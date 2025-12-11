@@ -1,6 +1,6 @@
 package pl.gogacz.smart_helpdesk.controller;
 
-import org.springframework.web.bind.annotation.*; // Tu się zmieniło na gwiazdkę, żeby było krócej
+import org.springframework.web.bind.annotation.*;
 import pl.gogacz.smart_helpdesk.model.Ticket;
 import pl.gogacz.smart_helpdesk.repository.TicketRepository;
 
@@ -16,14 +16,47 @@ public class TicketController {
         this.repository = repository;
     }
 
+    // 1. Pobieranie wszystkich zgłoszeń
     @GetMapping
     public List<Ticket> getAllTickets() {
         return repository.findAll();
     }
 
-    // --- TO DODAJESZ TERAZ ---
+    // 2. Pobieranie jednego zgłoszenia po ID
     @GetMapping("/{id}")
     public Ticket getTicket(@PathVariable Long id) {
         return repository.findById(id).orElse(null);
+    }
+
+    // 3. Tworzenie zgłoszenia
+    @PostMapping
+    public Ticket createTicket(@RequestBody Ticket ticket) {
+        ticket.setId(null);
+        return repository.save(ticket);
+    }
+
+    // 4. Aktualizacja
+    @PutMapping("/{id}")
+    public Ticket updateTicket(@PathVariable Long id, @RequestBody Ticket ticketDetails) {
+        Ticket ticket = repository.findById(id).orElse(null);
+        if (ticket != null) {
+            ticket.setDescription(ticketDetails.getDescription());
+            ticket.setStatus(ticketDetails.getStatus());
+            ticket.setTitle(ticketDetails.getTitle());
+            return repository.save(ticket);
+        }
+        return null;
+    }
+
+    // 5. Usuwanie
+    @DeleteMapping("/{id}")
+    public void deleteTicket(@PathVariable Long id) {
+        repository.deleteById(id);
+    }
+
+    // 6. Filtrowanie po statusie
+    @GetMapping("/status/{status}")
+    public List<Ticket> getTicketsByStatus(@PathVariable String status) {
+        return repository.findByStatus(status);
     }
 }
