@@ -8,4 +8,5 @@ import pl.gogacz.smart_helpdesk.model.Ticket;
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     List<Ticket> findByStatus(String status);
+    List<Ticket> findByTitleContainingIgnoreCase(String title);
 }

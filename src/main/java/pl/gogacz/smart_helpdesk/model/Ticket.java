@@ -17,7 +17,7 @@ public class Ticket {
     @Column(length = 2000)
     private String description;
 
-    private LocalDateTime createdDate = LocalDateTime.now();
+    private LocalDateTime createdDate;
 
     private String status = "NEW";
 
@@ -60,4 +60,10 @@ public class Ticket {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    @PrePersist
+    public void prePersist() {
+        this.createdDate = java.time.LocalDateTime.now();
+    }
+
 }

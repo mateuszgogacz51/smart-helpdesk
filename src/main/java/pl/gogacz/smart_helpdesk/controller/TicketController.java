@@ -59,4 +59,9 @@ public class TicketController {
     public List<Ticket> getTicketsByStatus(@PathVariable String status) {
         return repository.findByStatus(status);
     }
+    // 7. Wyszukiwarka po frazie (np. /api/tickets/search?title=myszka)
+    @GetMapping("/search")
+    public List<Ticket> searchTickets(@RequestParam String title) {
+        return repository.findByTitleContainingIgnoreCase(title);
+    }
 }
