@@ -18,13 +18,15 @@ public class SmartHelpdeskApplication {
 	CommandLineRunner runner(TicketRepository repository) {
 		return args -> {
 			Ticket ticket = new Ticket();
-			ticket.setTitle("Awaria drukarki");
-			ticket.setDescription("Dymi!");
-
+			ticket.setTitle("Testowe zgłoszenie");
+			ticket.setDescription("Opis testowy");
+			ticket.setStatus("NEW");
+			ticket.setCategory("Inne");
+			ticket.setLocation("Serwerownia");
 			repository.save(ticket);
 
 			System.out.println("----------------------------------------");
-			System.out.println("🔥 SUKCES! Zapisano zgłoszenie w bazie!");
+			System.out.println(" SUKCES! Zapisano zgłoszenie w bazie!");
 			System.out.println("----------------------------------------");
 		};
 	}

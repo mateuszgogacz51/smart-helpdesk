@@ -1,5 +1,6 @@
 package pl.gogacz.smart_helpdesk.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import pl.gogacz.smart_helpdesk.model.Ticket;
 import pl.gogacz.smart_helpdesk.repository.TicketRepository;
@@ -30,7 +31,7 @@ public class TicketController {
 
     // 3. Tworzenie zgłoszenia
     @PostMapping
-    public Ticket createTicket(@RequestBody Ticket ticket) {
+    public Ticket createTicket(@Valid @RequestBody Ticket ticket) {
         ticket.setId(null);
         return repository.save(ticket);
     }
