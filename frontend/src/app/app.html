@@ -1,6 +1,32 @@
-<div style="text-align: center; margin-top: 50px; font-family: Arial;">
+<div style="text-align: center; margin-top: 30px; font-family: Arial;">
   <h1>🚀 Smart Helpdesk</h1>
-  <p>Witaj w systemie zgłoszeń!</p>
-  <hr style="width: 50%;">
-  <p style="color: grey;">Frontend łączy się z Backendem...</p>
+  
+  <div *ngIf="tickets.length > 0; else noData">
+    <table border="1" style="margin: 0 auto; border-collapse: collapse; width: 80%;">
+      <thead style="background-color: #f2f2f2;">
+        <tr>
+          <th style="padding: 10px;">ID</th>
+          <th style="padding: 10px;">Tytuł</th>
+          <th style="padding: 10px;">Opis</th>
+          <th style="padding: 10px;">Kategoria</th>
+          <th style="padding: 10px;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of tickets">
+          <td style="padding: 8px;">{{ t.id }}</td>
+          <td style="padding: 8px; font-weight: bold;">{{ t.title }}</td>
+          <td style="padding: 8px;">{{ t.description }}</td>
+          <td style="padding: 8px;">{{ t.category }}</td>
+          <td style="padding: 8px;">{{ t.status }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #noData>
+    <p style="color: red; font-weight: bold;">⚠️ Brak zgłoszeń lub brak połączenia z Backendem!</p>
+    <p>Upewnij się, że Java (IntelliJ) jest włączona.</p>
+  </ng-template>
+
 </div>
