@@ -60,4 +60,18 @@ addTicket() {
       error: (err) => console.error('Nie udało się dodać:', err)
     });
   }
+  removeTicket(id?: number) {
+    if (!id) return; // Zabezpieczenie: jak nie ma ID, to nic nie rób
+
+    // Potwierdzenie (opcjonalne, ale profesjonalne)
+    if(confirm('Czy na pewno chcesz usunąć to zgłoszenie?')) {
+      this.ticketService.deleteTicket(id).subscribe({
+        next: () => {
+          console.log('Usunięto zgłoszenie o ID:', id);
+          this.loadTickets(); // Odśwież tabelę, żeby zniknęło z oczu
+        },
+        error: (err) => console.error('Błąd usuwania:', err)
+      });
+    }
+  }
 }

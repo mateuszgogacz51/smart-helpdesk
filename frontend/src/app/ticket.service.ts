@@ -19,4 +19,9 @@ export class TicketService {
   createTicket(ticket: Ticket): Observable<Ticket>{
     return this.http.post<Ticket>(this.apiUrl, ticket);
   }
+
+  deleteTicket(id: number): Observable<void> {
+    // Wysyłamy strzał pod adres np. http://localhost:8080/api/tickets/5
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }
