@@ -3,7 +3,7 @@ export interface Ticket {
   title: string;
   description: string;
   category: string;         // To co dodaliśmy wczoraj
-  location: string;         // To co dodaliśmy wczoraj
+  location?: string;         // To co dodaliśmy wczoraj
   status: string;
   createdDate?: string;     // Data przyjdzie z backendu jako napis
 }
