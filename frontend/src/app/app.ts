@@ -21,7 +21,7 @@ export class AppComponent implements OnInit {
     description: '',
     category: 'AWARIA',
     status: 'NOWE',
-    location: 'Biuro 302',
+    location: '',
   };
   // -----------------------------
 
@@ -53,7 +53,7 @@ addTicket() {
             description: '', 
             category: 'AWARIA', 
             status: 'NOWE',
-            location: 'Biuro' // <--- DODAJ TO!
+            location: '',
         };
         // --------------------
       },
