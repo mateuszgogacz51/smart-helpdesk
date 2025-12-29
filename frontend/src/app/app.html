@@ -52,29 +52,49 @@
 
   <div *ngIf="tickets.length > 0; else noData">
     <table border="1" style="margin: 0 auto; border-collapse: collapse; width: 80%;">
-      <thead style="background-color: #f2f2f2;">
+      <thead style="background-color: #2c3e50; color: white;">
         <tr>
           <th style="padding: 10px;">ID</th>
           <th style="padding: 10px;">Tytuł</th>
           <th style="padding: 10px;">Opis</th>
           <th style="padding: 10px;">Lokalizacja</th>
           <th style="padding: 10px;">Kategoria</th>
+          <th (click)="toggleSort()" style="padding: 10px; cursor: pointer; user-select: none;">
+            Data 
+            {{ sortDirection === 'ASC' ? '⬆️' : '⬇️' }}
+          </th>
           <th style="padding: 10px;">Status (Edytuj)</th>
           <th style="padding: 10px;">Akcje</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let t of visibleTickets">
+        <tr *ngFor="let t of visibleTickets" 
+            [style.background-color]="getStatusColor(t.status)"
+            style="border-bottom: 1px solid #ddd;">
+          
           <td style="padding: 8px;">{{ t.id }}</td>
           <td style="padding: 8px; font-weight: bold;">{{ t.title }}</td>
-          <td style="padding: 8px;">{{ t.description }}</td>
-          <td style="padding: 8px; color: blue;">{{ t.location }}</td>
-          <td style="padding: 8px;">{{ t.category }}</td>
           
-          <td [style.background-color]="getStatusColor(t.status)" 
-              style="padding: 8px; text-align: center; font-weight: bold;">
+          <td style="padding: 8px; text-align: center;">
+             <span style="color: #444; font-size: 0.9em;">
+               {{ t.description.substring(0, 20) }}...
+             </span>
+             <button (click)="openDescription(t.description)" 
+                     style="margin-left: 5px; cursor: pointer; background: rgba(255,255,255,0.5); border: 1px solid #999; border-radius: 4px; padding: 2px 6px;"
+                     title="Zobacz pełny opis">
+                🔍
+             </button>
+          </td>
+
+          <td style="padding: 8px; color: #0056b3; font-weight: 500;">{{ t.location }}</td>
+          <td style="padding: 8px;">{{ t.category }}</td>
+          <td style="padding: 8px; font-size: 0.9em; color: #333;">
+             {{ t.createdDate | date:'yyyy-MM-dd HH:mm' }}
+          </td>
+          
+          <td style="padding: 8px; text-align: center; font-weight: bold;">
             <select [ngModel]="t.status" (ngModelChange)="updateStatus(t, $event)"
-                    style="background: transparent; border: none; font-weight: bold; cursor: pointer; width: 100%;">
+                    style="background: rgba(255,255,255,0.6); border: 1px solid #aaa; border-radius: 4px; padding: 5px; font-weight: bold; cursor: pointer; width: 100%;">
               <option value="NOWE">🔴 NOWE</option>
               <option value="W TRAKCIE">🔵 W TRAKCIE</option>
               <option value="UKONCZONE">🟢 UKOŃCZONE</option>
@@ -83,7 +103,7 @@
 
           <td style="padding: 8px; text-align: center;">
             <button (click)="removeTicket(t.id)" 
-                    style="background-color: #ff4444; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">
+                    style="background-color: #ff4444; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 6px; font-size: 0.9em;">
               Usuń 🗑️
             </button>
           </td>
@@ -95,5 +115,20 @@
   <ng-template #noData>
     <p style="color: gray;">Brak zgłoszeń w bazie. Dodaj pierwsze powyżej!</p>
   </ng-template>
+
+  <div class="modal-backdrop" *ngIf="selectedDescription" (click)="closeDescription()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="close-btn" (click)="closeDescription()">&times;</button>
+      <h3 style="margin-top: 0; color: #2196F3;">📄 Pełny opis zgłoszenia</h3>
+      <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+      <p style="line-height: 1.6; font-size: 16px; white-space: pre-wrap;">{{ selectedDescription }}</p>
+      <div style="text-align: right; margin-top: 20px;">
+          <button (click)="closeDescription()" 
+                  style="padding: 8px 20px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">
+              Zamknij
+          </button>
+      </div>
+    </div>
+  </div>
 
 </div>

@@ -1,8 +1,8 @@
 package pl.gogacz.smart_helpdesk.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank; // <--- Import do walidacji
-import java.time.LocalDateTime;
+import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDateTime; // <--- WAŻNY IMPORT
 
 @Entity
 public class Ticket {
@@ -11,51 +11,46 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ZASADA: Tytuł jest obowiązkowy
     @NotBlank(message = "Tytuł zgłoszenia nie może być pusty")
     private String title;
 
-    @Column(length = 2000)
+    @Column(length = 4096)
     private String description;
 
-    // NOWOŚĆ ZE ZDJĘCIA: Kategoria (np. Drukarka, Internet)
-    // ZASADA: Musisz wybrać kategorię
-    @NotBlank(message = "Kategoria jest wymagana (np. Awaria, Sprzęt)")
-    private String category;
-
-    // NOWOŚĆ ZE ZDJĘCIA: Lokalizacja (np. Pokój 102)
-    @NotBlank(message = "Podaj lokalizację (np. numer pokoju)")
+    @NotBlank(message = "Podaj lokalizację")
     private String location;
 
-    private LocalDateTime createdDate;
+    private String category;
+    private String status;
 
-    private String status = "NEW";
+    // --- NOWOŚĆ: Data utworzenia ---
+    // Updatable = false oznacza, że data nie zmieni się przy edycji statusu!
+    @Column(updatable = false)
+    private LocalDateTime createdDate = LocalDateTime.now();
+    // -------------------------------
 
-    // --- Gettery i Settery (Możesz wygenerować Alt+Insert, albo wkleić te) ---
+    // --- Gettery i Settery ---
+    // (Pamiętaj, żeby wygenerować lub dopisać getter i setter dla createdDate!)
 
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    // ... reszta getterów i setterów bez zmian ...
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
-
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
-
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
-
-    public LocalDateTime getCreatedDate() { return createdDate; }
-    public void setCreatedDate(LocalDateTime createdDate) { this.createdDate = createdDate; }
-
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
-
-    @PrePersist
-    public void prePersist() {
-        this.createdDate = LocalDateTime.now();
-    }
 }
