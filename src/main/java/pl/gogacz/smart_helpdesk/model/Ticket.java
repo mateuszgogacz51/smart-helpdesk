@@ -28,10 +28,18 @@ public class Ticket {
     @Column(updatable = false)
     private LocalDateTime createdDate = LocalDateTime.now();
     // -------------------------------
-
+    @ManyToOne
+    @JoinColumn(name = "assigned_user_id") // Tak nazwiemy kolumnę w bazie
+    private User assignedUser;
     // --- Gettery i Settery ---
     // (Pamiętaj, żeby wygenerować lub dopisać getter i setter dla createdDate!)
+    public User getAssignedUser() {
+        return assignedUser;
+    }
 
+    public void setAssignedUser(User assignedUser) {
+        this.assignedUser = assignedUser;
+    }
     public LocalDateTime getCreatedDate() {
         return createdDate;
     }
