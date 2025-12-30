@@ -1,3 +1,5 @@
+import { User } from './user.model';
+
 export interface Ticket {
   id?: number;              // Znak zapytania oznacza, że przy tworzeniu ID może nie być
   title: string;
@@ -6,4 +8,5 @@ export interface Ticket {
   location?: string;         // To co dodaliśmy wczoraj
   status: string;
   createdDate?: string;     // Data przyjdzie z backendu jako napis
+  assignedUser?: User;
 }

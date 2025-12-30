@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Ważne dla formatowania daty (pipe date)
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TicketService } from './ticket.service';
 import { Ticket } from './ticket.model';
+import { User } from './user.model'; // <--- Nowy import
 
 @Component({
   selector: 'app-root',
@@ -14,10 +15,10 @@ import { Ticket } from './ticket.model';
 export class AppComponent implements OnInit {
   
   tickets: Ticket[] = [];
+  users: User[] = []; // <--- Tutaj będziemy trzymać pracowników
   currentFilter: string = 'WSZYSTKIE';
-
-  // Domyślne sortowanie: MALEJĄCO (DESC) - czyli najnowsze na górze
   sortDirection: 'ASC' | 'DESC' = 'DESC';
+  selectedDescription: string | null = null;
 
   newTicket: Ticket = {
     title: '',
@@ -27,40 +28,52 @@ export class AppComponent implements OnInit {
     location: ''
   };
 
-  selectedDescription: string | null = null;
-
   constructor(private ticketService: TicketService) {}
 
   ngOnInit() {
     this.loadTickets();
+    this.loadUsers(); // <--- Pobieramy pracowników przy starcie
   }
 
-  openDescription(description: string) {
-    this.selectedDescription = description;
+  loadUsers() {
+    this.ticketService.getUsers().subscribe({
+      next: (data) => this.users = data,
+      error: (err) => console.error('Błąd pobierania pracowników:', err)
+    });
   }
 
-  closeDescription() {
-    this.selectedDescription = null;
+  // --- NOWOŚĆ: Przypisywanie pracownika ---
+  assignUser(ticket: Ticket, event: any) {
+    // Pobieramy ID wybranego pracownika z <select>
+    const userId = event.target.value; 
+    
+    // Szukamy pełnego obiektu User na liście (lub null jeśli wybrano "Brak")
+    const selectedUser = this.users.find(u => u.id == userId) || null;
+
+    // Aktualizujemy bilet lokalnie i wysyłamy do bazy
+    const updatedTicket = { ...ticket, assignedUser: selectedUser as User }; // Rzutowanie as User, bo może być undefined
+
+    this.ticketService.updateTicket(updatedTicket).subscribe({
+      next: () => {
+        console.log(`Przypisano do: ${selectedUser ? selectedUser.firstName : 'Nikogo'}`);
+        ticket.assignedUser = selectedUser as User; // Aktualizacja widoku
+      },
+      error: (err) => console.error('Błąd przypisywania:', err)
+    });
   }
 
-  // --- 1. SORTOWANIE I FILTROWANIE ---
-
-  // Zmienia kierunek sortowania po kliknięciu w nagłówek "Data"
+  // ... reszta funkcji bez zmian ...
+  
   toggleSort() {
     this.sortDirection = this.sortDirection === 'ASC' ? 'DESC' : 'ASC';
     this.sortTickets();
   }
 
-  // Logika układająca bilety wg daty
   sortTickets() {
     this.tickets.sort((a, b) => {
-      // Jeśli brak daty, przyjmij 0 (żeby się nie wywaliło)
       const dateA = new Date(a.createdDate || 0).getTime();
       const dateB = new Date(b.createdDate || 0).getTime();
-
-      return this.sortDirection === 'ASC' 
-        ? dateA - dateB  // Od najstarszych
-        : dateB - dateA; // Od najnowszych
+      return this.sortDirection === 'ASC' ? dateA - dateB : dateB - dateA;
     });
   }
 
@@ -68,37 +81,28 @@ export class AppComponent implements OnInit {
     this.currentFilter = status;
   }
 
-  // "Inteligentna lista" do wyświetlania w tabeli
   get visibleTickets(): Ticket[] {
     let filtered = this.tickets;
-
-    // 1. Najpierw filtrujemy
     if (this.currentFilter !== 'WSZYSTKIE') {
       filtered = this.tickets.filter(t => t.status === this.currentFilter);
     }
-
-    // 2. Zwracamy posortowane (sortowanie robimy na głównej liście w loadTickets/toggleSort)
     return filtered;
   }
 
-  // --- 2. WYGLĄD (KOLORY) ---
-
   getStatusColor(status: string): string {
     switch (status) {
-      case 'NOWE': return '#ffcdd2';       // Czerwony
-      case 'W TRAKCIE': return '#bbdefb';  // Niebieski
-      case 'UKONCZONE': return '#c8e6c9';  // Zielony
+      case 'NOWE': return '#ffcdd2';
+      case 'W TRAKCIE': return '#bbdefb';
+      case 'UKONCZONE': return '#c8e6c9';
       default: return '#f5f5f5';
     }
   }
-
-  // --- 3. KOMUNIKACJA Z JAVĄ (CRUD) ---
 
   loadTickets() {
     this.ticketService.getTickets().subscribe({
       next: (data) => {
         this.tickets = data;
-        this.sortTickets(); // WAŻNE: Posortuj od razu po pobraniu danych!
+        this.sortTickets();
       },
       error: (err) => console.error('Błąd pobierania:', err)
     });
@@ -107,16 +111,8 @@ export class AppComponent implements OnInit {
   addTicket() {
     this.ticketService.createTicket(this.newTicket).subscribe({
       next: (response) => {
-        console.log('Dodano:', response);
         this.loadTickets(); 
-        // Reset formularza
-        this.newTicket = { 
-          title: '', 
-          description: '', 
-          category: 'AWARIA', 
-          status: 'NOWE', 
-          location: '' 
-        };
+        this.newTicket = { title: '', description: '', category: 'AWARIA', status: 'NOWE', location: '' };
         this.currentFilter = 'WSZYSTKIE';
       },
       error: (err) => console.error('Błąd dodawania:', err)
@@ -125,17 +121,9 @@ export class AppComponent implements OnInit {
 
   updateStatus(ticket: Ticket, newStatus: string) {
     const updatedTicket = { ...ticket, status: newStatus };
-    
     this.ticketService.updateTicket(updatedTicket).subscribe({
-      next: () => {
-        // Tutaj trik: zamiast przeładowywać wszystko z serwera (co może zmienić kolejność),
-        // aktualizujemy lokalnie, żeby było szybciej i płynniej.
-        ticket.status = newStatus; 
-      },
-      error: (err) => {
-        console.error('Błąd zmiany statusu:', err);
-        this.loadTickets(); // Jak błąd, to przywróć stan z serwera
-      }
+      next: () => ticket.status = newStatus,
+      error: (err) => this.loadTickets()
     });
   }
 
@@ -147,5 +135,13 @@ export class AppComponent implements OnInit {
         error: (err) => console.error('Błąd usuwania:', err)
       });
     }
+  }
+
+  openDescription(description: string) {
+    this.selectedDescription = description;
+  }
+
+  closeDescription() {
+    this.selectedDescription = null;
   }
 }
