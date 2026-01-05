@@ -1,12 +1,11 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
-import { provideHttpClient } from '@angular/common/http'; // <--- Czy to jest?
+import { provideHttpClient } from '@angular/common/http'; // <--- WAŻNE: To naprawi błędy z serwisami
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
-    provideHttpClient() // <--- Czy to jest?
+    provideRouter(routes),      // Włączamy nawigację (Login <-> Dashboard)
+    provideHttpClient()         // Włączamy Internet (połączenie z Backendem)
   ]
 };

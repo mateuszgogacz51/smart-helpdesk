@@ -16,13 +16,14 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Sprawdzamy, czy baza jest pusta
         if (userRepository.count() == 0) {
-            System.out.println("🚀 Baza pusta. Dodaję przykładowych pracowników...");
+            System.out.println("🚀 Baza pusta. Dodaję pracowników z hasłami...");
 
-            userRepository.save(new User("Jan", "Kowalski", "jan@firma.pl", "ADMIN"));
-            userRepository.save(new User("Anna", "Nowak", "anna@firma.pl", "HELPDESK"));
-            userRepository.save(new User("Marek", "Zegarek", "marek@firma.pl", "HELPDESK"));
+            // Hasło dla wszystkich to: haslo123
+            // {noop} oznacza "no operation" - czyli brak szyfrowania (tylko do testów!)
+            userRepository.save(new User("Jan", "Kowalski", "jan@firma.pl", "{noop}haslo123", "ADMIN"));
+            userRepository.save(new User("Anna", "Nowak", "anna@firma.pl", "{noop}haslo123", "HELPDESK"));
+            userRepository.save(new User("Marek", "Zegarek", "marek@firma.pl", "{noop}haslo123", "HELPDESK"));
 
             System.out.println("✅ Pracownicy dodani!");
         }

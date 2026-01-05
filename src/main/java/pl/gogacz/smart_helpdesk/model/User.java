@@ -3,7 +3,7 @@ package pl.gogacz.smart_helpdesk.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "app_users") // 'User' to słowo kluczowe w SQL, więc bezpieczniej nazwać tabelę 'app_users'
+@Table(name = "app_users")
 public class User {
 
     @Id
@@ -13,16 +13,17 @@ public class User {
     private String firstName;
     private String lastName;
     private String email;
-    private String role; // np. "ADMIN", "HELPDESK"
+    private String password; // <--- NOWE POLE
+    private String role;
 
-    // Pusty konstruktor (wymagany przez JPA)
     public User() {}
 
-    // Konstruktor dla naszej wygody
-    public User(String firstName, String lastName, String email, String role) {
+    // Zaktualizowany konstruktor (ma teraz hasło)
+    public User(String firstName, String lastName, String email, String password, String role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.password = password;
         this.role = role;
     }
 
@@ -35,6 +36,12 @@ public class User {
     public void setLastName(String lastName) { this.lastName = lastName; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    // <--- NOWE GETTERY I SETTERY
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    // ---------------------------
+
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 }

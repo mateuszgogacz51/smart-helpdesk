@@ -1,0 +1,26 @@
+<div class="form-container">
+  <div class="form-card">
+    <h2>📝 Nowe zgłoszenie</h2>
+    <p class="subtitle">Opisz problem techniczny</p>
+    
+    <div class="form-group">
+      <label>Lokalizacja / Nr pokoju</label>
+      <input type="text" [(ngModel)]="ticket.location" placeholder="np. Pokój 102, Biuro w Warszawie">
+    </div>
+
+    <div class="form-group">
+      <label>Temat zgłoszenia</label>
+      <input type="text" [(ngModel)]="ticket.title" placeholder="np. Nie działa drukarka">
+    </div>
+
+    <div class="form-group">
+      <label>Opis problemu</label>
+      <textarea [(ngModel)]="ticket.description" rows="5" placeholder="Opisz szczegóły usterki..."></textarea>
+    </div>
+
+    <div class="button-group">
+      <button class="btn-cancel" (click)="cancel()">Anuluj</button>
+      <button class="btn-save" (click)="saveTicket()">Wyślij zgłoszenie</button>
+    </div>
+  </div>
+</div>
