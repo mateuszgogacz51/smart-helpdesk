@@ -1,61 +1,54 @@
 package pl.gogacz.smart_helpdesk.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import pl.gogacz.smart_helpdesk.model.Ticket;
+import pl.gogacz.smart_helpdesk.model.User;
 import pl.gogacz.smart_helpdesk.repository.TicketRepository;
+import pl.gogacz.smart_helpdesk.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/tickets")
-@CrossOrigin(origins = "http://localhost:4200") // Pozwalamy Angularowi na dostęp
+// Zezwalamy na połączenie z Angulara:
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class TicketController {
 
-    // Tutaj nazywamy zmienną "repository"
-    private final TicketRepository repository;
+    private final TicketRepository ticketRepository;
+    private final UserRepository userRepository;
 
-    public TicketController(TicketRepository repository) {
-        this.repository = repository;
+    public TicketController(TicketRepository ticketRepository, UserRepository userRepository) {
+        this.ticketRepository = ticketRepository;
+        this.userRepository = userRepository;
     }
 
+    // --- TO JEST METODA, KTÓRĄ NAPRAWIAMY ---
     @GetMapping
     public List<Ticket> getAllTickets() {
-        return repository.findAll();
+        // findAll() zwraca wszystko co jest w bazie.
+        // Jeśli w SQL są dane, ta metoda MUSI je zwrócić.
+        List<Ticket> tickets = ticketRepository.findAll();
+        System.out.println("Backend wysyła do Angulara: " + tickets.size() + " zgłoszeń."); // Podgląd w konsoli
+        return tickets;
     }
-
-    @GetMapping("/{id}")
-    public Ticket getTicket(@PathVariable Long id) {
-        return repository.findById(id).orElse(null);
-    }
+    // ----------------------------------------
 
     @PostMapping
     public Ticket createTicket(@Valid @RequestBody Ticket ticket) {
-        ticket.setId(null);
-        return repository.save(ticket);
-    }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
 
-    // --- TO JEST TA METODA, KTÓRA ROBIŁA BŁĘDY ---
-    @PutMapping("/{id}")
-    public Ticket updateTicket(@PathVariable Long id, @RequestBody Ticket ticket) {
-        ticket.setId(id);
-        // TERAZ JEST DOBRZE: używamy "repository", tak jak na górze pliku
-        return repository.save(ticket);
-    }
-    // ----------------------------------------------
+        User author = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika!"));
 
-    @DeleteMapping("/{id}")
-    public void deleteTicket(@PathVariable Long id) {
-        repository.deleteById(id);
-    }
+        ticket.setAuthor(author);
+        ticket.setCreatedDate(LocalDateTime.now());
+        if (ticket.getStatus() == null) ticket.setStatus("OPEN");
 
-    @GetMapping("/status/{status}")
-    public List<Ticket> getTicketsByStatus(@PathVariable String status) {
-        return repository.findByStatus(status);
-    }
-
-    @GetMapping("/search")
-    public List<Ticket> searchTickets(@RequestParam String title) {
-        return repository.findByTitleContainingIgnoreCase(title);
+        return ticketRepository.save(ticket);
     }
 }

@@ -1,5 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // <--- Dodano ChangeDetectorRef
 import { CommonModule } from '@angular/common';
+import { TicketService } from '../ticket.service';
+import { AuthService } from '../auth.service';
+import { Ticket } from '../ticket.model';
 import { Router } from '@angular/router';
 
 @Component({
@@ -9,58 +12,67 @@ import { Router } from '@angular/router';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
 
-  // 1. Użytkownik
-  currentUser = {
-    name: 'Jan Kowalski',
-    role: 'USER' 
-  };
+  visibleTickets: Ticket[] = [];
+  currentUser: string = '';
 
-  // 2. Baza wszystkich zgłoszeń
-  allTickets = [
-    { id: 101, title: 'Problem z drukarką na 2 piętrze', status: 'OTWARTE', owner: 'Jan Kowalski' },
-    { id: 102, title: 'Brak dostępu do VPN', status: 'W TOKU', owner: 'Anna Nowak' },
-    { id: 103, title: 'Prośba o nowy monitor', status: 'ZAMKNIĘTE', owner: 'Jan Kowalski' },
-    { id: 104, title: 'Awaria poczty Outlook', status: 'OTWARTE', owner: 'Piotr Wiśniewski' },
-    { id: 105, title: 'Klawiatura zalana kawą', status: 'NOWE', owner: 'Jan Kowalski' }
-  ];
+  constructor(
+    private ticketService: TicketService,
+    private authService: AuthService,
+    private router: Router,
+    private cdr: ChangeDetectorRef // <--- Wstrzykujemy narzędzie do odświeżania
+  ) {}
 
-  // 3. Zmienna, którą widzi HTML (musi być zdefiniowana tutaj!)
-  visibleTickets: any[] = [];
-
-  constructor(private router: Router) {
-    // 4. Logika filtrowania uruchamiana OD RAZU przy starcie
-    this.filterTickets();
-  }
-
-  filterTickets() {
-    if (this.currentUser.role === 'ADMIN' || this.currentUser.role === 'HELPDESK') {
-      // Admin widzi wszystko
-      this.visibleTickets = this.allTickets;
-    } else {
-      // Zwykły user widzi tylko swoje
-      this.visibleTickets = this.allTickets.filter(ticket => ticket.owner === this.currentUser.name);
+  ngOnInit(): void {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.router.navigate(['/login']);
+      return;
     }
+    this.currentUser = this.authService.getUsername();
+    this.loadTickets();
   }
 
-  // --- Funkcje przycisków ---
+  loadTickets() {
+    this.ticketService.getTickets().subscribe({
+      next: (data) => {
+        console.log('✅ DANE PRZYSZŁY:', data);
+        
+        // 1. Przypisujemy dane
+        this.visibleTickets = data;
 
-  logout() {
-    this.router.navigate(['/login']);
+        // 2. WYMUSZAMY ODŚWIEŻENIE EKRANU (To jest Twój ratunek!)
+        this.cdr.detectChanges(); 
+        
+        console.log('✅ Ekran odświeżony. Liczba zgłoszeń:', this.visibleTickets.length);
+      },
+      error: (err) => {
+        console.error('❌ BŁĄD:', err);
+        if (err.status === 401) {
+          this.authService.logout();
+          this.router.navigate(['/login']);
+        }
+      }
+    });
+  }
+
+  getStatusClass(status: string): string {
+    if (!status) return '';
+    switch (status) {
+      case 'OPEN': return 'status-open';
+      case 'IN_PROGRESS': return 'status-pending';
+      case 'CLOSED': return 'status-closed';
+      default: return '';
+    }
   }
 
   createNewTicket() {
     this.router.navigate(['/add-ticket']);
   }
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'OTWARTE': return 'status-open';
-      case 'W TOKU': return 'status-pending';
-      case 'ZAMKNIĘTE': return 'status-closed';
-      case 'NOWE': return 'status-open';
-      default: return '';
-    }
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

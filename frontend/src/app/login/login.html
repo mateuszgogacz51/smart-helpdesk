@@ -3,11 +3,35 @@
       <h2>🔐 Zaloguj się</h2>
       <p style="color: #666; margin-bottom: 20px;">Dostęp do Smart Helpdesk</p>
   
-      <input type="text" [(ngModel)]="username" placeholder="Email (np. jan@firma.pl)" class="input-field">
-      <input type="password" [(ngModel)]="password" placeholder="Hasło" class="input-field">
+      <form (ngSubmit)="onLogin()">
+        
+        <input 
+          type="text" 
+          [(ngModel)]="username" 
+          name="username" 
+          placeholder="Login (np. jan)" 
+          class="input-field"
+          [disabled]="isLoading"
+        >
   
-      <p *ngIf="errorMessage" style="color: red; font-size: 0.9em;">{{ errorMessage }}</p>
+        <input 
+          type="password" 
+          [(ngModel)]="password" 
+          name="password" 
+          placeholder="Hasło" 
+          class="input-field"
+          [disabled]="isLoading"
+        >
   
-      <button (click)="login()" class="login-btn">Zaloguj się 🚀</button>
+        <p *ngIf="errorMessage" style="color: red; font-size: 0.9em; margin: 10px 0;">
+          {{ errorMessage }}
+        </p>
+  
+        <button type="submit" class="login-btn" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Zaloguj się 🚀</span>
+          <span *ngIf="isLoading">Logowanie... ⏳</span>
+        </button>
+  
+      </form>
     </div>
   </div>

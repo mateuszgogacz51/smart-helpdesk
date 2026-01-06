@@ -2,9 +2,10 @@ package pl.gogacz.smart_helpdesk.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import java.time.LocalDateTime; // <--- WAŻNY IMPORT
+import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "tickets") // <--- TO JEST KLUCZOWE! (Żeby Java widziała tabelę z SQL-a)
 public class Ticket {
 
     @Id
@@ -21,44 +22,51 @@ public class Ticket {
     private String location;
 
     private String category;
-    private String status;
 
-    // --- NOWOŚĆ: Data utworzenia ---
-    // Updatable = false oznacza, że data nie zmieni się przy edycji statusu!
+    // Status domyślny
+    private String status = "OPEN";
+
     @Column(updatable = false)
     private LocalDateTime createdDate = LocalDateTime.now();
-    // -------------------------------
+
+    // --- RELACJE ---
+
+    // Autor zgłoszenia (Tego brakowało!)
     @ManyToOne
-    @JoinColumn(name = "assigned_user_id") // Tak nazwiemy kolumnę w bazie
+    @JoinColumn(name = "author_id")
+    private User author;
+
+    // Przypisany pracownik
+    @ManyToOne
+    @JoinColumn(name = "assigned_user_id")
     private User assignedUser;
-    // --- Gettery i Settery ---
-    // (Pamiętaj, żeby wygenerować lub dopisać getter i setter dla createdDate!)
-    public User getAssignedUser() {
-        return assignedUser;
-    }
 
-    public void setAssignedUser(User assignedUser) {
-        this.assignedUser = assignedUser;
-    }
-    public LocalDateTime getCreatedDate() {
-        return createdDate;
-    }
+    // --- GETTERY I SETTERY ---
 
-    public void setCreatedDate(LocalDateTime createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    // ... reszta getterów i setterów bez zmian ...
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
+
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public LocalDateTime getCreatedDate() { return createdDate; }
+    public void setCreatedDate(LocalDateTime createdDate) { this.createdDate = createdDate; }
+
+    public User getAuthor() { return author; }
+    public void setAuthor(User author) { this.author = author; }
+
+    public User getAssignedUser() { return assignedUser; }
+    public void setAssignedUser(User assignedUser) { this.assignedUser = assignedUser; }
 }

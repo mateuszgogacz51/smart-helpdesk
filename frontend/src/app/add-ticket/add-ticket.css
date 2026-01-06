@@ -1,50 +1,98 @@
-.form-container {
-  position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh;
-  display: flex; justify-content: center; align-items: center;
-  /* WKLEJ SWOJE TŁO Z LOGIN.CSS TUTAJ: */
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  font-family: 'Segoe UI', sans-serif;
+.add-ticket-container {
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+    background-color: #f5f7fa;
+    min-height: 100vh;
 }
 
-.form-card {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 2rem;
-  border-radius: 20px;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+.ticket-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    width: 100%;
+    max-width: 600px;
 }
 
-h2 { margin-top: 0; color: #333; margin-bottom: 5px; }
-.subtitle { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
-
-.form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
-label { font-weight: bold; font-size: 0.9rem; color: #444; margin-bottom: 5px; }
-
-input, textarea, select {
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  font-size: 1rem;
-  background: #f9f9f9;
+h2 {
+    margin-bottom: 25px;
+    color: #2c3e50;
+    text-align: center;
 }
 
-input:focus, textarea:focus, select:focus {
-  outline: none; border-color: #2a5298; background: white;
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.input-field {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    box-sizing: border-box; /* Ważne żeby padding nie rozpychał */
+    transition: 0.2s;
+}
+
+.input-field:focus {
+    border-color: #2196F3;
+    outline: none;
+}
+
+textarea.input-field {
+    resize: vertical;
 }
 
 .button-group {
-  display: flex; gap: 10px; margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
 }
 
-button {
-  flex: 1; padding: 12px; border: none; border-radius: 10px;
-  font-weight: bold; cursor: pointer; transition: 0.2s;
+.btn-submit {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
 }
 
-.btn-save { background-color: #2a5298; color: white; }
-.btn-save:hover { background-color: #1e3c72; }
+.btn-submit:hover {
+    background-color: #45a049;
+}
 
-.btn-cancel { background-color: #e0e0e0; color: #333; }
-.btn-cancel:hover { background-color: #d6d6d6; }
+.btn-submit:disabled {
+    background-color: #ccc;
+}
+
+.btn-cancel {
+    background-color: transparent;
+    color: #777;
+    border: 1px solid #ccc;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn-cancel:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.error-msg {
+    color: #e74c3c;
+    text-align: center;
+    margin-top: 10px;
+}

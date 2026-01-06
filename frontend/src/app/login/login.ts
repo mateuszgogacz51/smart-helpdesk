@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
-import { TicketService } from '../ticket.service';
 
 @Component({
   selector: 'app-login',
@@ -13,33 +12,32 @@ import { TicketService } from '../ticket.service';
   styleUrl: './login.css'
 })
 export class LoginComponent {
-
   username = '';
   password = '';
   errorMessage = '';
+  isLoading = false; // Do obsługi kręciołka na przycisku
 
-  constructor(
-    private authService: AuthService, 
-    private ticketService: TicketService,
-    private router: Router
-  ) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
-  login() {
-    // 1. Zapisz dane w "portfelu"
-    this.authService.setCredentials(this.username, this.password);
+  onLogin() {
+    if (!this.username || !this.password) {
+      this.errorMessage = 'Wpisz login i hasło!';
+      return;
+    }
 
-    // 2. Spróbuj pobrać cokolwiek z API, żeby sprawdzić czy dane są poprawne
-    this.ticketService.getTickets().subscribe({
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    // Wywołujemy nową metodę login z AuthService
+    this.authService.login(this.username, this.password).subscribe({
       next: () => {
-        // SUKCES: Przekieruj do dashboardu
-        console.log('Logowanie udane!');
+        this.isLoading = false;
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        // BŁĄD: Pokaż komunikat i wyczyść błędne hasło
-        console.error('Błąd logowania:', err);
-        this.errorMessage = 'Nieprawidłowy login lub hasło ❌';
-        this.authService.logout(); // Czyścimy błędne dane
+        this.isLoading = false;
+        this.errorMessage = 'Błędny login lub hasło!';
+        console.error(err);
       }
     });
   }

@@ -1,12 +1,13 @@
-import { User } from './user.model';
+import { User } from "./user.model";
 
 export interface Ticket {
-  id?: number;              // Znak zapytania oznacza, że przy tworzeniu ID może nie być
+  id?: number;
   title: string;
   description: string;
-  category: string;         // To co dodaliśmy wczoraj
-  location?: string;         // To co dodaliśmy wczoraj
+  location: string;
+  category: string;
   status: string;
-  createdDate?: string;     // Data przyjdzie z backendu jako napis
-  assignedUser?: User;
+  createdDate?: string;
+  author?: User; 
+  assignedEmployee?: User; 
 }
