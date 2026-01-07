@@ -2,42 +2,81 @@
   <div class="dashboard-card">
 
     <header class="dashboard-header">
-      <div class="header-text">
-        <h2>👋 Witaj, {{ currentUser }}</h2>
+      <div class="header-content">
+        <h2>👋 Cześć, {{ currentUser }}</h2>
+        <p class="role-badge">{{ currentUserRole }}</p>
       </div>
       <button class="logout-btn" (click)="logout()">Wyloguj</button>
     </header>
 
-    <div style="background: black; color: yellow; padding: 10px; margin: 10px 0; font-family: monospace;">
-      🔍 STATUS DANYCH: <br>
-      Liczba zgłoszeń: {{ visibleTickets.length }} <br>
-      Przykładowe dane: {{ visibleTickets | json }}
-    </div>
     <div class="dashboard-content">
-      <div class="ticket-list">
+      
+      <div class="top-bar">
+        <h3>Lista zgłoszeń</h3>
+        <button class="add-ticket-btn" (click)="createNewTicket()">
+          <span>+</span> Nowe zgłoszenie
+        </button>
+      </div>
+
+      <div class="filters-panel">
         
-        <div class="ticket-item" *ngFor="let ticket of visibleTickets">
-          <div class="ticket-info">
-            <span class="ticket-title">#{{ ticket.id }} {{ ticket.title }}</span>
-            <p class="ticket-desc">{{ ticket.description }}</p>
-            <div class="ticket-meta">
-              <span>📍 {{ ticket.location }}</span>
-              <span>👤 {{ ticket.author?.username }}</span>
-            </div>
-          </div>
-          <span class="status" [ngClass]="getStatusClass(ticket.status)">
-            {{ ticket.status }}
-          </span>
+        <div class="filter-group">
+          <label>Status:</label>
+          <select [(ngModel)]="filterStatus" (change)="applyFilters()" class="styled-select">
+            <option value="ALL">Wszystkie</option>
+            <option value="OPEN">🟢 Otwarte</option>
+            <option value="IN_PROGRESS">🟠 W toku</option>
+            <option value="CLOSED">⚫ Zamknięte</option>
+          </select>
         </div>
 
-        <div *ngIf="visibleTickets.length === 0" style="text-align: center; padding: 20px;">
-          Brak zgłoszeń do wyświetlenia.
+        <div class="filter-group">
+          <label>Sortuj:</label>
+          <select [(ngModel)]="sortOrder" (change)="applyFilters()" class="styled-select">
+            <option value="NEWEST">📅 Najnowsze</option>
+            <option value="OLDEST">📅 Najstarsze</option>
+            <option value="STATUS">📊 Po statusie</option>
+          </select>
+        </div>
+
+        <div class="filter-group checkbox-group" *ngIf="currentUserRole !== 'USER'">
+          <input type="checkbox" id="myTickets" [(ngModel)]="onlyAssignedToMe" (change)="applyFilters()">
+          <label for="myTickets">Przypisane do mnie</label>
         </div>
 
       </div>
-      
-      <button class="add-ticket-btn" (click)="createNewTicket()">+ Nowe zgłoszenie</button>
-    </div>
 
+      <div class="ticket-list">
+        <div class="ticket-item" *ngFor="let ticket of visibleTickets" (click)="openTicketDetails(ticket.id)">
+          
+          <div class="ticket-left">
+            <span class="status-dot" [ngClass]="getStatusClass(ticket.status)"></span>
+            <div class="ticket-main-info">
+              <span class="ticket-id">#{{ ticket.id }}</span>
+              <span class="ticket-title">{{ ticket.title }}</span>
+              <div class="ticket-meta">
+                <span>📂 {{ ticket.category }}</span>
+                <span *ngIf="ticket.assignedUser" class="assignee-badge">
+                  🛠️ {{ ticket.assignedUser.firstName }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ticket-right">
+            <span class="date-info">{{ ticket.createdDate | date:'shortDate' }}</span>
+            <span class="status-pill" [ngClass]="getStatusClass(ticket.status)">
+              {{ ticket.status }}
+            </span>
+          </div>
+
+        </div>
+
+        <div *ngIf="visibleTickets.length === 0" class="empty-state">
+          <p>📭 Brak zgłoszeń pasujących do filtrów.</p>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>

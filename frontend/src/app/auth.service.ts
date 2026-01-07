@@ -12,54 +12,47 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   login(username: string, password: string) {
-    // Tworzymy nagłówek Basic Auth
+    // Generujemy token Basic Auth (Base64)
     const token = btoa(username + ':' + password);
     const headers = new HttpHeaders({
       Authorization: 'Basic ' + token
     });
 
-    // Próbujemy pobrać bilety, aby sprawdzić, czy hasło jest poprawne.
-    // (To prosty sposób weryfikacji przy Basic Auth)
+    // Próbujemy pobrać bilety, aby zweryfikować poprawność hasła
     return this.http.get(this.baseUrl + '/tickets', { headers }).pipe(
       map(response => {
-        // SUKCES: Zapisujemy dane w przeglądarce
+        // SUKCES: Zapisujemy token i dane użytkownika
         localStorage.setItem('username', username);
         localStorage.setItem('token', token);
         
-        // Prosta logika ról (docelowo Backend powinien to zwracać)
+        // Prosta logika ról (dla uproszczenia frontendu)
         let role = 'USER';
         if (username === 'admin') role = 'ADMIN';
-        if (username === 'marek') role = 'HELPDESK'; // Marek to nasz informatyk
+        if (username === 'marek') role = 'HELPDESK';
         
         localStorage.setItem('role', role);
-        
         return response;
       })
     );
   }
 
   logout() {
-    // Czyścimy pamięć przy wylogowaniu
     localStorage.removeItem('username');
     localStorage.removeItem('role');
     localStorage.removeItem('token');
   }
 
-  // --- OTO METODY, KTÓRYCH BRAKOWAŁO I POWODOWAŁY BŁĄD ---
+  // --- METODY POTRZEBNE DLA TICKET-SERVICE ---
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
 
   getUsername(): string {
     return localStorage.getItem('username') || '';
   }
 
-  getRole(): string {
-    return localStorage.getItem('role') || 'USER'; // Domyślnie zwykły user
-  }
-
-  // Pomocnicza metoda dla innych serwisów (np. TicketService)
-  getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({
-      Authorization: 'Basic ' + token
-    });
+  isAuthenticated(): boolean {
+    return !!this.getToken();
   }
 }

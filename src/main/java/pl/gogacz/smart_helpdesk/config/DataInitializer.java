@@ -33,9 +33,9 @@ public class DataInitializer implements CommandLineRunner {
         // 1. UPEWNIAMY SIĘ, ŻE UŻYTKOWNICY ISTNIEJĄ
         if (userRepository.count() == 0) {
             System.out.println("🚀 Baza pusta. Tworzenie użytkowników...");
-            createUser("admin", "admin123", "ADMIN", "Administrator", "admin@helpdesk.pl");
-            createUser("marek", "marek123", "HELPDESK", "Marek", "marek@helpdesk.pl");
-            createUser("jan", "jan123", "USER", "Jan", "jan@firma.pl");
+            createUser("admin", "admin123", "ADMIN", "Administrator", "admin@helpdesk.pl", "Zarząd");
+            createUser("marek", "marek123", "HELPDESK", "Marek", "marek@helpdesk.pl", "IT");
+            createUser("jan", "jan123", "USER", "Jan", "jan@firma.pl", "Księgowość");
         } else {
             System.out.println("✅ Użytkownicy już istnieją.");
         }
@@ -61,13 +61,14 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     // Metody pomocnicze, żeby kod był czystszy
-    private void createUser(String username, String pass, String role, String name, String email) {
+    private void createUser(String username, String pass, String role, String name, String email, String department) {
         User u = new User();
         u.setUsername(username);
         u.setPassword(passwordEncoder.encode(pass));
         u.setRole(role);
         u.setFirstName(name);
         u.setEmail(email);
+        u.setDepartment(department);
         userRepository.save(u);
     }
 

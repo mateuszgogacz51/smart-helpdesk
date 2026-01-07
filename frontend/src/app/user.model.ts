@@ -5,4 +5,5 @@ export interface User {
   lastName?: string;
   email?: string;
   role: string;
+  department?: string; // <--- ZMIANA: Dodajemy brakujące pole
 }

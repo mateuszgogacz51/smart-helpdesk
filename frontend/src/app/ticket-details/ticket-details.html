@@ -1,0 +1,99 @@
+<div class="details-container">
+  
+  <button class="back-btn" (click)="goBack()">← Wróć do listy</button>
+
+  <div *ngIf="!ticket && !errorMessage" class="loading">⏳ Ładowanie danych...</div>
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <div class="ticket-card" *ngIf="ticket">
+    
+    <header class="card-header">
+      <div class="title-group">
+        <span class="ticket-id">#{{ ticket.id }}</span>
+        <h1>{{ ticket.title }}</h1>
+      </div>
+      <span class="status-badge" [ngClass]="getStatusClass(ticket.status)">
+        {{ ticket.status }}
+      </span>
+    </header>
+
+    <div class="card-body">
+      
+      <section class="description-section">
+        <h3>Opis zgłoszenia</h3>
+        <p>{{ ticket.description }}</p>
+      </section>
+
+      <hr class="divider">
+
+      <div class="info-grid">
+        <div class="info-group">
+          <label>Zgłaszający:</label>
+          <p><strong>{{ ticket.author?.firstName }} {{ ticket.author?.lastName }}</strong></p>
+          <p class="sub-text">{{ ticket.author?.email }}</p>
+          <p class="sub-text" style="color: #0056b3;">
+            Dział: <strong>{{ ticket.author?.department || 'Brak danych' }}</strong>
+          </p>
+        </div>
+
+        <div class="info-group">
+          <label>Szczegóły:</label>
+          <p>📍 Lokalizacja: <strong>{{ ticket.location }}</strong></p>
+          <p>📂 Kategoria: <strong>{{ ticket.category }}</strong></p>
+          <p>📅 Data: {{ ticket.createdDate | date:'medium' }}</p>
+        </div>
+
+        <div class="info-group">
+          <label>Osoba obsługująca:</label>
+          <p *ngIf="ticket.assignedUser">
+            👨‍💻 {{ ticket.assignedUser.firstName }}
+          </p>
+          <p *ngIf="!ticket.assignedUser" style="color: #999; font-style: italic;">
+            Brak przypisania
+          </p>
+        </div>
+      </div>
+
+      <div class="admin-panel" *ngIf="currentUserRole === 'HELPDESK' || currentUserRole === 'ADMIN'">
+        <h3>🛠️ Centrum Zarządzania</h3>
+        
+        <div class="control-grid">
+          
+          <div class="control-box">
+            <label>👤 Osoba odpowiedzialna</label>
+            <div class="input-group">
+              <select [(ngModel)]="selectedStaffId" class="modern-select">
+                <option [ngValue]="null">-- Nieprzypisane --</option>
+                <option *ngFor="let staff of staffList" [value]="staff.id">
+                  {{ staff.firstName }} ({{ staff.role }})
+                </option>
+              </select>
+              <button type="button" class="save-btn" (click)="assignToSelectedUser()">
+                Zapisz
+              </button>
+            </div>
+          </div>
+
+          <div class="control-box">
+            <label>🚦 Status zgłoszenia</label>
+            <div class="input-group">
+              
+              <select [(ngModel)]="selectedStatus" class="modern-select">
+                <option value="OPEN">🟢 Otwarte (OPEN)</option>
+                <option value="IN_PROGRESS">🟠 W toku (IN_PROGRESS)</option>
+                <option value="CLOSED">⚫ Zamknięte (CLOSED)</option>
+              </select>
+
+              <button type="button" class="save-btn" (click)="updateStatusManual()">
+                Zmień status
+              </button>
+              
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

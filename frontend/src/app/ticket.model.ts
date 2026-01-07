@@ -9,5 +9,5 @@ export interface Ticket {
   status: string;
   createdDate?: string;
   author?: User; 
-  assignedEmployee?: User; 
+  assignedUser?: User; // <--- ZMIANA: Było assignedEmployee
 }

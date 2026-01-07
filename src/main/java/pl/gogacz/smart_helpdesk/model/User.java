@@ -1,50 +1,65 @@
 package pl.gogacz.smart_helpdesk.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "app_users")
+@Table(name = "users") // Zostawmy 'users' jeśli tak miałeś wcześniej (chyba że zmieniłeś celowo na app_users)
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false) // Login musi być unikalny
-    private String username; // <--- TEGO BRAKOWAŁO
+    @Column(unique = true, nullable = false)
+    private String username; // <--- TUTAJ ZWYKŁE POLE (chcemy je widzieć)
 
     private String firstName;
     private String lastName;
     private String email;
+
+    @JsonIgnore // <--- TUTAJ UKRYWAMY HASŁO (bezpieczeństwo)
     private String password;
+
     private String role;
+    private String department;
 
     public User() {}
 
-    public User(String username, String firstName, String lastName, String email, String password, String role) {
+    // POPRAWIONY KONSTRUKTOR (Dodano 'String department' w nawiasie)
+    public User(String username, String firstName, String lastName, String email, String password, String role, String department) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.department = department; // Teraz to zadziała
     }
 
-    // --- GETTERY I SETTERY (Kluczowe dla naprawy błędu) ---
+    // --- GETTERY I SETTERY ---
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
+
     public String getLastName() { return lastName; }
     public void setLastName(String lastName) { this.lastName = lastName; }
+
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
 }

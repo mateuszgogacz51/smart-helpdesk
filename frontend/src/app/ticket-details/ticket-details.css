@@ -1,0 +1,158 @@
+/* Kontener główny */
+.details-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Przycisk powrotu */
+.back-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 16px;
+  margin-bottom: 20px;
+  padding: 0;
+}
+.back-btn:hover { color: #000; text-decoration: underline; }
+
+/* Karta zgłoszenia */
+.ticket-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  padding: 40px; /* Większy padding */
+}
+
+/* Nagłówek karty */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #eee; /* Linia oddzielająca */
+  padding-bottom: 20px;
+}
+
+.title-group h1 { margin: 0; font-size: 26px; color: #2c3e50; }
+.ticket-id { font-size: 26px; color: #95a5a6; margin-right: 15px; font-weight: 300; }
+
+/* Status Badge */
+.status-badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.status-open { background: #eafaf1; color: #27ae60; }
+.status-pending { background: #fdf2e9; color: #d35400; }
+.status-closed { background: #f4f6f8; color: #7f8c8d; }
+
+/* Sekcje treści */
+.description-section h3 { color: #2c3e50; margin-top: 0; }
+.description-section p { color: #555; line-height: 1.6; font-size: 16px; }
+
+.divider { border: 0; border-top: 1px solid #eee; margin: 30px 0; }
+
+/* Grid informacji */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 40px;
+}
+.info-group label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #95a5a6;
+  margin-bottom: 8px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+.sub-text { font-size: 14px; color: #34495e; margin: 4px 0; }
+
+/* --- PANEL ZARZĄDZANIA (POPRAWIONY) --- */
+.admin-panel {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-left: 5px solid #3498db;
+  padding: 30px;
+  border-radius: 8px;
+  margin-top: 40px;
+}
+
+.admin-panel h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  font-size: 18px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Równe kolumny */
+  gap: 30px;
+}
+
+.control-box {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+}
+
+.control-box label {
+  display: block;
+  font-weight: bold;
+  font-size: 12px;
+  color: #7f8c8d;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center; /* Wyrównanie w pionie */
+}
+
+.modern-select {
+  flex: 1; /* Rozciągnij na całą szerokość */
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  height: 42px; /* Stała wysokość */
+}
+
+.save-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  height: 42px; /* Taka sama wysokość jak select */
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.save-btn:hover { background: #2980b9; }
+
+/* Opcjonalnie: Styl dla szarego przycisku (jeśli chcesz go używać) */
+.btn-secondary { background: #95a5a6; }
+.btn-secondary:hover { background: #7f8c8d; }
+
+/* Błędy i ładowanie */
+.loading, .error { text-align: center; padding: 40px; font-size: 18px; color: #666; }
+.error { color: #e74c3c; }
