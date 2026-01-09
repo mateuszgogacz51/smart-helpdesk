@@ -18,6 +18,22 @@
         </button>
       </div>
 
+      <div class="tabs-container" *ngIf="currentUserRole !== 'USER'">
+        
+        <button class="tab-btn" 
+                [class.active]="currentView === 'ALL'" 
+                (click)="setView('ALL')">
+          📂 Wszystkie zgłoszenia
+        </button>
+
+        <button class="tab-btn" 
+                [class.active]="currentView === 'MINE'" 
+                (click)="setView('MINE')">
+          🙋‍♂️ Moje zgłoszenia (Przypisane)
+        </button>
+
+      </div>
+
       <div class="filters-panel">
         
         <div class="filter-group">
@@ -31,17 +47,15 @@
         </div>
 
         <div class="filter-group">
-          <label>Sortuj:</label>
+          <label>Sortuj według:</label>
           <select [(ngModel)]="sortOrder" (change)="applyFilters()" class="styled-select">
-            <option value="NEWEST">📅 Najnowsze</option>
-            <option value="OLDEST">📅 Najstarsze</option>
+            <option value="LAST_ACTIVITY">🔥 Ostatnia aktywność</option>
+            <option value="NEWEST">📅 Data zgłoszenia (Najnowsze)</option>
+            <option value="OLDEST">📅 Data zgłoszenia (Najstarsze)</option>
+            <option value="ID_ASC">🔢 ID zgłoszenia (Rosnąco)</option>
+            <option value="ID_DESC">🔢 ID zgłoszenia (Malejąco)</option>
             <option value="STATUS">📊 Po statusie</option>
           </select>
-        </div>
-
-        <div class="filter-group checkbox-group" *ngIf="currentUserRole !== 'USER'">
-          <input type="checkbox" id="myTickets" [(ngModel)]="onlyAssignedToMe" (change)="applyFilters()">
-          <label for="myTickets">Przypisane do mnie</label>
         </div>
 
       </div>
@@ -59,6 +73,9 @@
                 <span *ngIf="ticket.assignedUser" class="assignee-badge">
                   🛠️ {{ ticket.assignedUser.firstName }}
                 </span>
+                <span *ngIf="ticket.lastUpdated" class="last-updated">
+                   🕒 Ost. zmiana: {{ ticket.lastUpdated | date:'short' }}
+                </span>
               </div>
             </div>
           </div>
@@ -73,7 +90,7 @@
         </div>
 
         <div *ngIf="visibleTickets.length === 0" class="empty-state">
-          <p>📭 Brak zgłoszeń pasujących do filtrów.</p>
+          <p>📭 Brak zgłoszeń w tym widoku.</p>
         </div>
       </div>
 

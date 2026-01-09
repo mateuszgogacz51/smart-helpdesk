@@ -136,7 +136,7 @@
   font-weight: bold;
 }
 
-/* Kolory statusów */
+
 .status-open { color: #27ae60; background: #eafaf1; } /* Zielony */
 .status-open::before { background: #27ae60; }
 
@@ -152,3 +152,56 @@
 .status-closed.status-dot { background: #95a5a6; }
 
 .empty-state { text-align: center; color: #999; margin-top: 40px; }
+
+.tabs-container {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e9ecef; /* Linia bazowa pod zakładkami */
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 10px 15px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #7f8c8d;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent; /* Ukryta linia aktywacji */
+  margin-bottom: -2px; /* Żeby linia nachodziła na linię kontenera */
+}
+
+.tab-btn:hover {
+  color: #2c3e50;
+  background-color: #f8f9fa;
+  border-radius: 5px 5px 0 0;
+}
+
+.tab-btn.active {
+  color: #3498db; /* Niebieski kolor tekstu */
+  border-bottom: 3px solid #3498db; /* Niebieska linia na dole */
+}
+
+/* Dostosowanie panelu filtrów, żeby pasował do zakładek */
+.filters-panel {
+  display: flex;
+  gap: 20px;
+  background: #f8f9fa;
+  padding: 15px 20px;
+  border-radius: 0 0 10px 10px; /* Zaokrąglenie tylko na dole */
+  border: 1px solid #e9ecef;
+  border-top: none; /* Łączymy wizualnie z zakładkami */
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.last-updated {
+    font-size: 11px;
+    color: #95a5a6;
+    margin-left: 10px;
+}
