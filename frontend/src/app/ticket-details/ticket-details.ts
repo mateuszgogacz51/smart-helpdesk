@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TicketService } from '../ticket.service';
 import { Ticket } from '../ticket.model';
 import { User } from '../user.model';
+import { Comment } from '../comment.model';
 
 @Component({
   selector: 'app-ticket-details',
@@ -22,7 +23,10 @@ export class TicketDetailsComponent implements OnInit {
   currentUserRole: string = '';
   staffList: User[] = [];
   selectedStaffId: number | null = null;
-  selectedStatus: string = 'OPEN'; // Domyślna wartość
+  selectedStatus: string = 'OPEN'; 
+  comments: Comment[] = [];
+  newCommentContent: string = '';
+  currentUsername: string = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -33,6 +37,7 @@ export class TicketDetailsComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentUserRole = localStorage.getItem('role') || '';
+    this.currentUsername = localStorage.getItem('usernam') || '';
     
     // 1. Pobierz ID
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -59,6 +64,7 @@ export class TicketDetailsComponent implements OnInit {
         }
 
         this.cdr.detectChanges(); // Odśwież widok
+        this.fetchComments(id);
       },
       error: (err) => {
         console.error(err);
@@ -124,4 +130,26 @@ export class TicketDetailsComponent implements OnInit {
       default: return '';
     }
   }
+fetchComments(ticketId: number) {
+  this.ticketService.getComments(ticketId).subscribe({
+    next: (data) => {
+      this.comments = data;
+      this.cdr.detectChanges();
+    }
+  });
+}
+
+addComment() {
+  if (!this.newCommentContent.trim() || !this.ticket?.id) return;
+
+  this.ticketService.addComment(this.ticket.id, this.newCommentContent).subscribe({
+    next: (comment) => {
+      this.comments.push(comment); // Dodaj nowy komentarz do listy
+      this.newCommentContent = ''; // Wyczyść pole tekstowe
+      this.cdr.detectChanges();
+    },
+    error: () => alert('Błąd wysyłania komentarza.')
+  });
+}
+
 }

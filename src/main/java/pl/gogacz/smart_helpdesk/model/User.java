@@ -1,10 +1,11 @@
 package pl.gogacz.smart_helpdesk.model;
 
-import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
-@Table(name = "users") // Zostawmy 'users' jeśli tak miałeś wcześniej (chyba że zmieniłeś celowo na app_users)
+@Table(name = "users")
 public class User {
 
     @Id
@@ -12,54 +13,121 @@ public class User {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String username; // <--- TUTAJ ZWYKŁE POLE (chcemy je widzieć)
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
 
     private String firstName;
     private String lastName;
     private String email;
-
-    @JsonIgnore // <--- TUTAJ UKRYWAMY HASŁO (bezpieczeństwo)
-    private String password;
-
-    private String role;
     private String department;
+    private String role; // USER, HELPDESK, ADMIN
 
-    public User() {}
+    // --- RELACJE Z ZABEZPIECZENIEM PRZED PĘTLĄ ---
 
-    // POPRAWIONY KONSTRUKTOR (Dodano 'String department' w nawiasie)
-    public User(String username, String firstName, String lastName, String email, String password, String role, String department) {
+    @OneToMany(mappedBy = "author")
+    @JsonIgnore // <--- To przerywa pętlę przy pobieraniu zgłoszeń utworzonych przez usera
+    private List<Ticket> ticketsCreated;
+
+    @OneToMany(mappedBy = "assignedUser")
+    @JsonIgnore // <--- To przerywa pętlę przy pobieraniu zgłoszeń przypisanych do usera
+    private List<Ticket> ticketsAssigned;
+
+    // --- KONSTRUKTORY ---
+
+    public User() {
+    }
+
+    public User(String username, String password, String firstName, String lastName, String email, String department, String role) {
         this.username = username;
+        this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.password = password;
+        this.department = department;
         this.role = role;
-        this.department = department; // Teraz to zadziała
     }
 
     // --- GETTERY I SETTERY ---
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public String getUsername() {
+        return username;
+    }
 
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getPassword() {
+        return password;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public String getFirstName() {
+        return firstName;
+    }
 
-    public String getDepartment() { return department; }
-    public void setDepartment(String department) { this.department = department; }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public List<Ticket> getTicketsCreated() {
+        return ticketsCreated;
+    }
+
+    public void setTicketsCreated(List<Ticket> ticketsCreated) {
+        this.ticketsCreated = ticketsCreated;
+    }
+
+    public List<Ticket> getTicketsAssigned() {
+        return ticketsAssigned;
+    }
+
+    public void setTicketsAssigned(List<Ticket> ticketsAssigned) {
+        this.ticketsAssigned = ticketsAssigned;
+    }
 }

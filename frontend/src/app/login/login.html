@@ -1,37 +1,46 @@
 <div class="login-container">
-    <div class="login-box">
-      <h2>🔐 Zaloguj się</h2>
-      <p style="color: #666; margin-bottom: 20px;">Dostęp do Smart Helpdesk</p>
-  
-      <form (ngSubmit)="onLogin()">
-        
+  <div class="login-card">
+    
+    <h2>Witaj w Smart Helpdesk 👋</h2>
+    <p class="subtitle">Zaloguj się, aby kontynuować</p>
+
+    <div *ngIf="errorMessage" class="error-banner">
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="onLogin()">
+      
+      <div class="form-group">
+        <label for="username">Login</label>
         <input 
           type="text" 
+          id="username" 
           [(ngModel)]="username" 
           name="username" 
-          placeholder="Login (np. jan)" 
-          class="input-field"
-          [disabled]="isLoading"
+          placeholder="np. admin" 
+          required
         >
-  
+      </div>
+
+      <div class="form-group">
+        <label for="password">Hasło</label>
         <input 
           type="password" 
+          id="password" 
           [(ngModel)]="password" 
           name="password" 
-          placeholder="Hasło" 
-          class="input-field"
-          [disabled]="isLoading"
+          placeholder="••••••••" 
+          required
         >
-  
-        <p *ngIf="errorMessage" style="color: red; font-size: 0.9em; margin: 10px 0;">
-          {{ errorMessage }}
-        </p>
-  
-        <button type="submit" class="login-btn" [disabled]="isLoading">
-          <span *ngIf="!isLoading">Zaloguj się 🚀</span>
-          <span *ngIf="isLoading">Logowanie... ⏳</span>
-        </button>
-  
-      </form>
+      </div>
+
+      <button type="submit" class="login-btn">Zaloguj się</button>
+    
+    </form>
+    
+    <div class="footer-text">
+      <p>Zapomniałeś hasła? Skontaktuj się z IT.</p>
     </div>
+
   </div>
+</div>

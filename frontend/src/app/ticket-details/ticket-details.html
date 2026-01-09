@@ -41,6 +41,7 @@
           <p>📍 Lokalizacja: <strong>{{ ticket.location }}</strong></p>
           <p>📂 Kategoria: <strong>{{ ticket.category }}</strong></p>
           <p>📅 Data: {{ ticket.createdDate | date:'medium' }}</p>
+          <p *ngIf="ticket.lastUpdated" class="sub-text">🕒 Ost. zmiana: {{ ticket.lastUpdated | date:'short' }}</p>
         </div>
 
         <div class="info-group">
@@ -93,6 +94,38 @@
 
         </div>
       </div>
+
+      <hr class="divider">
+      
+      <section class="comments-section">
+        <h3>💬 Dyskusja ({{ comments.length }})</h3>
+
+        <div class="comments-list">
+          
+          <div *ngFor="let comment of comments" class="comment-bubble"
+               [ngClass]="{'my-comment': comment.author.username === currentUsername, 
+                           'other-comment': comment.author.username !== currentUsername}">
+            
+            <div class="comment-header">
+              <strong>{{ comment.author.firstName }} {{ comment.author.lastName }}</strong>
+              <span class="comment-date">{{ comment.createdDate | date:'short' }}</span>
+            </div>
+            
+            <p class="comment-text">{{ comment.content }}</p>
+          </div>
+
+          <p *ngIf="comments.length === 0" class="no-comments">
+            Brak wiadomości. Rozpocznij dyskusję! 👇
+          </p>
+        </div>
+
+        <div class="add-comment-box">
+          <textarea [(ngModel)]="newCommentContent" placeholder="Napisz wiadomość..."></textarea>
+          <button class="send-btn" (click)="addComment()" [disabled]="!newCommentContent.trim()">
+            Wyślij ✈️
+          </button>
+        </div>
+      </section>
 
     </div>
   </div>

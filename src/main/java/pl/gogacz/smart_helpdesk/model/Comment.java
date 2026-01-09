@@ -1,11 +1,10 @@
 package pl.gogacz.smart_helpdesk.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
 @Table(name = "comments")
 public class Comment {
 
@@ -13,21 +12,63 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 1000) // Dłuższy tekst
+    @Column(columnDefinition = "TEXT")
     private String content;
 
-    private LocalDateTime createdDate = LocalDateTime.now();
+    private LocalDateTime createdDate;
 
-    // RELACJA 1: Kto napisał komentarz?
     @ManyToOne
-    @JoinColumn(name = "author_id", nullable = false)
+    @JoinColumn(name = "author_id")
     private User author;
 
-    // RELACJA 2: Do jakiego zgłoszenia należy ten komentarz?
-    // JsonBackReference zapobiega pętli przy generowaniu JSON-a (Ticket -> Comment -> Ticket...)
-    // Musisz dodać import: com.fasterxml.jackson.annotation.JsonBackReference;
-    // Jeśli go nie masz, możemy to na razie pominąć, ale przy API będzie potrzebne.
     @ManyToOne
-    @JoinColumn(name = "ticket_id", nullable = false)
+    @JoinColumn(name = "ticket_id")
+    @JsonIgnore // <--- TO JEST KLUCZOWE, ŻEBY NIE BYŁO PĘTLI
     private Ticket ticket;
+
+    // --- KONSTRUKTORY ---
+    public Comment() {
+    }
+
+    // --- GETTERY I SETTERY ---
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public User getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(User author) {
+        this.author = author;
+    }
+
+    public Ticket getTicket() {
+        return ticket;
+    }
+
+    public void setTicket(Ticket ticket) {
+        this.ticket = ticket;
+    }
 }
