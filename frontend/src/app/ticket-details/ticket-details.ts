@@ -1,155 +1,145 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // <--- WAŻNE: ChangeDetectorRef
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // <--- NIEZBĘDNE DO DZIAŁANIA SELECTÓW
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { TicketService } from '../ticket.service';
 import { Ticket } from '../ticket.model';
-import { User } from '../user.model';
 import { Comment } from '../comment.model';
+import { User } from '../user.model';
 
 @Component({
   selector: 'app-ticket-details',
   standalone: true,
-  imports: [CommonModule, FormsModule], // <--- BEZ TEGO PRZYCISKI SĄ MARTWE
+  imports: [CommonModule, FormsModule],
   templateUrl: './ticket-details.html',
-  styleUrl: './ticket-details.css'
+  styleUrls: ['./ticket-details.css']
 })
 export class TicketDetailsComponent implements OnInit {
-
   ticket: Ticket | null = null;
-  errorMessage: string = '';
-  
-  // Zmienne do Panelu Obsługi
-  currentUserRole: string = '';
-  staffList: User[] = [];
-  selectedStaffId: number | null = null;
-  selectedStatus: string = 'OPEN'; 
   comments: Comment[] = [];
   newCommentContent: string = '';
+  staffList: User[] = [];
+  
+  currentUserRole: string = 'USER';
   currentUsername: string = '';
+  errorMessage: string = '';
 
   constructor(
     private route: ActivatedRoute,
     private ticketService: TicketService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef // <--- WSTRZYKUJEMY DETEKTOR ZMIAN
   ) {}
 
   ngOnInit(): void {
-    this.currentUserRole = localStorage.getItem('role') || '';
-    this.currentUsername = localStorage.getItem('usernam') || '';
-    
-    // 1. Pobierz ID
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.currentUserRole = localStorage.getItem('role') || 'USER';
+    this.currentUsername = localStorage.getItem('username') || '';
 
-    if (id) {
-      this.fetchTicket(id);
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const id = Number(idParam);
+
+    if (idParam && !isNaN(id)) {
+      this.loadTicket(id);
+      this.loadComments(id);
+    } else {
+      this.errorMessage = 'Błędne ID zgłoszenia.';
     }
 
-    // 2. Jeśli Helpdesk/Admin -> Pobierz listę pracowników
-    if (this.currentUserRole === 'HELPDESK' || this.currentUserRole === 'ADMIN') {
-      this.fetchStaff();
+    if (this.currentUserRole !== 'USER') {
+      this.loadStaff();
     }
   }
 
-  fetchTicket(id: number) {
+  loadTicket(id: number): void {
     this.ticketService.getTicket(id).subscribe({
       next: (data) => {
+        console.log('Pobrano zgłoszenie:', data);
         this.ticket = data;
-        
-        // Aktualizujemy selecty danymi z bazy
-        this.selectedStatus = this.ticket.status;
-        if (this.ticket.assignedUser) {
-          this.selectedStaffId = this.ticket.assignedUser.id || null;
-        }
-
-        this.cdr.detectChanges(); // Odśwież widok
-        this.fetchComments(id);
+        this.cdr.detectChanges(); // <--- WYMUSZENIE ODŚWIEŻENIA WIDOKU!
       },
       error: (err) => {
-        console.error(err);
-        this.errorMessage = 'Nie udało się załadować zgłoszenia.';
+        console.error('Błąd:', err);
+        this.errorMessage = 'Nie udało się pobrać danych.';
         this.cdr.detectChanges();
       }
     });
   }
 
-  fetchStaff() {
+  loadComments(id: number): void {
+    this.ticketService.getComments(id).subscribe({
+      next: (data) => {
+        this.comments = data;
+        this.cdr.detectChanges(); // <--- WYMUSZENIE
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  loadStaff(): void {
     this.ticketService.getSupportStaff().subscribe({
-      next: (data) => this.staffList = data,
-      error: (err) => console.error('Błąd pobierania pracowników', err)
+      next: (data) => {
+        this.staffList = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error(err)
     });
   }
 
-  // --- AKCJA 1: PRZYPISANIE ---
-  assignToSelectedUser() {
-    if (!this.selectedStaffId || !this.ticket?.id) return;
+  // --- AKCJE ---
+
+  assignToMe(): void {
+    if (!this.ticket || !this.ticket.id) return;
+
+    this.ticketService.assignToMe(this.ticket.id).subscribe({
+      next: (updatedTicket) => {
+        this.ticket = updatedTicket;
+        alert('Przypisano zgłoszenie do Ciebie!');
+        this.cdr.detectChanges(); // <--- WYMUSZENIE PO AKCJI
+      },
+      error: (err) => alert('Błąd: ' + err.message)
+    });
+  }
+
+  changeStatus(status: string): void {
+    if (!this.ticket || !this.ticket.id) return;
+
+    this.ticketService.changeStatus(this.ticket.id, status).subscribe({
+      next: (updatedTicket) => {
+        this.ticket = updatedTicket;
+        this.cdr.detectChanges(); // <--- WYMUSZENIE PO AKCJI
+      },
+      error: (err) => alert('Błąd zmiany statusu')
+    });
+  }
+
+  assignToUser(userIdStr: string): void {
+    if (!this.ticket || !this.ticket.id) return;
+    const userId = Number(userIdStr);
     
-    this.ticketService.assignToUser(this.ticket.id, this.selectedStaffId).subscribe({
+    this.ticketService.assignToUser(this.ticket.id, userId).subscribe({
       next: (updatedTicket) => {
         this.ticket = updatedTicket;
-        alert('✅ Zgłoszenie zostało przekazane!');
-        this.cdr.detectChanges();
+        alert('Przypisano pracownika.');
+        this.cdr.detectChanges(); // <--- WYMUSZENIE PO AKCJI
       },
-      error: () => alert('❌ Błąd podczasypisywania.')
+      error: (err) => alert('Błąd przypisywania')
     });
   }
 
-  // --- AKCJA 2: ZMIANA STATUSU ---
-  updateStatusManual() {
-    console.log('Kliknięto przycisk! Wybrany status:', this.selectedStatus); // Log dla pewności
+  addComment(): void {
+    if (!this.ticket || !this.ticket.id || !this.newCommentContent.trim()) return;
 
-    if (!this.ticket || !this.ticket.id) {
-      alert('Błąd: Brak danych zgłoszenia.');
-      return;
-    }
-
-    this.ticketService.changeStatus(this.ticket.id, this.selectedStatus).subscribe({
-      next: (updatedTicket) => {
-        this.ticket = updatedTicket;
-        alert('✅ Status zmieniony na: ' + updatedTicket.status);
-        this.cdr.detectChanges();
+    this.ticketService.addComment(this.ticket.id, this.newCommentContent).subscribe({
+      next: (comment) => {
+        this.comments.push(comment);
+        this.newCommentContent = '';
+        this.cdr.detectChanges(); // <--- WYMUSZENIE PO AKCJI
       },
-      error: (err) => {
-        console.error(err);
-        alert('❌ Błąd zmiany statusu (Sprawdź konsolę F12).');
-      }
+      error: (err) => alert('Błąd dodawania komentarza')
     });
   }
 
-  goBack() {
+  goBack(): void {
     this.router.navigate(['/dashboard']);
   }
-
-  getStatusClass(status: string | undefined): string {
-    if (!status) return '';
-    switch (status) {
-      case 'OPEN': return 'status-open';
-      case 'IN_PROGRESS': return 'status-pending';
-      case 'CLOSED': return 'status-closed';
-      default: return '';
-    }
-  }
-fetchComments(ticketId: number) {
-  this.ticketService.getComments(ticketId).subscribe({
-    next: (data) => {
-      this.comments = data;
-      this.cdr.detectChanges();
-    }
-  });
-}
-
-addComment() {
-  if (!this.newCommentContent.trim() || !this.ticket?.id) return;
-
-  this.ticketService.addComment(this.ticket.id, this.newCommentContent).subscribe({
-    next: (comment) => {
-      this.comments.push(comment); // Dodaj nowy komentarz do listy
-      this.newCommentContent = ''; // Wyczyść pole tekstowe
-      this.cdr.detectChanges();
-    },
-    error: () => alert('Błąd wysyłania komentarza.')
-  });
-}
-
 }

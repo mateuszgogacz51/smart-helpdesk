@@ -5,7 +5,7 @@
       <h2 style="margin:0; font-size: 18px;">Smart Helpdesk</h2>
     </div>
     <div style="display:flex; align-items:center; gap:15px;">
-      <span style="font-size:13px;">Witaj, <strong>{{ currentUser }}</strong></span>
+      <span style="font-size:13px;">Witaj, <strong>{{ currentUser }}</strong> ({{ currentUserRole }})</span>
       <button class="logout-btn" (click)="logout()">Wyloguj</button>
     </div>
   </header>
@@ -13,6 +13,7 @@
   <div class="content-area">
 
     <div class="stats-container" *ngIf="stats && currentUserRole !== 'USER'">
+      
       <div class="stats-group">
         <h3>Moje Zadania</h3>
         <div class="cards-row">
@@ -61,7 +62,10 @@
         <button [class.active]="viewMode === 'ALL'" (click)="viewMode = 'ALL'; statusFilter = 'ALL'">Wszystkie</button>
         <button [class.active]="viewMode === 'MY'" (click)="viewMode = 'MY'; statusFilter = 'ALL'">Moje</button>
       </div>
-      <div *ngIf="currentUserRole === 'USER'" style="font-weight:bold; color:#2c3e50; font-size:14px;">Twoje zgłoszenia</div>
+      
+      <div *ngIf="currentUserRole === 'USER'" style="font-weight:bold; color:#2c3e50; font-size:14px;">
+        Twoje zgłoszenia
+      </div>
 
       <button class="add-btn" (click)="goToAddTicket()">+ Nowe zgłoszenie</button>
     </div>
@@ -86,9 +90,8 @@
             <td>{{ ticket.title }}</td>
             <td><span class="status-badge" [ngClass]="ticket.status">{{ ticket.status }}</span></td>
             <td>{{ ticket.category }}</td>
-            <td>{{ ticket.author?.username }}</td>
-            <td>
-              <span *ngIf="ticket.assignedUser" class="assignee-badge">{{ ticket.assignedUser.username }}</span>
+            <td>{{ ticket.author?.username }}</td> <td>
+              <span *ngIf="ticket.assignedUser" class="assignee-badge">{{ ticket.assignedUser?.username }}</span>
               <span *ngIf="!ticket.assignedUser">-</span>
             </td>
             <td>{{ ticket.createdDate | date:'short' }}</td>
@@ -96,8 +99,11 @@
               <button class="details-btn" (click)="goToDetails(ticket.id!)">Podgląd</button>
             </td>
           </tr>
+          
           <tr *ngIf="visibleTickets.length === 0">
-            <td colspan="8" style="text-align:center; padding: 20px; color:#95a5a6;">Brak zgłoszeń do wyświetlenia.</td>
+            <td colspan="8" style="text-align:center; padding: 20px; color:#95a5a6;">
+              Brak zgłoszeń (Tryb: {{ viewMode === 'MY' ? 'Moje' : 'Wszystkie' }}, Filtr: {{ statusFilter }})
+            </td>
           </tr>
         </tbody>
       </table>

@@ -20,8 +20,7 @@ export class DashboardComponent implements OnInit {
   
   viewMode: 'ALL' | 'MY' = 'ALL'; 
   statusFilter: string = 'ALL'; 
-
-  // --- SORTOWANIE (Domyślnie: DATA, Malejąco) ---
+  
   sortColumn: string = 'createdDate'; 
   sortDirection: 'asc' | 'desc' = 'desc'; 
 
@@ -50,18 +49,25 @@ export class DashboardComponent implements OnInit {
     this.currentUser = localStorage.getItem('username') || '';
     this.currentUserRole = localStorage.getItem('role') || 'USER';
 
-    if (this.currentUserRole === 'USER') this.viewMode = 'MY';
+    // Domyślny widok
+    if (this.currentUserRole === 'USER') {
+      this.viewMode = 'MY';
+    } else {
+      this.viewMode = 'ALL'; // Helpdesk widzi na start wszystko
+    }
 
     this.loadTickets();
 
-    if (this.currentUserRole !== 'USER') this.loadStats();
+    if (this.currentUserRole !== 'USER') {
+      this.loadStats();
+    }
   }
 
   loadTickets(): void {
     this.ticketService.getTickets().subscribe({
       next: (data) => {
         this.tickets = data;
-        this.performSort(); // Sortuj od razu po załadowaniu
+        this.performSort();
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Błąd:', err)
@@ -80,12 +86,19 @@ export class DashboardComponent implements OnInit {
   get visibleTickets(): Ticket[] {
     let filtered = this.tickets;
 
+    // 1. FILTRACJA: Moje vs Wszystkie
     if (this.currentUserRole !== 'USER') {
       if (this.viewMode === 'MY') {
-        filtered = filtered.filter(t => t.assignedUser && t.assignedUser.username === this.currentUser);
+        // Używamy toLowerCase() aby uniknąć problemów "Marek" vs "marek"
+        filtered = filtered.filter(t => 
+          t.assignedUser && 
+          t.assignedUser.username && 
+          t.assignedUser.username.toLowerCase() === this.currentUser.toLowerCase()
+        );
       }
     }
 
+    // 2. FILTRACJA: Status
     if (this.statusFilter !== 'ALL') {
       filtered = filtered.filter(t => t.status === this.statusFilter);
     }
@@ -93,7 +106,17 @@ export class DashboardComponent implements OnInit {
     return filtered;
   }
 
-  // --- LOGIKA SORTOWANIA ---
+  // Kliknięcie w kafelek
+  filterByStatus(status: string): void {
+    if (this.statusFilter === status) {
+      this.statusFilter = 'ALL';
+    } else {
+      this.statusFilter = status;
+    }
+    this.cdr.detectChanges();
+  }
+
+  // Sortowanie
   sortTable(column: string): void {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -102,6 +125,7 @@ export class DashboardComponent implements OnInit {
       this.sortDirection = 'asc';
     }
     this.performSort();
+    this.cdr.detectChanges();
   }
 
   performSort(): void {
@@ -109,12 +133,10 @@ export class DashboardComponent implements OnInit {
       let valA = this.getProperty(a, this.sortColumn);
       let valB = this.getProperty(b, this.sortColumn);
 
-      // Daty
       if (this.sortColumn === 'createdDate') {
         valA = valA ? new Date(valA).getTime() : 0;
         valB = valB ? new Date(valB).getTime() : 0;
       } else {
-        // Tekst
         if (typeof valA === 'string') valA = valA.toLowerCase();
         if (typeof valB === 'string') valB = valB.toLowerCase();
       }
@@ -132,10 +154,6 @@ export class DashboardComponent implements OnInit {
   getSortIcon(column: string): string {
     if (this.sortColumn !== column) return '↕';
     return this.sortDirection === 'asc' ? '🔼' : '🔽';
-  }
-
-  filterByStatus(status: string): void {
-    this.statusFilter = (this.statusFilter === status) ? 'ALL' : status;
   }
 
   goToAddTicket(): void { this.router.navigate(['/add-ticket']); }
