@@ -1,46 +1,31 @@
 <div class="login-container">
-  <div class="login-card">
+  <div class="login-box">
+    <h2>Smart Helpdesk</h2>
     
-    <h2>Witaj w Smart Helpdesk 👋</h2>
-    <p class="subtitle">Zaloguj się, aby kontynuować</p>
-
-    <div *ngIf="errorMessage" class="error-banner">
-      {{ errorMessage }}
+    <div class="form-group">
+      <label for="username">Login</label>
+      <input 
+        type="text" 
+        id="username" 
+        [(ngModel)]="username" 
+        placeholder="Wpisz swój login"
+        (keyup.enter)="login()">
     </div>
 
-    <form (ngSubmit)="onLogin()">
-      
-      <div class="form-group">
-        <label for="username">Login</label>
-        <input 
-          type="text" 
-          id="username" 
-          [(ngModel)]="username" 
-          name="username" 
-          placeholder="np. admin" 
-          required
-        >
-      </div>
-
-      <div class="form-group">
-        <label for="password">Hasło</label>
-        <input 
-          type="password" 
-          id="password" 
-          [(ngModel)]="password" 
-          name="password" 
-          placeholder="••••••••" 
-          required
-        >
-      </div>
-
-      <button type="submit" class="login-btn">Zaloguj się</button>
-    
-    </form>
-    
-    <div class="footer-text">
-      <p>Zapomniałeś hasła? Skontaktuj się z IT.</p>
+    <div class="form-group">
+      <label for="password">Hasło</label>
+      <input 
+        type="password" 
+        id="password" 
+        [(ngModel)]="password" 
+        placeholder="Wpisz swoje hasło"
+        (keyup.enter)="login()">
     </div>
 
+    <button (click)="login()">Zaloguj się</button>
+
+    <div class="error" *ngIf="errorMessage">
+      ⚠ {{ errorMessage }}
+    </div>
   </div>
 </div>

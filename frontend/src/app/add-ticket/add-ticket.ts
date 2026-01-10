@@ -3,25 +3,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TicketService } from '../ticket.service';
-import { Ticket } from '../ticket.model';
 
 @Component({
   selector: 'app-add-ticket',
-  standalone: true, // Ważne dla Angular 17+
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './add-ticket.html',
-  styleUrl: './add-ticket.css'
+  styleUrls: ['./add-ticket.css']
 })
 export class AddTicketComponent {
-
-  // Obiekt zgodny z nowym Backendem
-  ticket: Ticket = {
+  ticketData = {
     title: '',
     description: '',
-    location: '',      // Backend może wymagać tego pola
-    category: 'SPRZET', // Domyślna kategoria
-    status: 'OPEN'     // Domyślny status
-    // author: backend ustawi to sam na podstawie logowania!
+    category: 'IT',
+    location: ''
   };
 
   isSubmitting = false;
@@ -29,32 +24,30 @@ export class AddTicketComponent {
 
   constructor(private ticketService: TicketService, private router: Router) {}
 
-  onSubmit() {
-    // Prosta walidacja
-    if (!this.ticket.title || !this.ticket.description || !this.ticket.location) {
-      this.errorMessage = 'Wypełnij wszystkie wymagane pola!';
+  submitTicket() {
+    if (!this.ticketData.title || !this.ticketData.description) {
+      this.errorMessage = 'Tytuł i opis są wymagane!';
       return;
     }
 
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    console.log('Wysyłanie zgłoszenia:', this.ticket); // Podgląd w konsoli
-
-    this.ticketService.createTicket(this.ticket).subscribe({
-      next: (response) => {
-        console.log('Sukces! Odpowiedź serwera:', response);
-        this.router.navigate(['/dashboard']); // Wracamy do panelu
+    // TUTAJ POPRAWKA: Dodano "as any", żeby TypeScript nie krzyczał o brakujące ID/Status
+    this.ticketService.createTicket(this.ticketData as any).subscribe({
+      next: () => {
+        alert('Zgłoszenie zostało wysłane pomyślnie!');
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        console.error('Błąd wysyłania:', err);
+        console.error(err);
         this.isSubmitting = false;
-        this.errorMessage = 'Wystąpił błąd podczas zapisywania. Sprawdź konsolę (F12).';
+        this.errorMessage = 'Nie udało się wysłać zgłoszenia. Sprawdź konsolę.';
       }
     });
   }
 
-  cancel() {
+  goBack() {
     this.router.navigate(['/dashboard']);
   }
 }

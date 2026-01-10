@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // <--- WAŻNE: ChangeDetectorRef
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -24,15 +24,19 @@ export class TicketDetailsComponent implements OnInit {
   currentUsername: string = '';
   errorMessage: string = '';
 
+  selectedStatus: string = '';
+  selectedAssigneeId: number | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private ticketService: TicketService,
     private router: Router,
-    private cdr: ChangeDetectorRef // <--- WSTRZYKUJEMY DETEKTOR ZMIAN
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.currentUserRole = localStorage.getItem('role') || 'USER';
+    // NAPRAWA: Wymuszenie wielkich liter
+    this.currentUserRole = (localStorage.getItem('role') || 'USER').toUpperCase();
     this.currentUsername = localStorage.getItem('username') || '';
 
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -53,13 +57,14 @@ export class TicketDetailsComponent implements OnInit {
   loadTicket(id: number): void {
     this.ticketService.getTicket(id).subscribe({
       next: (data) => {
-        console.log('Pobrano zgłoszenie:', data);
         this.ticket = data;
-        this.cdr.detectChanges(); // <--- WYMUSZENIE ODŚWIEŻENIA WIDOKU!
+        this.selectedStatus = data.status || 'OPEN';
+        this.selectedAssigneeId = null;
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Błąd:', err);
-        this.errorMessage = 'Nie udało się pobrać danych.';
+        console.error(err);
+        this.errorMessage = 'Nie udało się pobrać danych zgłoszenia.';
         this.cdr.detectChanges();
       }
     });
@@ -69,7 +74,7 @@ export class TicketDetailsComponent implements OnInit {
     this.ticketService.getComments(id).subscribe({
       next: (data) => {
         this.comments = data;
-        this.cdr.detectChanges(); // <--- WYMUSZENIE
+        this.cdr.detectChanges();
       },
       error: (err) => console.error(err)
     });
@@ -85,55 +90,54 @@ export class TicketDetailsComponent implements OnInit {
     });
   }
 
-  // --- AKCJE ---
-
   assignToMe(): void {
-    if (!this.ticket || !this.ticket.id) return;
-
+    if (!this.ticket?.id) return;
     this.ticketService.assignToMe(this.ticket.id).subscribe({
       next: (updatedTicket) => {
         this.ticket = updatedTicket;
-        alert('Przypisano zgłoszenie do Ciebie!');
-        this.cdr.detectChanges(); // <--- WYMUSZENIE PO AKCJI
+        alert('Sukces: Przypisano do Ciebie!');
+        this.cdr.detectChanges();
       },
-      error: (err) => alert('Błąd: ' + err.message)
+      error: (err) => alert('Błąd: ' + (err.error?.message || err.message))
     });
   }
 
-  changeStatus(status: string): void {
-    if (!this.ticket || !this.ticket.id) return;
-
-    this.ticketService.changeStatus(this.ticket.id, status).subscribe({
+  updateTicketStatus(): void {
+    if (!this.ticket?.id || !this.selectedStatus) return;
+    this.ticketService.changeStatus(this.ticket.id, this.selectedStatus).subscribe({
       next: (updatedTicket) => {
         this.ticket = updatedTicket;
-        this.cdr.detectChanges(); // <--- WYMUSZENIE PO AKCJI
+        alert('Status zmieniony na: ' + this.selectedStatus);
+        this.cdr.detectChanges();
       },
       error: (err) => alert('Błąd zmiany statusu')
     });
   }
 
-  assignToUser(userIdStr: string): void {
-    if (!this.ticket || !this.ticket.id) return;
-    const userId = Number(userIdStr);
+  assignSelectedUser(): void {
+    if (!this.ticket?.id) return;
+    if (!this.selectedAssigneeId) {
+      alert('Wybierz pracownika z listy!');
+      return;
+    }
     
-    this.ticketService.assignToUser(this.ticket.id, userId).subscribe({
+    this.ticketService.assignToUser(this.ticket.id, Number(this.selectedAssigneeId)).subscribe({
       next: (updatedTicket) => {
         this.ticket = updatedTicket;
         alert('Przypisano pracownika.');
-        this.cdr.detectChanges(); // <--- WYMUSZENIE PO AKCJI
+        this.cdr.detectChanges();
       },
       error: (err) => alert('Błąd przypisywania')
     });
   }
 
   addComment(): void {
-    if (!this.ticket || !this.ticket.id || !this.newCommentContent.trim()) return;
-
+    if (!this.ticket?.id || !this.newCommentContent.trim()) return;
     this.ticketService.addComment(this.ticket.id, this.newCommentContent).subscribe({
       next: (comment) => {
         this.comments.push(comment);
         this.newCommentContent = '';
-        this.cdr.detectChanges(); // <--- WYMUSZENIE PO AKCJI
+        this.cdr.detectChanges();
       },
       error: (err) => alert('Błąd dodawania komentarza')
     });

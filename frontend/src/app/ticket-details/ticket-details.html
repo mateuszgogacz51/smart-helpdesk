@@ -1,96 +1,90 @@
 <div class="details-container" *ngIf="ticket">
   
-  <button class="back-btn" (click)="goBack()">← Wróć do listy</button>
-
-  <div class="ticket-header">
-    <div class="header-left">
-      <h1>{{ ticket?.title }} <span class="id-tag">#{{ ticket?.id }}</span></h1>
-      <div class="meta-info">
-        <span class="category-badge">{{ ticket?.category }}</span>
-        <span class="date">Utworzono: {{ ticket?.createdDate | date:'medium' }}</span>
-        <span class="author">Autor: <strong>{{ ticket?.author?.username }}</strong></span>
-      </div>
-    </div>
+  <div class="ticket-card">
     
-    <div class="header-right">
-      <div class="status-box" [ngClass]="ticket?.status || ''">
-        STATUS: {{ ticket?.status }}
-      </div>
-      
-      <div class="assigned-box" *ngIf="ticket?.assignedUser">
-        Przypisany do: <strong>{{ ticket?.assignedUser?.username }}</strong>
-      </div>
-      <div class="assigned-box unassigned" *ngIf="!ticket?.assignedUser">
-        Nieprzypisane
-      </div>
-    </div>
-  </div>
-
-  <div class="description-section">
-    <h3>Opis zgłoszenia</h3>
-    <p>{{ ticket?.description }}</p>
-    <div *ngIf="ticket?.location" class="location-info">
-      📍 Lokalizacja: {{ ticket?.location }}
-    </div>
-  </div>
-
-  <div class="admin-panel" *ngIf="currentUserRole !== 'USER'">
-    <h3>Panel Obsługi (Helpdesk/Admin)</h3>
-    
-    <div class="actions-grid">
-      
-      <div class="action-group">
-        <label>Zmień status:</label>
-        <div class="status-buttons">
-          <button (click)="changeStatus('OPEN')" class="btn-open" [disabled]="ticket?.status === 'OPEN'">OPEN</button>
-          <button (click)="changeStatus('IN_PROGRESS')" class="btn-progress" [disabled]="ticket?.status === 'IN_PROGRESS'">IN PROGRESS</button>
-          <button (click)="changeStatus('CLOSED')" class="btn-closed" [disabled]="ticket?.status === 'CLOSED'">CLOSED</button>
+    <div class="header-section">
+      <div class="header-left">
+        <button class="back-btn" (click)="goBack()">← Wróć</button>
+        <h1>{{ ticket.title }} <span class="id-tag">#{{ ticket.id }}</span></h1>
+        <div class="meta">
+          <span class="category-tag">{{ ticket.category }}</span>
+          <span>Autor: <strong>{{ ticket.author?.username }}</strong></span> &bull;
+          <span>{{ ticket.createdDate | date:'medium' }}</span>
         </div>
       </div>
-
-      <div class="action-group">
-        <label>Przypisz zgłoszenie:</label>
-        <div class="assign-controls">
-          <button (click)="assignToMe()" class="btn-assign-me">Przypisz do mnie</button>
-          
-          <select #staffSelect (change)="assignToUser(staffSelect.value)" class="staff-select">
-            <option value="" disabled selected>Przypisz do innej osoby...</option>
-            <option *ngFor="let person of staffList" [value]="person?.id">
-              {{ person?.username }} ({{ person?.role }})
-            </option>
-          </select>
+      
+      <div class="header-right">
+        <div class="status-box" [ngClass]="ticket.status">{{ ticket.status }}</div>
+        <div class="assignee">
+          Przypisany: 
+          <strong *ngIf="ticket.assignedUser">{{ ticket.assignedUser.username }}</strong>
+          <span *ngIf="!ticket.assignedUser" style="color:red">Brak</span>
         </div>
       </div>
-
     </div>
-  </div>
 
-  <div class="comments-section">
-    <h3>Komentarze ({{ comments ? comments.length : 0 }})</h3>
-    
-    <div class="comments-list">
-      <div *ngFor="let comment of comments" class="comment-bubble" 
-           [class.my-comment]="comment?.author?.username === currentUsername">
+    <div class="content-section">
+      <p>{{ ticket.description }}</p>
+      <div *ngIf="ticket.location" style="margin-top:10px; font-size:14px; color:#7f8c8d;">
+        📍 Lokalizacja: {{ ticket.location }}
+      </div>
+    </div>
+
+    <div class="admin-panel" *ngIf="currentUserRole !== 'USER'">
+      <h3>Panel Zarządzania</h3>
+      
+      <div class="actions-row">
+        
+        <div class="action-col">
+          <label>Zmień Status</label>
+          <div class="control-wrapper">
+            <select [(ngModel)]="selectedStatus" class="custom-select">
+              <option value="OPEN">OPEN</option>
+              <option value="IN_PROGRESS">IN_PROGRESS</option>
+              <option value="CLOSED">CLOSED</option>
+            </select>
+            <button class="action-btn blue-btn" (click)="updateTicketStatus()">OK</button>
+          </div>
+        </div>
+
+        <div class="action-col">
+          <label>Przypisz Pracownika</label>
+          <div class="control-wrapper">
+            <select [(ngModel)]="selectedAssigneeId" class="custom-select">
+              <option [ngValue]="null" disabled selected>Wybierz...</option>
+              <option *ngFor="let staff of staffList" [ngValue]="staff.id">
+                {{ staff.username }}
+              </option>
+            </select>
+            <button class="action-btn green-btn" (click)="assignSelectedUser()">Przypisz</button>
+            <button class="action-btn small-btn" (click)="assignToMe()">Ja</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="comments-section">
+      <h3>Komentarze</h3>
+      
+      <div *ngFor="let c of comments" class="comment-bubble" 
+           [class.my-comment]="c.author?.username === currentUsername">
         <div class="comment-header">
-          <strong>{{ comment?.author?.username }}</strong>
-          <span>{{ comment?.createdDate | date:'short' }}</span>
+          <strong>{{ c.author?.username }}</strong>
+          <span>{{ c.createdDate | date:'short' }}</span>
         </div>
-        <p>{{ comment?.content }}</p>
+        <div>{{ c.content }}</div>
       </div>
 
-      <div *ngIf="!comments || comments.length === 0" class="no-comments">
-        Brak komentarzy. Bądź pierwszy!
+      <div *ngIf="comments.length === 0" style="color:#bdc3c7; text-align:center; padding:10px;">
+        Brak komentarzy.
+      </div>
+
+      <div class="add-comment-box">
+        <textarea [(ngModel)]="newCommentContent" placeholder="Dodaj notatkę..."></textarea>
+        <button (click)="addComment()">Wyślij</button>
       </div>
     </div>
 
-    <div class="add-comment-box">
-      <textarea [(ngModel)]="newCommentContent" placeholder="Napisz komentarz..."></textarea>
-      <button (click)="addComment()">Wyślij</button>
-    </div>
   </div>
-
-</div>
-
-<div *ngIf="!ticket" style="padding: 20px; text-align: center;">
-  <p>Ładowanie danych zgłoszenia...</p>
 </div>

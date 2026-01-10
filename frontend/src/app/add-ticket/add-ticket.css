@@ -1,98 +1,122 @@
+/* Tło całej strony - jasny gradient */
 .add-ticket-container {
-    display: flex;
-    justify-content: center;
-    padding: 40px;
-    background-color: #f5f7fa;
-    min-height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Karta formularza */
 .ticket-card {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    width: 100%;
-    max-width: 600px;
+  background: white;
+  width: 100%;
+  max-width: 600px;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  position: relative;
 }
 
-h2 {
-    margin-bottom: 25px;
-    color: #2c3e50;
-    text-align: center;
+/* Nagłówek */
+.ticket-card h2 {
+  margin-top: 10px;
+  margin-bottom: 30px;
+  color: #2c3e50;
+  text-align: center;
+  font-size: 24px;
 }
 
+/* Przycisk powrotu */
+.back-btn {
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  margin-bottom: 10px;
+  display: inline-block;
+  transition: color 0.3s;
+}
+
+.back-btn:hover {
+  color: #34495e;
+  text-decoration: underline;
+}
+
+/* Pola formularza */
 .form-group {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #555;
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #34495e;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-.input-field {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 15px;
-    box-sizing: border-box; /* Ważne żeby padding nie rozpychał */
-    transition: 0.2s;
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dfe6e9;
+  border-radius: 6px;
+  font-size: 15px;
+  box-sizing: border-box; /* Ważne! */
+  transition: border 0.3s, box-shadow 0.3s;
+  background-color: #fdfdfd;
 }
 
-.input-field:focus {
-    border-color: #2196F3;
-    outline: none;
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  outline: none;
 }
 
-textarea.input-field {
-    resize: vertical;
+/* Przycisk wysyłania */
+.submit-btn {
+  width: 100%;
+  padding: 15px;
+  background-color: #27ae60;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+  margin-top: 10px;
 }
 
-.button-group {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 30px;
+.submit-btn:hover {
+  background-color: #219150;
 }
 
-.btn-submit {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 16px;
+.submit-btn:active {
+  transform: scale(0.98);
 }
 
-.btn-submit:hover {
-    background-color: #45a049;
+.submit-btn:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+  transform: none;
 }
 
-.btn-submit:disabled {
-    background-color: #ccc;
-}
-
-.btn-cancel {
-    background-color: transparent;
-    color: #777;
-    border: 1px solid #ccc;
-    padding: 12px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.btn-cancel:hover {
-    background-color: #f0f0f0;
-    color: #333;
-}
-
+/* Komunikaty błędów */
 .error-msg {
-    color: #e74c3c;
-    text-align: center;
-    margin-top: 10px;
+  color: #e74c3c;
+  background-color: #fadbd8;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 15px;
+  text-align: center;
+  border: 1px solid #f5b7b1;
 }

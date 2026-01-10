@@ -1,131 +1,189 @@
-/* GŁÓWNY KONTENER NA CAŁY EKRAN */
+/* Tło globalne */
 .dashboard-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh; /* 100% wysokości okna */
-  background-color: #f4f6f9;
-  overflow: hidden;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #2c3e50;
 }
 
-/* --- 1. GÓRNA BELKA (Stała, 60px) --- */
+/* Górny pasek */
 .top-bar {
-  flex: 0 0 60px; 
-  background-color: #2c3e50;
-  color: white;
-  padding: 0 20px;
+  background: white;
+  padding: 15px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  z-index: 100;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.welcome-section h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .logout-btn {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.3);
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
   color: white;
-  padding: 6px 12px;
-  border-radius: 4px;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 30px;
   cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
-.logout-btn:hover { background: rgba(255,255,255,0.2); }
 
-/* --- 2. OBSZAR ROBOCZY --- */
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4);
+}
+
+/* Główna treść */
 .content-area {
-  flex: 1; /* Zajmuje resztę ekranu */
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  overflow: hidden; /* Blokuje wyciekanie */
-  gap: 20px;
+  padding: 40px;
+  max-width: 1300px;
+  margin: 0 auto;
 }
 
-/* --- 3. STATYSTYKI --- */
+/* Statystyki */
 .stats-container {
-  flex: 0 0 auto; /* Wysokość zależna od zawartości */
   display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
+  gap: 30px;
+  margin-bottom: 40px;
 }
 
-.global-group { margin-left: auto; }
+.stats-group {
+  flex: 1;
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
 
 .stats-group h3 {
-  font-size: 12px;
+  margin-top: 0;
   color: #7f8c8d;
-  margin: 0 0 10px 0;
+  font-size: 13px;
   text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 20px;
+  font-weight: 700;
 }
 
-.cards-row { display: flex; gap: 10px; }
+.cards-row {
+  display: flex;
+  gap: 15px;
+}
 
+/* Kafelki */
 .stat-card {
-  background: white;
-  padding: 10px 20px;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  flex: 1;
+  padding: 20px;
+  border-radius: 12px;
   text-align: center;
-  min-width: 100px;
-  border: 2px solid transparent;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
-.stat-card.clickable { cursor: pointer; }
-.stat-card.clickable:hover { transform: translateY(-2px); }
-.stat-card.active-filter { background-color: #eef2f7; border-color: #3498db; }
-.stat-card .count { display: block; font-size: 20px; font-weight: bold; color: #2c3e50; }
-.stat-card .label { font-size: 11px; color: #95a5a6; }
-.stat-card.blue { border-bottom: 3px solid #3498db; }
-.stat-card.orange { border-bottom: 3px solid #f39c12; }
-.stat-card.green { border-bottom: 3px solid #27ae60; }
 
-/* --- 4. BELKA AKCJI (Filtry - Sztywna) --- */
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.stat-card.active-filter::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border: 4px solid rgba(255,255,255,0.4);
+  border-radius: 12px;
+}
+
+.stat-card.blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+.stat-card.orange { background: linear-gradient(135deg, #f39c12, #d35400); }
+.stat-card.green { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+.stat-card.purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+.stat-card.dark { background: linear-gradient(135deg, #34495e, #2c3e50); }
+
+.stat-card .count {
+  display: block;
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 5px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-card .label {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+/* Pasek akcji */
 .action-bar {
-  flex: 0 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #f4f6f9;
-  padding: 5px 0;
-}
-
-.view-toggle {
-  background: white;
-  padding: 3px;
-  border-radius: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 25px;
 }
 
 .view-toggle button {
+  padding: 12px 24px;
   border: none;
-  background: none;
-  padding: 6px 15px;
-  border-radius: 15px;
+  background: white;
   cursor: pointer;
+  font-weight: 600;
   color: #7f8c8d;
-  font-size: 13px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  transition: all 0.3s;
 }
 
+.view-toggle button:first-child { border-radius: 30px 0 0 30px; }
+.view-toggle button:last-child { border-radius: 0 30px 30px 0; }
+
 .view-toggle button.active {
-  background-color: #3498db;
+  background: #2c3e50;
   color: white;
+  box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3);
 }
 
 .add-btn {
-  background-color: #27ae60;
+  background: linear-gradient(135deg, #3498db, #2980b9);
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 12px 30px;
+  border-radius: 30px;
   cursor: pointer;
+  font-weight: 700;
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+  transition: transform 0.2s;
 }
 
-/* --- 5. TABELA (JEDYNY ELEMENT PRZEWIJANY) --- */
+.add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(52, 152, 219, 0.5);
+}
+
+/* Tabela */
 .table-wrapper {
-  flex: 1; /* Rozciągnij się do dołu */
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  overflow: auto; /* SUWAK POJAWIA SIĘ TUTAJ */
-  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.05);
 }
 
 .tickets-table {
@@ -133,33 +191,70 @@
   border-collapse: collapse;
 }
 
-/* Nagłówek tabeli przyklejony do góry kontenera tabeli */
 .tickets-table th {
-  position: sticky;
-  top: 0;
   background-color: #f8f9fa;
-  z-index: 10;
-  padding: 15px;
+  color: #95a5a6;
+  padding: 20px;
   text-align: left;
+  font-weight: 700;
   font-size: 13px;
-  color: #7f8c8d;
-  border-bottom: 2px solid #eee;
+  text-transform: uppercase;
+  border-bottom: 2px solid #ecf0f1;
   cursor: pointer;
-  user-select: none;
+  transition: background 0.2s;
 }
-.tickets-table th:hover { background-color: #e9ecef; color: #2c3e50; }
 
-.tickets-table td {
-  padding: 12px 15px;
-  border-bottom: 1px solid #eee;
-  font-size: 13px;
+.tickets-table th:hover {
+  background-color: #ecf0f1;
   color: #2c3e50;
 }
 
-/* Badges */
-.status-badge { padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; }
-.status-badge.OPEN { background: #e3f2fd; color: #3498db; }
-.status-badge.IN_PROGRESS { background: #fff3e0; color: #f39c12; }
-.status-badge.CLOSED { background: #e8f5e9; color: #27ae60; }
-.assignee-badge { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
-.details-btn { background: #34495e; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+.tickets-table td {
+  padding: 20px;
+  border-bottom: 1px solid #f1f2f6;
+  font-size: 14px;
+  color: #34495e;
+}
+
+.tickets-table tr:hover {
+  background-color: #fafbfc;
+}
+
+/* Statusy */
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.5px;
+}
+.status-badge.OPEN { background-color: #3498db; }
+.status-badge.IN_PROGRESS { background-color: #f39c12; }
+.status-badge.CLOSED { background-color: #2ecc71; }
+
+.assignee-badge {
+  background-color: #eaf2f8;
+  color: #2980b9;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.details-btn {
+  background: white;
+  border: 2px solid #3498db;
+  color: #3498db;
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.details-btn:hover {
+  background: #3498db;
+  color: white;
+}

@@ -1,11 +1,13 @@
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
-import { provideHttpClient } from '@angular/common/http'; // <--- WAŻNE: To naprawi błędy z serwisami
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),      // Włączamy nawigację (Login <-> Dashboard)
-    provideHttpClient()         // Włączamy Internet (połączenie z Backendem)
+    provideRouter(routes),
+    // To jest najważniejsza linijka:
+    provideHttpClient(withInterceptors([authInterceptor])) 
   ]
 };

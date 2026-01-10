@@ -1,10 +1,13 @@
 package pl.gogacz.smart_helpdesk.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import pl.gogacz.smart_helpdesk.model.Comment;
 import pl.gogacz.smart_helpdesk.model.Ticket;
 import pl.gogacz.smart_helpdesk.model.User;
+import pl.gogacz.smart_helpdesk.repository.CommentRepository;
 import pl.gogacz.smart_helpdesk.repository.TicketRepository;
 import pl.gogacz.smart_helpdesk.repository.UserRepository;
 
@@ -15,138 +18,128 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tickets")
+@CrossOrigin(origins = "http://localhost:4200")
 public class TicketController {
 
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
 
-    public TicketController(TicketRepository ticketRepository, UserRepository userRepository) {
+    public TicketController(TicketRepository ticketRepository, UserRepository userRepository, CommentRepository commentRepository) {
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
+        this.commentRepository = commentRepository;
     }
 
-    // 1. POBIERANIE LISTY ZGŁOSZEŃ
     @GetMapping
-    public List<Ticket> getTickets() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String role = auth.getAuthorities().toString(); // np. [ROLE_USER] lub [ROLE_ADMIN]
-        String username = auth.getName();
+    public List<Ticket> getAllTickets(Authentication authentication) {
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username).orElseThrow();
 
-        // Jeśli to zwykły USER, widzi tylko swoje zgłoszenia
-        if (role.contains("USER") && !role.contains("HELPDESK") && !role.contains("ADMIN")) {
-            User currentUser = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
-            return ticketRepository.findByAuthor(currentUser);
+        if (user.getRole().equals("USER")) {
+            return ticketRepository.findByAuthor(user);
         }
-
-        // Helpdesk i Admin widzą wszystko
         return ticketRepository.findAll();
     }
 
-    // 2. SZCZEGÓŁY ZGŁOSZENIA
-    @GetMapping("/{id}")
-    public Ticket getTicket(@PathVariable Long id) {
-        return ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono zgłoszenia o ID: " + id));
-    }
-
-    // 3. TWORZENIE ZGŁOSZENIA
-    @PostMapping
-    public Ticket createTicket(@RequestBody Ticket ticket) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        ticket.setAuthor(currentUser);
-        ticket.setCreatedDate(LocalDateTime.now());
-        ticket.setStatus("OPEN"); // Domyślny status
-
-        return ticketRepository.save(ticket);
-    }
-
-    // 4. PRZYPISYWANIE ZGŁOSZENIA
-    // A) Przypisz do mnie (uproszczone)
-    @PutMapping("/{id}/assign")
-    public Ticket assignTicketToMe(@PathVariable Long id) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found"));
-
-        ticket.setAssignedUser(currentUser);
-        ticket.setStatus("IN_PROGRESS"); // Automatycznie zmieniamy na W TRAKCIE
-        ticket.setLastUpdated(LocalDateTime.now());
-
-        return ticketRepository.save(ticket);
-    }
-
-    // B) Przypisz do innej osoby (dla Admina/Managera)
-    @PutMapping("/{id}/assign/{userId}")
-    public Ticket assignTicketToUser(@PathVariable Long id, @PathVariable Long userId) {
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found"));
-
-        User staff = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        ticket.setAssignedUser(staff);
-        ticket.setStatus("IN_PROGRESS");
-        ticket.setLastUpdated(LocalDateTime.now());
-
-        return ticketRepository.save(ticket);
-    }
-
-    // 5. ZMIANA STATUSU
-    @PutMapping("/{id}/status")
-    public Ticket updateTicketStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found"));
-
-        String newStatus = body.get("status");
-        if (newStatus != null) {
-            ticket.setStatus(newStatus);
-            ticket.setLastUpdated(LocalDateTime.now());
-        }
-
-        return ticketRepository.save(ticket);
-    }
-
-    // 6. LISTA PRACOWNIKÓW (do dropdowna)
-    @GetMapping("/staff")
-    public List<User> getSupportStaff() {
-        // Zwracamy wszystkich, którzy mają rolę HELPDESK lub ADMIN
-        // To jest uproszczone, w SQL można by zrobić WHERE role IN (...)
-        return userRepository.findAll().stream()
-                .filter(u -> "HELPDESK".equals(u.getRole()) || "ADMIN".equals(u.getRole()))
-                .toList();
-    }
-
-    // 7. STATYSTYKI (Dla Dashboardu) - TO JEST NOWA METODA
     @GetMapping("/stats")
-    public Map<String, Long> getTicketStats() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = auth.getName();
-        User currentUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+    public Map<String, Long> getStats(Authentication authentication) {
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username).orElseThrow();
 
         Map<String, Long> stats = new HashMap<>();
 
-        // A. OGÓLNE (Globalne w firmie)
-        stats.put("globalTotal", ticketRepository.count());
-        stats.put("globalOpen", ticketRepository.countByStatus("OPEN"));
-        stats.put("globalInProgress", ticketRepository.countByStatus("IN_PROGRESS"));
-        stats.put("globalClosed", ticketRepository.countByStatus("CLOSED"));
+        // Statystyki osobiste
+        stats.put("myOpen", ticketRepository.countByAssignedUserAndStatus(user, "OPEN"));
+        stats.put("myInProgress", ticketRepository.countByAssignedUserAndStatus(user, "IN_PROGRESS"));
+        stats.put("myClosed", ticketRepository.countByAssignedUserAndStatus(user, "CLOSED"));
 
-        // B. MOJE (Przypisane do mnie)
-        stats.put("myTotal", ticketRepository.countByAssignedUser(currentUser));
-        stats.put("myOpen", ticketRepository.countByAssignedUserAndStatus(currentUser, "OPEN"));
-        stats.put("myInProgress", ticketRepository.countByAssignedUserAndStatus(currentUser, "IN_PROGRESS"));
-        stats.put("myClosed", ticketRepository.countByAssignedUserAndStatus(currentUser, "CLOSED"));
+        // Statystyki globalne
+        // ZMIANA: Zamiast wszystkich OPEN, liczymy te bez właściciela (unassigned)
+        stats.put("globalUnassigned", ticketRepository.countByAssignedUserIsNull());
+        stats.put("globalTotal", ticketRepository.count());
 
         return stats;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Ticket> getTicket(@PathVariable Long id) {
+        return ticketRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public Ticket createTicket(@RequestBody Ticket ticket, Authentication authentication) {
+        String username = authentication.getName();
+        User author = userRepository.findByUsername(username).orElseThrow();
+        ticket.setAuthor(author);
+        ticket.setStatus("OPEN");
+        ticket.setCreatedDate(LocalDateTime.now());
+        ticket.setLastUpdated(LocalDateTime.now());
+        return ticketRepository.save(ticket);
+    }
+
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
+    public ResponseEntity<Ticket> changeStatus(@PathVariable Long id, @RequestBody String status) {
+        return ticketRepository.findById(id).map(ticket -> {
+            String cleanStatus = status.replace("\"", "").trim();
+            ticket.setStatus(cleanStatus);
+            ticket.setLastUpdated(LocalDateTime.now());
+            return ResponseEntity.ok(ticketRepository.save(ticket));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}/assign")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
+    public ResponseEntity<Ticket> assignTicket(@PathVariable Long id, @RequestParam Long userId) {
+        return ticketRepository.findById(id).map(ticket -> {
+            User staff = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            ticket.setAssignedUser(staff);
+            ticket.setLastUpdated(LocalDateTime.now());
+            return ResponseEntity.ok(ticketRepository.save(ticket));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}/assign-me")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
+    public ResponseEntity<Ticket> assignToMe(@PathVariable Long id, Authentication authentication) {
+        String username = authentication.getName();
+        User currentUser = userRepository.findByUsername(username).orElseThrow();
+
+        return ticketRepository.findById(id).map(ticket -> {
+            ticket.setAssignedUser(currentUser);
+            ticket.setLastUpdated(LocalDateTime.now());
+            return ResponseEntity.ok(ticketRepository.save(ticket));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/comments")
+    public List<Comment> getComments(@PathVariable Long id) {
+        return commentRepository.findByTicketIdOrderByCreatedDateAsc(id);
+    }
+
+    @PostMapping("/{id}/comments")
+    public Comment addComment(@PathVariable Long id, @RequestBody String content, Authentication authentication) {
+        Ticket ticket = ticketRepository.findById(id).orElseThrow();
+        User author = userRepository.findByUsername(authentication.getName()).orElseThrow();
+
+        Comment comment = new Comment();
+        comment.setContent(content);
+        comment.setTicket(ticket);
+        comment.setAuthor(author);
+        comment.setCreatedDate(LocalDateTime.now());
+
+        return commentRepository.save(comment);
+    }
+
+    @GetMapping("/staff")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
+    public List<User> getSupportStaff() {
+        return userRepository.findAll().stream()
+                .filter(u -> !u.getRole().equals("USER"))
+                .toList();
     }
 }

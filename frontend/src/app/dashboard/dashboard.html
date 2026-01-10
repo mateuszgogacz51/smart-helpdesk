@@ -2,10 +2,10 @@
   
   <header class="top-bar">
     <div class="welcome-section">
-      <h2 style="margin:0; font-size: 18px;">Smart Helpdesk</h2>
+      <h2>Smart Helpdesk</h2>
     </div>
-    <div style="display:flex; align-items:center; gap:15px;">
-      <span style="font-size:13px;">Witaj, <strong>{{ currentUser }}</strong> ({{ currentUserRole }})</span>
+    <div class="user-info">
+      <span>Witaj, <strong>{{ currentUser }}</strong> ({{ currentUserRole }})</span>
       <button class="logout-btn" (click)="logout()">Wyloguj</button>
     </div>
   </header>
@@ -18,38 +18,39 @@
         <h3>Moje Zadania</h3>
         <div class="cards-row">
           <div class="stat-card blue clickable" 
-               [class.active-filter]="statusFilter === 'OPEN' && viewMode === 'MY'"
-               (click)="viewMode = 'MY'; filterByStatus('OPEN')">
+               [class.active-filter]="activeFilter === 'OPEN' && viewMode === 'MY'"
+               (click)="viewMode = 'MY'; setFilter('OPEN')">
             <span class="count">{{ stats.myOpen }}</span>
             <span class="label">Nowe</span>
           </div>
           <div class="stat-card orange clickable" 
-               [class.active-filter]="statusFilter === 'IN_PROGRESS' && viewMode === 'MY'"
-               (click)="viewMode = 'MY'; filterByStatus('IN_PROGRESS')">
+               [class.active-filter]="activeFilter === 'IN_PROGRESS' && viewMode === 'MY'"
+               (click)="viewMode = 'MY'; setFilter('IN_PROGRESS')">
             <span class="count">{{ stats.myInProgress }}</span>
             <span class="label">W trakcie</span>
           </div>
           <div class="stat-card green clickable" 
-               [class.active-filter]="statusFilter === 'CLOSED' && viewMode === 'MY'"
-               (click)="viewMode = 'MY'; filterByStatus('CLOSED')">
+               [class.active-filter]="activeFilter === 'CLOSED' && viewMode === 'MY'"
+               (click)="viewMode = 'MY'; setFilter('CLOSED')">
             <span class="count">{{ stats.myClosed }}</span>
             <span class="label">Gotowe</span>
           </div>
         </div>
       </div>
 
-      <div class="stats-group global-group">
+      <div class="stats-group">
         <h3>Cała Firma</h3>
         <div class="cards-row">
-          <div class="stat-card clickable" 
-               [class.active-filter]="statusFilter === 'OPEN' && viewMode === 'ALL'"
-               (click)="viewMode = 'ALL'; filterByStatus('OPEN')">
-            <span class="count">{{ stats.globalOpen }}</span>
+          <div class="stat-card purple clickable" 
+               [class.active-filter]="activeFilter === 'UNASSIGNED' && viewMode === 'ALL'"
+               (click)="viewMode = 'ALL'; setFilter('UNASSIGNED')">
+            <span class="count">{{ stats.globalUnassigned }}</span>
             <span class="label">Do wzięcia</span>
           </div>
-          <div class="stat-card clickable"
-               [class.active-filter]="statusFilter === 'ALL' && viewMode === 'ALL'"
-               (click)="viewMode = 'ALL'; statusFilter = 'ALL'">
+          
+          <div class="stat-card dark clickable"
+               [class.active-filter]="activeFilter === 'ALL' && viewMode === 'ALL'"
+               (click)="viewMode = 'ALL'; setFilter('ALL')">
             <span class="count">{{ stats.globalTotal }}</span>
             <span class="label">Wszystkie</span>
           </div>
@@ -59,11 +60,11 @@
 
     <div class="action-bar">
       <div class="view-toggle" *ngIf="currentUserRole !== 'USER'">
-        <button [class.active]="viewMode === 'ALL'" (click)="viewMode = 'ALL'; statusFilter = 'ALL'">Wszystkie</button>
-        <button [class.active]="viewMode === 'MY'" (click)="viewMode = 'MY'; statusFilter = 'ALL'">Moje</button>
+        <button [class.active]="viewMode === 'ALL'" (click)="viewMode = 'ALL'; setFilter('ALL')">Wszystkie</button>
+        <button [class.active]="viewMode === 'MY'" (click)="viewMode = 'MY'; setFilter('ALL')">Tylko moje</button>
       </div>
       
-      <div *ngIf="currentUserRole === 'USER'" style="font-weight:bold; color:#2c3e50; font-size:14px;">
+      <div *ngIf="currentUserRole === 'USER'" style="font-weight:bold; color:#2c3e50;">
         Twoje zgłoszenia
       </div>
 
@@ -87,22 +88,22 @@
         <tbody>
           <tr *ngFor="let ticket of visibleTickets">
             <td>#{{ ticket.id }}</td>
-            <td>{{ ticket.title }}</td>
+            <td><strong>{{ ticket.title }}</strong></td>
             <td><span class="status-badge" [ngClass]="ticket.status">{{ ticket.status }}</span></td>
             <td>{{ ticket.category }}</td>
-            <td>{{ ticket.author?.username }}</td> <td>
+            <td>{{ ticket.author?.username }}</td>
+            <td>
               <span *ngIf="ticket.assignedUser" class="assignee-badge">{{ ticket.assignedUser?.username }}</span>
-              <span *ngIf="!ticket.assignedUser">-</span>
+              <span *ngIf="!ticket.assignedUser" style="color:#bdc3c7; font-style: italic;">Brak</span>
             </td>
             <td>{{ ticket.createdDate | date:'short' }}</td>
             <td>
               <button class="details-btn" (click)="goToDetails(ticket.id!)">Podgląd</button>
             </td>
           </tr>
-          
           <tr *ngIf="visibleTickets.length === 0">
-            <td colspan="8" style="text-align:center; padding: 20px; color:#95a5a6;">
-              Brak zgłoszeń (Tryb: {{ viewMode === 'MY' ? 'Moje' : 'Wszystkie' }}, Filtr: {{ statusFilter }})
+            <td colspan="8" style="text-align:center; padding: 40px; color:#95a5a6;">
+              Brak zgłoszeń w tym widoku.
             </td>
           </tr>
         </tbody>
