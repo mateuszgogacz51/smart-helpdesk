@@ -1,6 +1,5 @@
 package pl.gogacz.smart_helpdesk.controller;
 
-import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -10,11 +9,12 @@ import pl.gogacz.smart_helpdesk.repository.TicketRepository;
 import pl.gogacz.smart_helpdesk.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tickets")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class TicketController {
 
     private final TicketRepository ticketRepository;
@@ -25,105 +25,128 @@ public class TicketController {
         this.userRepository = userRepository;
     }
 
-    // 1. POBIERANIE LISTY ZGŁOSZEŃ (z podziałem na role)
+    // 1. POBIERANIE LISTY ZGŁOSZEŃ
     @GetMapping
-    public List<Ticket> getAllTickets() {
+    public List<Ticket> getTickets() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = auth.getName();
+        String role = auth.getAuthorities().toString(); // np. [ROLE_USER] lub [ROLE_ADMIN]
+        String username = auth.getName();
 
-        User currentUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika!"));
-
-        // Logika uprawnień:
-        if ("ADMIN".equals(currentUser.getRole()) || "HELPDESK".equals(currentUser.getRole())) {
-            // Admin i Helpdesk widzą WSZYSTKO
-            return ticketRepository.findAll();
-        } else {
-            // Zwykły pracownik widzi TYLKO SWOJE
+        // Jeśli to zwykły USER, widzi tylko swoje zgłoszenia
+        if (role.contains("USER") && !role.contains("HELPDESK") && !role.contains("ADMIN")) {
+            User currentUser = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
             return ticketRepository.findByAuthor(currentUser);
         }
+
+        // Helpdesk i Admin widzą wszystko
+        return ticketRepository.findAll();
     }
 
-    // 2. POBIERANIE JEDNEGO ZGŁOSZENIA (Szczegóły)
+    // 2. SZCZEGÓŁY ZGŁOSZENIA
     @GetMapping("/{id}")
-    public Ticket getTicketById(@PathVariable Long id) {
+    public Ticket getTicket(@PathVariable Long id) {
         return ticketRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Nie znaleziono zgłoszenia o ID: " + id));
     }
 
-    // 3. TWORZENIE NOWEGO ZGŁOSZENIA
+    // 3. TWORZENIE ZGŁOSZENIA
     @PostMapping
-    public Ticket createTicket(@Valid @RequestBody Ticket ticket) {
+    public Ticket createTicket(@RequestBody Ticket ticket) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = auth.getName();
+        String username = auth.getName();
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        User author = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika!"));
-
-        ticket.setAuthor(author);
+        ticket.setAuthor(currentUser);
         ticket.setCreatedDate(LocalDateTime.now());
-
-        if (ticket.getStatus() == null) {
-            ticket.setStatus("OPEN");
-        }
+        ticket.setStatus("OPEN"); // Domyślny status
 
         return ticketRepository.save(ticket);
     }
 
-    // --- NOWE METODY DO DELEGOWANIA ---
+    // 4. PRZYPISYWANIE ZGŁOSZENIA
+    // A) Przypisz do mnie (uproszczone)
+    @PutMapping("/{id}/assign")
+    public Ticket assignTicketToMe(@PathVariable Long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    // 1. Pobierz listę pracowników (żeby Marek miał kogo wybrać z listy)
-    @GetMapping("/staff")
-    public List<User> getSupportStaff() {
-        return userRepository.findAllStaff();
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        ticket.setAssignedUser(currentUser);
+        ticket.setStatus("IN_PROGRESS"); // Automatycznie zmieniamy na W TRAKCIE
+        ticket.setLastUpdated(LocalDateTime.now());
+
+        return ticketRepository.save(ticket);
     }
 
-    // 2. Przypisz zgłoszenie do KONKRETNEJ osoby (np. Marek przypisuje Robertowi)
+    // B) Przypisz do innej osoby (dla Admina/Managera)
     @PutMapping("/{id}/assign/{userId}")
     public Ticket assignTicketToUser(@PathVariable Long id, @PathVariable Long userId) {
         Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono zgłoszenia"));
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
 
-        User targetEmployee = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono pracownika"));
+        User staff = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        ticket.setAssignedUser(targetEmployee);
-        ticket.setStatus("IN_PROGRESS"); // Automatyczna zmiana na "W toku"
+        ticket.setAssignedUser(staff);
+        ticket.setStatus("IN_PROGRESS");
+        ticket.setLastUpdated(LocalDateTime.now());
 
         return ticketRepository.save(ticket);
     }
 
-    // 4. ZMIANA STATUSU (np. "CLOSED") - Dla Helpdesku
+    // 5. ZMIANA STATUSU
     @PutMapping("/{id}/status")
-    public Ticket updateStatus(@PathVariable Long id, @RequestBody java.util.Map<String, String> payload) {
+    public Ticket updateTicketStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono zgłoszenia"));
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
 
-        // Pobieramy status z obiektu JSON { "status": "CLOSED" }
-        String newStatus = payload.get("status");
-
+        String newStatus = body.get("status");
         if (newStatus != null) {
             ticket.setStatus(newStatus);
+            ticket.setLastUpdated(LocalDateTime.now());
         }
 
         return ticketRepository.save(ticket);
     }
 
-    // 5. PRZYPISANIE DO MNIE (Marek klika "Biorę to")
-    @PutMapping("/{id}/assign")
-    public Ticket assignTicket(@PathVariable Long id) {
+    // 6. LISTA PRACOWNIKÓW (do dropdowna)
+    @GetMapping("/staff")
+    public List<User> getSupportStaff() {
+        // Zwracamy wszystkich, którzy mają rolę HELPDESK lub ADMIN
+        // To jest uproszczone, w SQL można by zrobić WHERE role IN (...)
+        return userRepository.findAll().stream()
+                .filter(u -> "HELPDESK".equals(u.getRole()) || "ADMIN".equals(u.getRole()))
+                .toList();
+    }
+
+    // 7. STATYSTYKI (Dla Dashboardu) - TO JEST NOWA METODA
+    @GetMapping("/stats")
+    public Map<String, Long> getTicketStats() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
 
-        User employee = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono pracownika"));
+        Map<String, Long> stats = new HashMap<>();
 
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono zgłoszenia"));
+        // A. OGÓLNE (Globalne w firmie)
+        stats.put("globalTotal", ticketRepository.count());
+        stats.put("globalOpen", ticketRepository.countByStatus("OPEN"));
+        stats.put("globalInProgress", ticketRepository.countByStatus("IN_PROGRESS"));
+        stats.put("globalClosed", ticketRepository.countByStatus("CLOSED"));
 
-        ticket.setAssignedUser(employee); // Przypisujemy obecnego użytkownika (Marka)
-        ticket.setStatus("IN_PROGRESS");  // Automatycznie zmieniamy status na "W toku"
+        // B. MOJE (Przypisane do mnie)
+        stats.put("myTotal", ticketRepository.countByAssignedUser(currentUser));
+        stats.put("myOpen", ticketRepository.countByAssignedUserAndStatus(currentUser, "OPEN"));
+        stats.put("myInProgress", ticketRepository.countByAssignedUserAndStatus(currentUser, "IN_PROGRESS"));
+        stats.put("myClosed", ticketRepository.countByAssignedUserAndStatus(currentUser, "CLOSED"));
 
-        return ticketRepository.save(ticket);
+        return stats;
     }
 }

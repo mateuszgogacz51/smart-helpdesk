@@ -13,18 +13,16 @@ export class TicketService {
 
   constructor(private http: HttpClient) {}
 
-  // --- 1. POPRAWIONA METODA NAGŁÓWKÓW (BASIC AUTH) ---
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders();
     if (token) {
-      // W przypadku Basic Auth, token w localStorage będzie już zawierał słowo "Basic ..."
       headers = headers.set('Authorization', token);
     }
     return headers;
   }
 
-  // --- 2. METODY ZGŁOSZEŃ ---
+  // --- ZGŁOSZENIA ---
   getTickets(): Observable<Ticket[]> {
     return this.http.get<Ticket[]>(this.apiUrl, { headers: this.getHeaders() });
   }
@@ -54,7 +52,7 @@ export class TicketService {
     return this.http.put<Ticket>(`${this.apiUrl}/${ticketId}/assign/${userId}`, {}, { headers: this.getHeaders() });
   }
 
-  // --- 3. METODY KOMENTARZY ---
+  // --- KOMENTARZE ---
   getComments(ticketId: number): Observable<Comment[]> {
     const url = 'http://localhost:8080/api/comments/ticket/' + ticketId;
     return this.http.get<Comment[]>(url, { headers: this.getHeaders() });
@@ -64,5 +62,9 @@ export class TicketService {
     const url = 'http://localhost:8080/api/comments/ticket/' + ticketId;
     const body = { content: content };
     return this.http.post<Comment>(url, body, { headers: this.getHeaders() });
+  }
+
+  getStats(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/stats`, { headers: this.getHeaders() });
   }
 }

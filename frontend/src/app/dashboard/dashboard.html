@@ -1,99 +1,107 @@
 <div class="dashboard-container">
-  <div class="dashboard-card">
-
-    <header class="dashboard-header">
-      <div class="header-content">
-        <h2>👋 Cześć, {{ currentUser }}</h2>
-        <p class="role-badge">{{ currentUserRole }}</p>
-      </div>
-      <button class="logout-btn" (click)="logout()">Wyloguj</button>
-    </header>
-
-    <div class="dashboard-content">
-      
-      <div class="top-bar">
-        <h3>Lista zgłoszeń</h3>
-        <button class="add-ticket-btn" (click)="createNewTicket()">
-          <span>+</span> Nowe zgłoszenie
-        </button>
-      </div>
-
-      <div class="tabs-container" *ngIf="currentUserRole !== 'USER'">
-        
-        <button class="tab-btn" 
-                [class.active]="currentView === 'ALL'" 
-                (click)="setView('ALL')">
-          📂 Wszystkie zgłoszenia
-        </button>
-
-        <button class="tab-btn" 
-                [class.active]="currentView === 'MINE'" 
-                (click)="setView('MINE')">
-          🙋‍♂️ Moje zgłoszenia (Przypisane)
-        </button>
-
-      </div>
-
-      <div class="filters-panel">
-        
-        <div class="filter-group">
-          <label>Status:</label>
-          <select [(ngModel)]="filterStatus" (change)="applyFilters()" class="styled-select">
-            <option value="ALL">Wszystkie</option>
-            <option value="OPEN">🟢 Otwarte</option>
-            <option value="IN_PROGRESS">🟠 W toku</option>
-            <option value="CLOSED">⚫ Zamknięte</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label>Sortuj według:</label>
-          <select [(ngModel)]="sortOrder" (change)="applyFilters()" class="styled-select">
-            <option value="LAST_ACTIVITY">🔥 Ostatnia aktywność</option>
-            <option value="NEWEST">📅 Data zgłoszenia (Najnowsze)</option>
-            <option value="OLDEST">📅 Data zgłoszenia (Najstarsze)</option>
-            <option value="ID_ASC">🔢 ID zgłoszenia (Rosnąco)</option>
-            <option value="ID_DESC">🔢 ID zgłoszenia (Malejąco)</option>
-            <option value="STATUS">📊 Po statusie</option>
-          </select>
-        </div>
-
-      </div>
-
-      <div class="ticket-list">
-        <div class="ticket-item" *ngFor="let ticket of visibleTickets" (click)="openTicketDetails(ticket.id)">
-          
-          <div class="ticket-left">
-            <span class="status-dot" [ngClass]="getStatusClass(ticket.status)"></span>
-            <div class="ticket-main-info">
-              <span class="ticket-id">#{{ ticket.id }}</span>
-              <span class="ticket-title">{{ ticket.title }}</span>
-              <div class="ticket-meta">
-                <span>📂 {{ ticket.category }}</span>
-                <span *ngIf="ticket.assignedUser" class="assignee-badge">
-                  🛠️ {{ ticket.assignedUser.firstName }}
-                </span>
-                <span *ngIf="ticket.lastUpdated" class="last-updated">
-                   🕒 Ost. zmiana: {{ ticket.lastUpdated | date:'short' }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="ticket-right">
-            <span class="date-info">{{ ticket.createdDate | date:'shortDate' }}</span>
-            <span class="status-pill" [ngClass]="getStatusClass(ticket.status)">
-              {{ ticket.status }}
-            </span>
-          </div>
-
-        </div>
-
-        <div *ngIf="visibleTickets.length === 0" class="empty-state">
-          <p>📭 Brak zgłoszeń w tym widoku.</p>
-        </div>
-      </div>
-
+  
+  <header class="top-bar">
+    <div class="welcome-section">
+      <h2 style="margin:0; font-size: 18px;">Smart Helpdesk</h2>
     </div>
+    <div style="display:flex; align-items:center; gap:15px;">
+      <span style="font-size:13px;">Witaj, <strong>{{ currentUser }}</strong></span>
+      <button class="logout-btn" (click)="logout()">Wyloguj</button>
+    </div>
+  </header>
+
+  <div class="content-area">
+
+    <div class="stats-container" *ngIf="stats && currentUserRole !== 'USER'">
+      <div class="stats-group">
+        <h3>Moje Zadania</h3>
+        <div class="cards-row">
+          <div class="stat-card blue clickable" 
+               [class.active-filter]="statusFilter === 'OPEN' && viewMode === 'MY'"
+               (click)="viewMode = 'MY'; filterByStatus('OPEN')">
+            <span class="count">{{ stats.myOpen }}</span>
+            <span class="label">Nowe</span>
+          </div>
+          <div class="stat-card orange clickable" 
+               [class.active-filter]="statusFilter === 'IN_PROGRESS' && viewMode === 'MY'"
+               (click)="viewMode = 'MY'; filterByStatus('IN_PROGRESS')">
+            <span class="count">{{ stats.myInProgress }}</span>
+            <span class="label">W trakcie</span>
+          </div>
+          <div class="stat-card green clickable" 
+               [class.active-filter]="statusFilter === 'CLOSED' && viewMode === 'MY'"
+               (click)="viewMode = 'MY'; filterByStatus('CLOSED')">
+            <span class="count">{{ stats.myClosed }}</span>
+            <span class="label">Gotowe</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-group global-group">
+        <h3>Cała Firma</h3>
+        <div class="cards-row">
+          <div class="stat-card clickable" 
+               [class.active-filter]="statusFilter === 'OPEN' && viewMode === 'ALL'"
+               (click)="viewMode = 'ALL'; filterByStatus('OPEN')">
+            <span class="count">{{ stats.globalOpen }}</span>
+            <span class="label">Do wzięcia</span>
+          </div>
+          <div class="stat-card clickable"
+               [class.active-filter]="statusFilter === 'ALL' && viewMode === 'ALL'"
+               (click)="viewMode = 'ALL'; statusFilter = 'ALL'">
+            <span class="count">{{ stats.globalTotal }}</span>
+            <span class="label">Wszystkie</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <div class="view-toggle" *ngIf="currentUserRole !== 'USER'">
+        <button [class.active]="viewMode === 'ALL'" (click)="viewMode = 'ALL'; statusFilter = 'ALL'">Wszystkie</button>
+        <button [class.active]="viewMode === 'MY'" (click)="viewMode = 'MY'; statusFilter = 'ALL'">Moje</button>
+      </div>
+      <div *ngIf="currentUserRole === 'USER'" style="font-weight:bold; color:#2c3e50; font-size:14px;">Twoje zgłoszenia</div>
+
+      <button class="add-btn" (click)="goToAddTicket()">+ Nowe zgłoszenie</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="tickets-table">
+        <thead>
+          <tr>
+            <th (click)="sortTable('id')">ID {{ getSortIcon('id') }}</th>
+            <th (click)="sortTable('title')">Tytuł {{ getSortIcon('title') }}</th>
+            <th (click)="sortTable('status')">Status {{ getSortIcon('status') }}</th>
+            <th (click)="sortTable('category')">Kategoria {{ getSortIcon('category') }}</th>
+            <th (click)="sortTable('author.username')">Autor {{ getSortIcon('author.username') }}</th>
+            <th (click)="sortTable('assignedUser.username')">Przypisany {{ getSortIcon('assignedUser.username') }}</th>
+            <th (click)="sortTable('createdDate')">Data {{ getSortIcon('createdDate') }}</th>
+            <th>Akcja</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ticket of visibleTickets">
+            <td>#{{ ticket.id }}</td>
+            <td>{{ ticket.title }}</td>
+            <td><span class="status-badge" [ngClass]="ticket.status">{{ ticket.status }}</span></td>
+            <td>{{ ticket.category }}</td>
+            <td>{{ ticket.author?.username }}</td>
+            <td>
+              <span *ngIf="ticket.assignedUser" class="assignee-badge">{{ ticket.assignedUser.username }}</span>
+              <span *ngIf="!ticket.assignedUser">-</span>
+            </td>
+            <td>{{ ticket.createdDate | date:'short' }}</td>
+            <td>
+              <button class="details-btn" (click)="goToDetails(ticket.id!)">Podgląd</button>
+            </td>
+          </tr>
+          <tr *ngIf="visibleTickets.length === 0">
+            <td colspan="8" style="text-align:center; padding: 20px; color:#95a5a6;">Brak zgłoszeń do wyświetlenia.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
   </div>
 </div>

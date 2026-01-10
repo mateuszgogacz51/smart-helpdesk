@@ -1,207 +1,165 @@
-/* Kontener i Karta */
+/* GŁÓWNY KONTENER NA CAŁY EKRAN */
 .dashboard-container {
-  background-color: #f4f6f8;
-  min-height: 100vh;
-  padding: 20px;
-  font-family: 'Inter', sans-serif;
-}
-
-.dashboard-card {
-  max-width: 1000px;
-  margin: 0 auto;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* 100% wysokości okna */
+  background-color: #f4f6f9;
   overflow: hidden;
 }
 
-/* Nagłówek */
-.dashboard-header {
-  background: #2c3e50;
+/* --- 1. GÓRNA BELKA (Stała, 60px) --- */
+.top-bar {
+  flex: 0 0 60px; 
+  background-color: #2c3e50;
   color: white;
-  padding: 20px 30px;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 100;
 }
-.header-content h2 { margin: 0; font-size: 22px; }
-.role-badge { margin: 5px 0 0 0; font-size: 12px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
 
 .logout-btn {
   background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
   color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: 0.2s;
 }
 .logout-btn:hover { background: rgba(255,255,255,0.2); }
 
-/* Zawartość */
-.dashboard-content { padding: 30px; }
-
-.top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-}
-.add-ticket-btn {
-  background: #3498db;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
-}
-.add-ticket-btn:hover { background: #2980b9; transform: translateY(-1px); }
-
-/* PASEK FILTRÓW - TO JEST NOWOŚĆ */
-.filters-panel {
-  display: flex;
-  gap: 20px;
-  background: #f8f9fa;
-  padding: 15px 20px;
-  border-radius: 10px;
-  border: 1px solid #e9ecef;
-  margin-bottom: 30px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.filter-group {
+/* --- 2. OBSZAR ROBOCZY --- */
+.content-area {
+  flex: 1; /* Zajmuje resztę ekranu */
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  padding: 20px;
+  overflow: hidden; /* Blokuje wyciekanie */
+  gap: 20px;
 }
-.filter-group label {
+
+/* --- 3. STATYSTYKI --- */
+.stats-container {
+  flex: 0 0 auto; /* Wysokość zależna od zawartości */
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.global-group { margin-left: auto; }
+
+.stats-group h3 {
   font-size: 12px;
   color: #7f8c8d;
-  font-weight: 600;
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
 }
 
-.styled-select {
-  padding: 8px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
+.cards-row { display: flex; gap: 10px; }
+
+.stat-card {
   background: white;
-  min-width: 150px;
-  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  text-align: center;
+  min-width: 100px;
+  border: 2px solid transparent;
 }
+.stat-card.clickable { cursor: pointer; }
+.stat-card.clickable:hover { transform: translateY(-2px); }
+.stat-card.active-filter { background-color: #eef2f7; border-color: #3498db; }
+.stat-card .count { display: block; font-size: 20px; font-weight: bold; color: #2c3e50; }
+.stat-card .label { font-size: 11px; color: #95a5a6; }
+.stat-card.blue { border-bottom: 3px solid #3498db; }
+.stat-card.orange { border-bottom: 3px solid #f39c12; }
+.stat-card.green { border-bottom: 3px solid #27ae60; }
 
-.checkbox-group {
-  flex-direction: row;
-  align-items: center;
-  margin-top: 18px; /* Wyrównanie do inputów */
-  cursor: pointer;
-}
-.checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
-.checkbox-group label { font-size: 14px; color: #2c3e50; cursor: pointer; }
-
-/* LISTA ZGŁOSZEŃ */
-.ticket-list { display: flex; flex-direction: column; gap: 10px; }
-
-.ticket-item {
+/* --- 4. BELKA AKCJI (Filtry - Sztywna) --- */
+.action-bar {
+  flex: 0 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
+  background-color: #f4f6f9;
+  padding: 5px 0;
+}
+
+.view-toggle {
   background: white;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.ticket-item:hover {
-  border-color: #3498db;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  transform: translateX(4px);
-}
-
-.ticket-left { display: flex; align-items: center; gap: 15px; }
-.ticket-main-info { display: flex; flex-direction: column; }
-.ticket-title { font-weight: 600; color: #2c3e50; font-size: 16px; }
-.ticket-id { font-size: 12px; color: #95a5a6; margin-bottom: 2px; }
-
-.ticket-meta { font-size: 13px; color: #7f8c8d; margin-top: 4px; display: flex; gap: 10px;}
-.assignee-badge { background: #e8f6f3; color: #16a085; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
-
-.status-pill {
-  padding: 6px 12px;
+  padding: 3px;
   border-radius: 20px;
-  font-size: 12px;
-  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-
-.status-open { color: #27ae60; background: #eafaf1; } /* Zielony */
-.status-open::before { background: #27ae60; }
-
-.status-pending { color: #d35400; background: #fdf2e9; } /* Pomarańczowy */
-.status-pending::before { background: #d35400; }
-
-.status-closed { color: #7f8c8d; background: #f4f6f8; } /* Szary */
-.status-closed::before { background: #95a5a6; }
-
-.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
-.status-open.status-dot { background: #27ae60; }
-.status-pending.status-dot { background: #d35400; }
-.status-closed.status-dot { background: #95a5a6; }
-
-.empty-state { text-align: center; color: #999; margin-top: 40px; }
-
-.tabs-container {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #e9ecef; /* Linia bazowa pod zakładkami */
-  padding-bottom: 0;
-}
-
-.tab-btn {
-  background: none;
+.view-toggle button {
   border: none;
-  padding: 10px 15px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #7f8c8d;
+  background: none;
+  padding: 6px 15px;
+  border-radius: 15px;
   cursor: pointer;
+  color: #7f8c8d;
+  font-size: 13px;
+}
+
+.view-toggle button.active {
+  background-color: #3498db;
+  color: white;
+}
+
+.add-btn {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* --- 5. TABELA (JEDYNY ELEMENT PRZEWIJANY) --- */
+.table-wrapper {
+  flex: 1; /* Rozciągnij się do dołu */
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  overflow: auto; /* SUWAK POJAWIA SIĘ TUTAJ */
   position: relative;
-  transition: all 0.2s;
-  border-bottom: 3px solid transparent; /* Ukryta linia aktywacji */
-  margin-bottom: -2px; /* Żeby linia nachodziła na linię kontenera */
 }
 
-.tab-btn:hover {
-  color: #2c3e50;
+.tickets-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Nagłówek tabeli przyklejony do góry kontenera tabeli */
+.tickets-table th {
+  position: sticky;
+  top: 0;
   background-color: #f8f9fa;
-  border-radius: 5px 5px 0 0;
+  z-index: 10;
+  padding: 15px;
+  text-align: left;
+  font-size: 13px;
+  color: #7f8c8d;
+  border-bottom: 2px solid #eee;
+  cursor: pointer;
+  user-select: none;
+}
+.tickets-table th:hover { background-color: #e9ecef; color: #2c3e50; }
+
+.tickets-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  color: #2c3e50;
 }
 
-.tab-btn.active {
-  color: #3498db; /* Niebieski kolor tekstu */
-  border-bottom: 3px solid #3498db; /* Niebieska linia na dole */
-}
-
-/* Dostosowanie panelu filtrów, żeby pasował do zakładek */
-.filters-panel {
-  display: flex;
-  gap: 20px;
-  background: #f8f9fa;
-  padding: 15px 20px;
-  border-radius: 0 0 10px 10px; /* Zaokrąglenie tylko na dole */
-  border: 1px solid #e9ecef;
-  border-top: none; /* Łączymy wizualnie z zakładkami */
-  margin-bottom: 30px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.last-updated {
-    font-size: 11px;
-    color: #95a5a6;
-    margin-left: 10px;
-}
+/* Badges */
+.status-badge { padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; }
+.status-badge.OPEN { background: #e3f2fd; color: #3498db; }
+.status-badge.IN_PROGRESS { background: #fff3e0; color: #f39c12; }
+.status-badge.CLOSED { background: #e8f5e9; color: #27ae60; }
+.assignee-badge { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+.details-btn { background: #34495e; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
