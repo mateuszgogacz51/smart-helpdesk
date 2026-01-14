@@ -16,6 +16,7 @@
       
       <div class="stats-group">
         <h3>Moje Zadania</h3>
+        
         <div class="cards-row">
           <div class="stat-card blue clickable" 
                [class.active-filter]="activeFilter === 'OPEN' && viewMode === 'MY'"
@@ -36,24 +37,57 @@
             <span class="label">Gotowe</span>
           </div>
         </div>
+
+        <div class="cards-row" style="margin-top: 15px;">
+          <div class="stat-card dark clickable" 
+               [class.active-filter]="activeFilter === 'ALL' && viewMode === 'MY'"
+               (click)="viewMode = 'MY'; setFilter('ALL')">
+            <span class="count">{{ stats.myTotal }}</span>
+            <span class="label">Razem</span>
+          </div>
+        </div>
+
       </div>
 
       <div class="stats-group">
         <h3>Cała Firma</h3>
         <div class="cards-row">
+          
           <div class="stat-card purple clickable" 
                [class.active-filter]="activeFilter === 'UNASSIGNED' && viewMode === 'ALL'"
                (click)="viewMode = 'ALL'; setFilter('UNASSIGNED')">
             <span class="count">{{ stats.globalUnassigned }}</span>
-            <span class="label">Do wzięcia</span>
+            <span class="label">Nie przypisane</span>
+          </div>
+
+          <div class="stat-card blue clickable" 
+               [class.active-filter]="activeFilter === 'OPEN' && viewMode === 'ALL'"
+               (click)="viewMode = 'ALL'; setFilter('OPEN')">
+            <span class="count">{{ stats.globalOpen }}</span>
+            <span class="label">Wszystkie Nowe</span>
+          </div>
+
+          <div class="stat-card orange clickable" 
+               [class.active-filter]="activeFilter === 'IN_PROGRESS' && viewMode === 'ALL'"
+               (click)="viewMode = 'ALL'; setFilter('IN_PROGRESS')">
+            <span class="count">{{ stats.globalInProgress }}</span>
+            <span class="label">W Trakcie</span>
+          </div>
+
+          <div class="stat-card green clickable" 
+               [class.active-filter]="activeFilter === 'CLOSED' && viewMode === 'ALL'"
+               (click)="viewMode = 'ALL'; setFilter('CLOSED')">
+            <span class="count">{{ stats.globalClosed }}</span>
+            <span class="label">Zakończone</span>
           </div>
           
           <div class="stat-card dark clickable"
                [class.active-filter]="activeFilter === 'ALL' && viewMode === 'ALL'"
                (click)="viewMode = 'ALL'; setFilter('ALL')">
             <span class="count">{{ stats.globalTotal }}</span>
-            <span class="label">Wszystkie</span>
+            <span class="label">Razem</span>
           </div>
+
         </div>
       </div>
     </div>
@@ -66,6 +100,13 @@
       
       <div *ngIf="currentUserRole === 'USER'" style="font-weight:bold; color:#2c3e50;">
         Twoje zgłoszenia
+      </div>
+
+      <div class="search-box">
+        <input 
+          type="text" 
+          placeholder="🔍 Szukaj (tytuł, opis, autor, przypisany)..." 
+          [(ngModel)]="searchTerm">
       </div>
 
       <button class="add-btn" (click)="goToAddTicket()">+ Nowe zgłoszenie</button>
@@ -103,7 +144,8 @@
           </tr>
           <tr *ngIf="visibleTickets.length === 0">
             <td colspan="8" style="text-align:center; padding: 40px; color:#95a5a6;">
-              Brak zgłoszeń w tym widoku.
+              <span *ngIf="searchTerm">Nie znaleziono zgłoszeń pasujących do "<strong>{{ searchTerm }}</strong>".</span>
+              <span *ngIf="!searchTerm">Brak zgłoszeń w tym widoku.</span>
             </td>
           </tr>
         </tbody>

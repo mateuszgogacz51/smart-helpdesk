@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TicketService } from '../ticket.service';
 import { AuthService } from '../auth.service';
 import { Ticket } from '../ticket.model';
@@ -8,7 +9,7 @@ import { Router, NavigationEnd } from '@angular/router';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
@@ -18,12 +19,14 @@ export class DashboardComponent implements OnInit {
   currentUserRole: string = 'USER';
   stats: any = null;
   
-  // Tryby filtrowania
+  // Filtry
   viewMode: 'ALL' | 'MY' = 'ALL'; 
-  
-  // Status: ALL, OPEN, IN_PROGRESS, CLOSED lub UNASSIGNED (dla kafelka "Do wzięcia")
   activeFilter: string = 'ALL'; 
   
+  // WYSZUKIWARKA
+  searchTerm: string = ''; 
+  
+  // Sortowanie
   sortColumn: string = 'createdDate'; 
   sortDirection: 'asc' | 'desc' = 'desc'; 
 
@@ -52,13 +55,14 @@ export class DashboardComponent implements OnInit {
     this.currentUser = localStorage.getItem('username') || '';
     this.currentUserRole = (localStorage.getItem('role') || 'USER').toUpperCase();
 
-    // Domyślnie WSZYSTKIE dla Helpdesk/Admin
+    // Domyślne ustawienia widoku
     if (this.currentUserRole !== 'USER') {
         this.viewMode = 'ALL'; 
     } else {
         this.viewMode = 'MY';
     }
     this.activeFilter = 'ALL';
+    this.searchTerm = ''; 
 
     this.loadTickets();
 
@@ -84,6 +88,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  // --- GŁÓWNA LOGIKA FILTROWANIA ---
   get visibleTickets(): Ticket[] {
     let filtered = this.tickets;
 
@@ -98,20 +103,30 @@ export class DashboardComponent implements OnInit {
       }
     }
 
-    // 2. Filtracja po kafelkach
+    // 2. Filtracja po kafelkach (Status)
     if (this.activeFilter === 'UNASSIGNED') {
-      // Pokaż tylko te bez przypisanego użytkownika
       filtered = filtered.filter(t => !t.assignedUser);
     } else if (this.activeFilter !== 'ALL') {
-      // Pokaż konkretny status
       filtered = filtered.filter(t => t.status === this.activeFilter);
+    }
+
+    // 3. WYSZUKIWARKA (Rozszerzona o autora i przypisanego)
+    if (this.searchTerm.trim() !== '') {
+      const lowerTerm = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(t => 
+        t.title.toLowerCase().includes(lowerTerm) || 
+        (t.description && t.description.toLowerCase().includes(lowerTerm)) ||
+        // Szukanie po autorze zgłoszenia
+        (t.author && t.author.username.toLowerCase().includes(lowerTerm)) ||
+        // Szukanie po przypisanym pracowniku
+        (t.assignedUser && t.assignedUser.username.toLowerCase().includes(lowerTerm))
+      );
     }
 
     return filtered;
   }
 
   setFilter(filter: string): void {
-    // Kliknięcie drugi raz w to samo resetuje filtr
     if (this.activeFilter === filter) {
       this.activeFilter = 'ALL';
     } else {

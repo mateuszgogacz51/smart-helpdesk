@@ -49,14 +49,22 @@ public class TicketController {
 
         Map<String, Long> stats = new HashMap<>();
 
-        // Statystyki osobiste
-        stats.put("myOpen", ticketRepository.countByAssignedUserAndStatus(user, "OPEN"));
-        stats.put("myInProgress", ticketRepository.countByAssignedUserAndStatus(user, "IN_PROGRESS"));
-        stats.put("myClosed", ticketRepository.countByAssignedUserAndStatus(user, "CLOSED"));
+        // 1. Statystyki OSOBISTE (Moje) - Pobieramy do zmiennych, żeby zsumować
+        long myOpen = ticketRepository.countByAssignedUserAndStatus(user, "OPEN");
+        long myInProgress = ticketRepository.countByAssignedUserAndStatus(user, "IN_PROGRESS");
+        long myClosed = ticketRepository.countByAssignedUserAndStatus(user, "CLOSED");
+        long myTotal = myOpen + myInProgress + myClosed; // Suma moich
 
-        // Statystyki globalne
-        // ZMIANA: Zamiast wszystkich OPEN, liczymy te bez właściciela (unassigned)
+        stats.put("myOpen", myOpen);
+        stats.put("myInProgress", myInProgress);
+        stats.put("myClosed", myClosed);
+        stats.put("myTotal", myTotal); // <-- NOWE POLE
+
+        // 2. Statystyki GLOBALNE (Cała Firma)
         stats.put("globalUnassigned", ticketRepository.countByAssignedUserIsNull());
+        stats.put("globalOpen", ticketRepository.countByStatus("OPEN"));
+        stats.put("globalInProgress", ticketRepository.countByStatus("IN_PROGRESS"));
+        stats.put("globalClosed", ticketRepository.countByStatus("CLOSED"));
         stats.put("globalTotal", ticketRepository.count());
 
         return stats;

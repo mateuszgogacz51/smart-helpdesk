@@ -60,6 +60,7 @@
   display: flex;
   gap: 30px;
   margin-bottom: 40px;
+  flex-wrap: wrap; /* Zabezpieczenie na mniejsze ekrany */
 }
 
 .stats-group {
@@ -68,6 +69,7 @@
   padding: 25px;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  min-width: 300px; /* Żeby grupa nie była za wąska */
 }
 
 .stats-group h3 {
@@ -83,14 +85,24 @@
 .cards-row {
   display: flex;
   gap: 15px;
+  flex-wrap: wrap; /* Pozwala kafelkom spaść niżej */
 }
 
-/* Kafelki */
+/* Kafelki - poprawione skalowanie */
 .stat-card {
   flex: 1;
-  padding: 20px;
+  min-width: 110px;      /* Minimalna szerokość */
+  min-height: 120px;     /* Stała wysokość */
+  
+  padding: 15px;
   border-radius: 12px;
-  text-align: center;
+  
+  /* Centrowanie zawartości */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
   color: white;
   cursor: pointer;
   transition: transform 0.3s, box-shadow 0.3s;
@@ -120,17 +132,21 @@
 
 .stat-card .count {
   display: block;
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 800;
   margin-bottom: 5px;
   text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  line-height: 1;
 }
 
 .stat-card .label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  opacity: 0.9;
+  opacity: 0.95;
+  text-align: center;
+  white-space: normal; /* Zawijanie tekstu */
+  line-height: 1.2;
 }
 
 /* Pasek akcji */
@@ -159,6 +175,36 @@
   background: #2c3e50;
   color: white;
   box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3);
+}
+
+/* Wyszukiwarka */
+.search-box {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  margin: 0 20px;
+}
+
+.search-box input {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 20px;
+  border: 1px solid #dfe6e9;
+  border-radius: 30px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.search-box input:focus {
+  border-color: #3498db;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+}
+
+.search-box input::placeholder {
+  color: #bdc3c7;
 }
 
 .add-btn {

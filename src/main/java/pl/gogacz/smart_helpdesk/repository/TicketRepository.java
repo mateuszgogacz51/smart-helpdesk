@@ -9,12 +9,12 @@ import java.util.List;
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findByAuthor(User author);
 
-    // Liczy zadania przypisane do konkretnego usera o danym statusie
+    // Liczy zadania przypisane do konkretnego usera
     long countByAssignedUserAndStatus(User assignedUser, String status);
 
-    // Liczy wszystkie zadania w systemie
-    long count();
-
-    // --- NOWOŚĆ: Liczy zadania, które NIE MAJĄ nikogo przypisanego (Do wzięcia) ---
+    // Liczy zadania bez właściciela
     long countByAssignedUserIsNull();
+
+    // --- NOWOŚĆ: Liczy globalnie po statusie (dla całej firmy) ---
+    long countByStatus(String status);
 }
