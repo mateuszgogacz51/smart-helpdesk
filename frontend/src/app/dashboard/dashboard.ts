@@ -33,7 +33,7 @@ export class DashboardComponent implements OnInit {
   constructor(
     private ticketService: TicketService,
     public authService: AuthService,
-    private router: Router,
+    public router: Router,
     private cdr: ChangeDetectorRef
   ) {
     this.router.events.subscribe((event) => {
