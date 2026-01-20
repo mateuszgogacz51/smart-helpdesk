@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "users") // Zachowuję Twoją nazwę tabeli
+@Table(name = "users")
 public class User {
 
     @Id
@@ -22,24 +22,22 @@ public class User {
     private String lastName;
     private String email;
     private String department;
-    private String role; // USER, HELPDESK, ADMIN
+    private String role; // USER, HELPDESK, BOARD, ADMIN
 
     // --- NOWE POLE (Dla priorytetów) ---
     private String defaultPriority; // LOW, NORMAL, HIGH
     // -----------------------------------
 
-    // --- RELACJE Z ZABEZPIECZENIEM PRZED PĘTLĄ ---
-
+    // --- RELACJE ---
     @OneToMany(mappedBy = "author")
-    @JsonIgnore // Przerywa pętlę przy pobieraniu zgłoszeń autora
+    @JsonIgnore
     private List<Ticket> ticketsCreated;
 
     @OneToMany(mappedBy = "assignedUser")
-    @JsonIgnore // Przerywa pętlę przy pobieraniu zgłoszeń serwisanta
+    @JsonIgnore
     private List<Ticket> ticketsAssigned;
 
     // --- KONSTRUKTORY ---
-
     public User() {
     }
 
@@ -70,7 +68,7 @@ public class User {
     public String getLastName() { return lastName; }
     public void setLastName(String lastName) { this.lastName = lastName; }
 
-    // Dodałem ten getter, żeby Frontend (który pyta o 'fullName') dostał imię i nazwisko
+    // Pomocniczy getter dla Frontendu
     public String getFullName() {
         return (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
     }
@@ -84,14 +82,13 @@ public class User {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
-    // Gettery do relacji
     public List<Ticket> getTicketsCreated() { return ticketsCreated; }
     public void setTicketsCreated(List<Ticket> ticketsCreated) { this.ticketsCreated = ticketsCreated; }
 
     public List<Ticket> getTicketsAssigned() { return ticketsAssigned; }
     public void setTicketsAssigned(List<Ticket> ticketsAssigned) { this.ticketsAssigned = ticketsAssigned; }
 
-    // --- GETTER I SETTER DLA NOWEGO POLE ---
+    // --- GETTER I SETTER DLA PRIORYTETU ---
     public String getDefaultPriority() { return defaultPriority; }
     public void setDefaultPriority(String defaultPriority) { this.defaultPriority = defaultPriority; }
 }

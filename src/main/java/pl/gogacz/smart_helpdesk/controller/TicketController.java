@@ -84,6 +84,7 @@ public class TicketController {
         ticket.setCreatedDate(LocalDateTime.now());
         ticket.setLastUpdated(LocalDateTime.now());
 
+        // LOGIKA AUTOMATYCZNEGO PRIORYTETU
         if (author.getDefaultPriority() != null && !author.getDefaultPriority().isEmpty()) {
             ticket.setPriority(author.getDefaultPriority());
         } else if ("BOARD".equals(author.getRole())) {
@@ -96,7 +97,7 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'HELPDESK')") // <--- ZMIANA NA hasAnyAuthority
+    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
     public ResponseEntity<Ticket> changeStatus(@PathVariable Long id, @RequestBody String status) {
         return ticketRepository.findById(id).map(ticket -> {
             String cleanStatus = status.replace("\"", "").trim();
@@ -107,7 +108,7 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/priority")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'HELPDESK')") // <--- ZMIANA NA hasAnyAuthority
+    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
     public ResponseEntity<Ticket> changePriority(@PathVariable Long id, @RequestBody String priority) {
         return ticketRepository.findById(id).map(ticket -> {
             String cleanPriority = priority.replace("\"", "").trim();
@@ -118,7 +119,7 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/assign")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'HELPDESK')") // <--- ZMIANA
+    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
     public ResponseEntity<Ticket> assignTicket(@PathVariable Long id, @RequestParam Long userId) {
         return ticketRepository.findById(id).map(ticket -> {
             User staff = userRepository.findById(userId)
@@ -130,7 +131,7 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/assign-me")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'HELPDESK')") // <--- ZMIANA
+    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
     public ResponseEntity<Ticket> assignToMe(@PathVariable Long id, Authentication authentication) {
         String username = authentication.getName();
         User currentUser = userRepository.findByUsername(username).orElseThrow();
@@ -151,16 +152,18 @@ public class TicketController {
     public Comment addComment(@PathVariable Long id, @RequestBody String content, Authentication authentication) {
         Ticket ticket = ticketRepository.findById(id).orElseThrow();
         User author = userRepository.findByUsername(authentication.getName()).orElseThrow();
+
         Comment comment = new Comment();
         comment.setContent(content);
         comment.setTicket(ticket);
         comment.setAuthor(author);
         comment.setCreatedDate(LocalDateTime.now());
+
         return commentRepository.save(comment);
     }
 
     @GetMapping("/staff")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'HELPDESK')") // <--- ZMIANA
+    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
     public List<User> getSupportStaff() {
         return userRepository.findAll().stream()
                 .filter(u -> !u.getRole().equals("USER") && !u.getRole().equals("BOARD"))

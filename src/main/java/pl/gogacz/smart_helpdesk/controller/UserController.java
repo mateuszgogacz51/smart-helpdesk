@@ -20,13 +20,13 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN')") // <--- ZMIANA: hasAuthority zamiast hasRole
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
     @PutMapping("/{id}/role")
-    @PreAuthorize("hasAuthority('ADMIN')") // <--- ZMIANA
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<User> changeRole(@PathVariable Long id, @RequestBody String role) {
         return userRepository.findById(id).map(user -> {
             String cleanRole = role.replace("\"", "").trim();
@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/default-priority")
-    @PreAuthorize("hasAuthority('ADMIN')") // <--- ZMIANA (To naprawi panel admina)
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<User> changeDefaultPriority(@PathVariable Long id, @RequestBody String priority) {
         return userRepository.findById(id).map(user -> {
             String cleanPriority = priority.replace("\"", "").trim();
@@ -46,7 +46,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')") // <--- ZMIANA
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         return userRepository.findById(id).map(user -> {
             userRepository.delete(user);
