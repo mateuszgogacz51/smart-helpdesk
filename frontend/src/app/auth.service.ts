@@ -12,17 +12,19 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   login(username: string, password: string) {
-    // 1. Zakoduj hasło
+    // 1. Tworzymy token
     const token = btoa(username + ':' + password);
     
-    // 2. Dodaj nagłówek
+    // 2. Tworzymy nagłówki
     const headers = new HttpHeaders({
       Authorization: 'Basic ' + token
     });
 
-    // 3. UWAGA: TU MA BYĆ .get() !!!
-    // Zmieniamy to, aby pasowało do Backendu.
-        return this.http.get<any>(this.baseUrl + '/auth/login', { headers }).pipe(      map(response => {
+    // 3. UWAGA: TU MUSI BYĆ .get !!! 
+    // Backend ma @GetMapping("/login"), więc musimy użyć GET.
+    // W metodzie GET, 'headers' przekazujemy jako drugi argument (opcje).
+    return this.http.get<any>(this.baseUrl + '/auth/login', { headers }).pipe(
+      map(response => {
         localStorage.setItem('username', username);
         localStorage.setItem('token', token);
         
