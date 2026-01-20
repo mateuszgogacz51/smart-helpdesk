@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users") // Zachowuję Twoją nazwę tabeli
 public class User {
 
     @Id
@@ -24,14 +24,18 @@ public class User {
     private String department;
     private String role; // USER, HELPDESK, ADMIN
 
+    // --- NOWE POLE (Dla priorytetów) ---
+    private String defaultPriority; // LOW, NORMAL, HIGH
+    // -----------------------------------
+
     // --- RELACJE Z ZABEZPIECZENIEM PRZED PĘTLĄ ---
 
     @OneToMany(mappedBy = "author")
-    @JsonIgnore // <--- To przerywa pętlę przy pobieraniu zgłoszeń utworzonych przez usera
+    @JsonIgnore // Przerywa pętlę przy pobieraniu zgłoszeń autora
     private List<Ticket> ticketsCreated;
 
     @OneToMany(mappedBy = "assignedUser")
-    @JsonIgnore // <--- To przerywa pętlę przy pobieraniu zgłoszeń przypisanych do usera
+    @JsonIgnore // Przerywa pętlę przy pobieraniu zgłoszeń serwisanta
     private List<Ticket> ticketsAssigned;
 
     // --- KONSTRUKTORY ---
@@ -51,83 +55,43 @@ public class User {
 
     // --- GETTERY I SETTERY ---
 
-    public Long getId() {
-        return id;
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+
+    // Dodałem ten getter, żeby Frontend (który pyta o 'fullName') dostał imię i nazwisko
+    public String getFullName() {
+        return (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getUsername() {
-        return username;
-    }
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
-    public String getPassword() {
-        return password;
-    }
+    // Gettery do relacji
+    public List<Ticket> getTicketsCreated() { return ticketsCreated; }
+    public void setTicketsCreated(List<Ticket> ticketsCreated) { this.ticketsCreated = ticketsCreated; }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public List<Ticket> getTicketsAssigned() { return ticketsAssigned; }
+    public void setTicketsAssigned(List<Ticket> ticketsAssigned) { this.ticketsAssigned = ticketsAssigned; }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public List<Ticket> getTicketsCreated() {
-        return ticketsCreated;
-    }
-
-    public void setTicketsCreated(List<Ticket> ticketsCreated) {
-        this.ticketsCreated = ticketsCreated;
-    }
-
-    public List<Ticket> getTicketsAssigned() {
-        return ticketsAssigned;
-    }
-
-    public void setTicketsAssigned(List<Ticket> ticketsAssigned) {
-        this.ticketsAssigned = ticketsAssigned;
-    }
+    // --- GETTER I SETTER DLA NOWEGO POLE ---
+    public String getDefaultPriority() { return defaultPriority; }
+    public void setDefaultPriority(String defaultPriority) { this.defaultPriority = defaultPriority; }
 }

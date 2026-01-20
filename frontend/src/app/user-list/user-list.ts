@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../user.service';
@@ -14,8 +14,8 @@ import { Router } from '@angular/router';
 })
 export class UserListComponent implements OnInit {
   users: User[] = [];
+  isLoading: boolean = false;
   
-  // Obiekt do formularza nowego użytkownika
   newUser = {
     username: '',
     password: '',
@@ -23,16 +23,36 @@ export class UserListComponent implements OnInit {
     role: 'USER'
   };
 
-  constructor(private userService: UserService, private router: Router) {}
+  constructor(
+    private userService: UserService, 
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {}
 
   ngOnInit(): void {
     this.loadUsers();
   }
 
   loadUsers(): void {
+    this.isLoading = true;
     this.userService.getAllUsers().subscribe({
-      next: (data) => this.users = data,
-      error: (err) => console.error('Błąd pobierania użytkowników', err)
+      next: (data) => {
+        this.ngZone.run(() => {
+          setTimeout(() => {
+            this.users = data;
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          }, 0);
+        });
+      },
+      error: (err) => {
+        this.ngZone.run(() => {
+          console.error('Błąd:', err);
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
+      }
     });
   }
 
@@ -42,45 +62,99 @@ export class UserListComponent implements OnInit {
       return;
     }
 
+    this.isLoading = true;
+
     this.userService.registerUser(this.newUser).subscribe({
-      next: () => {
-        alert('Użytkownik dodany pomyślnie!');
-        this.loadUsers(); // Odśwież tabelę
-        // Wyczyść formularz
-        this.newUser = { username: '', password: '', fullName: '', role: 'USER' };
+      next: (createdUser: any) => {
+        this.ngZone.run(() => {
+          setTimeout(() => {
+            this.users.push(createdUser); 
+            alert('Użytkownik dodany pomyślnie!');
+            this.newUser = { username: '', password: '', fullName: '', role: 'USER' };
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          }, 0);
+        });
       },
       error: (err) => {
-        console.error(err);
-        alert('Błąd: ' + (err.error?.message || 'Nie udało się dodać użytkownika'));
+        this.ngZone.run(() => {
+          console.error(err);
+          alert('Błąd: ' + (err.error?.message || 'Nie udało się dodać użytkownika'));
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
       }
     });
   }
 
-  // POPRAWKA 1: Akceptujemy id, które może być undefined (id?: number)
   deleteUser(id?: number): void {
-    if (!id) return; // Jeśli nie ma ID, przerwij
-    
+    if (!id) return;
     if (!confirm('Czy na pewno chcesz usunąć tego użytkownika?')) return;
 
+    this.isLoading = true;
     this.userService.deleteUser(id).subscribe({
-      next: () => this.loadUsers(),
-      error: (err) => alert('Nie można usunąć użytkownika.')
+      next: () => {
+        this.ngZone.run(() => {
+          setTimeout(() => {
+            this.users = this.users.filter(u => u.id !== id);
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          }, 0);
+        });
+      },
+      error: (err) => {
+        this.ngZone.run(() => {
+          alert('Nie można usunąć użytkownika.');
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
+      }
     });
   }
 
-  // POPRAWKA 2: Typowanie eventu
   updateRole(user: User, event: Event): void {
-    // Rzutowanie event.target na HTMLSelectElement, żeby TypeScript widział pole .value
     const selectElement = event.target as HTMLSelectElement;
     const newRole = selectElement.value;
 
-    if (!user.id) return; // Zabezpieczenie braku ID
+    if (!user.id) return;
 
     this.userService.changeRole(user.id, newRole).subscribe({
-      next: () => console.log(`Zmieniono rolę ${user.username} na ${newRole}`),
+      next: () => {
+        this.ngZone.run(() => {
+            console.log(`Zmieniono rolę ${user.username} na ${newRole}`);
+            user.role = newRole;
+            this.cdr.detectChanges();
+        });
+      },
       error: (err) => {
-        alert('Błąd zmiany roli');
-        this.loadUsers(); // Cofnij zmianę w tabeli w razie błędu
+        this.ngZone.run(() => {
+            alert('Błąd zmiany roli');
+            this.loadUsers(); 
+        });
+      }
+    });
+  }
+
+  // --- NOWA METODA ---
+  updateDefaultPriority(user: User, event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const newPriority = select.value;
+
+    if (!user.id) return;
+
+    this.userService.changeDefaultPriority(user.id, newPriority).subscribe({
+      next: () => {
+        this.ngZone.run(() => {
+          console.log(`Zmieniono priorytet ${user.username} na ${newPriority}`);
+          user.defaultPriority = newPriority;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        this.ngZone.run(() => {
+          alert('Błąd zmiany priorytetu');
+          this.loadUsers();
+        });
       }
     });
   }

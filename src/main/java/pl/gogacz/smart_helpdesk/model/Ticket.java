@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tickets")
 public class Ticket {
 
     @Id
@@ -13,17 +12,14 @@ public class Ticket {
 
     private String title;
 
-    @Column(length = 2000) // Zwiększony limit znaków dla opisu
+    @Column(length = 1000)
     private String description;
 
-    private String category;
-    private String location;
-    private String status; // Np. OPEN, IN_PROGRESS, CLOSED
+    private String status; // OPEN, IN_PROGRESS, CLOSED
 
-    private LocalDateTime createdDate;
+    private String category; // HARDWARE, SOFTWARE, OTHER
 
-    // --- NOWE POLE DO SORTOWANIA ---
-    private LocalDateTime lastUpdated;
+    private String priority; // LOW, NORMAL, HIGH (Nowe pole)
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -33,103 +29,38 @@ public class Ticket {
     @JoinColumn(name = "assigned_user_id")
     private User assignedUser;
 
-    // --- KONSTRUKTORY ---
+    private LocalDateTime createdDate;
+    private LocalDateTime lastUpdated;
 
-    public Ticket() {
-    }
+    // Gettery i Settery
 
-    public Ticket(String title, String description, String category, String location, User author) {
-        this.title = title;
-        this.description = description;
-        this.category = category;
-        this.location = location;
-        this.author = author;
-        this.status = "OPEN";
-        this.createdDate = LocalDateTime.now();
-        this.lastUpdated = LocalDateTime.now();
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    // --- GETTERY I SETTERY ---
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
 
-    public String getDescription() {
-        return description;
-    }
+    public User getAuthor() { return author; }
+    public void setAuthor(User author) { this.author = author; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public User getAssignedUser() { return assignedUser; }
+    public void setAssignedUser(User assignedUser) { this.assignedUser = assignedUser; }
 
-    public String getCategory() {
-        return category;
-    }
+    public LocalDateTime getCreatedDate() { return createdDate; }
+    public void setCreatedDate(LocalDateTime createdDate) { this.createdDate = createdDate; }
 
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(LocalDateTime createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    // Specjalny getter dla lastUpdated
-    // Jeśli lastUpdated jest null (stare zgłoszenia), zwracamy datę utworzenia
-    public LocalDateTime getLastUpdated() {
-        return lastUpdated != null ? lastUpdated : createdDate;
-    }
-
-    public void setLastUpdated(LocalDateTime lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
-
-    public User getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(User author) {
-        this.author = author;
-    }
-
-    public User getAssignedUser() {
-        return assignedUser;
-    }
-
-    public void setAssignedUser(User assignedUser) {
-        this.assignedUser = assignedUser;
-    }
+    public LocalDateTime getLastUpdated() { return lastUpdated; }
+    public void setLastUpdated(LocalDateTime lastUpdated) { this.lastUpdated = lastUpdated; }
 }

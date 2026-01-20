@@ -21,27 +21,36 @@
           <option value="ADMIN">Administrator</option>
         </select>
         
-        <button class="save-btn" (click)="createUser()">Zapisz</button>
+        <button class="save-btn" (click)="createUser()" [disabled]="isLoading">
+          {{ isLoading ? '...' : 'Zapisz' }}
+        </button>
       </div>
     </div>
 
     <div class="card list-section">
       <h3>👥 Lista pracowników ({{ users.length }})</h3>
-      <table class="users-table">
+      
+      <div *ngIf="isLoading" style="text-align: center; padding: 20px; color: #7f8c8d;">
+        ⏳ Pobieranie danych...
+      </div>
+
+      <table class="users-table" *ngIf="!isLoading">
         <thead>
           <tr>
             <th>ID</th>
             <th>Login</th>
-            <th>Pełna nazwa</th>
-            <th>Rola (Zmień)</th>
-            <th>Akcje</th>
+            <th>Rola</th>
+            <th>Domyślny Priorytet</th> <th>Akcje</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let user of users">
             <td>#{{ user.id }}</td>
-            <td style="font-weight: bold;">{{ user.username }}</td>
-            <td>{{ user.fullName || '-' }}</td>
+            <td style="font-weight: bold;">
+              {{ user.username }}
+              <div style="font-size: 11px; color: #95a5a6; font-weight: normal;">{{ user.fullName }}</div>
+            </td>
+            
             <td>
               <select [ngModel]="user.role" (change)="updateRole(user, $event)" 
                       [class]="'role-select ' + user.role">
@@ -51,9 +60,23 @@
                 <option value="ADMIN">ADMIN</option>
               </select>
             </td>
+
+            <td>
+              <select [ngModel]="user.defaultPriority || 'NORMAL'" 
+                      (change)="updateDefaultPriority(user, $event)"
+                      [class]="'priority-select ' + (user.defaultPriority || 'NORMAL')">
+                <option value="LOW">Niski</option>
+                <option value="NORMAL">Normalny</option>
+                <option value="HIGH">🔥 PILNE</option>
+              </select>
+            </td>
+
             <td>
               <button class="delete-btn" (click)="deleteUser(user.id)">🗑 Usuń</button>
             </td>
+          </tr>
+          <tr *ngIf="users.length === 0">
+            <td colspan="5" style="text-align: center; padding: 20px;">Brak użytkowników</td>
           </tr>
         </tbody>
       </table>

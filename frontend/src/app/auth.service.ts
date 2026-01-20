@@ -25,10 +25,13 @@ export class AuthService {
         localStorage.setItem('username', username);
         localStorage.setItem('token', token);
         
-        // Prosta logika ról (dla uproszczenia frontendu)
+        // --- PROSTA LOGIKA RÓL (Zaktualizowana) ---
         let role = 'USER';
+        
+        // Tutaj ustalamy role "na sztywno" na podstawie loginu (dopóki backend nie zwróci roli)
         if (username === 'admin') role = 'ADMIN';
-        if (username === 'marek') role = 'HELPDESK';
+        if (username === 'marek' || username === 'helpdesk') role = 'HELPDESK';
+        if (username === 'prezes') role = 'BOARD'; // <--- DODANE DLA PREZESA
         
         localStorage.setItem('role', role);
         return response;
@@ -42,7 +45,7 @@ export class AuthService {
     localStorage.removeItem('token');
   }
 
-  // --- METODY POTRZEBNE DLA TICKET-SERVICE ---
+  // --- METODY POMOCNICZE ---
 
   getToken(): string | null {
     return localStorage.getItem('token');
@@ -58,5 +61,10 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  // --- BRAKUJĄCA METODA (TO NAPRAWI BŁĄD) ---
+  getRole(): string {
+    return localStorage.getItem('role') || 'USER';
   }
 }

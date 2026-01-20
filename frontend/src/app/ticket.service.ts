@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Ticket } from './ticket.model';
-import { Comment } from './comment.model';
 import { User } from './user.model';
 
 @Injectable({
@@ -13,46 +12,49 @@ export class TicketService {
 
   constructor(private http: HttpClient) {}
 
+  // Pobierz wszystkie zgłoszenia
   getTickets(): Observable<Ticket[]> {
     return this.http.get<Ticket[]>(this.apiUrl);
   }
 
+  // Pobierz jedno zgłoszenie
   getTicket(id: number): Observable<Ticket> {
     return this.http.get<Ticket>(`${this.apiUrl}/${id}`);
   }
 
-  createTicket(ticket: any): Observable<Ticket> {
+  // Utwórz nowe
+  createTicket(ticket: Ticket): Observable<Ticket> {
     return this.http.post<Ticket>(this.apiUrl, ticket);
   }
 
-  // --- NAPRAWA BŁĘDU 404 ---
-  // Było: .../assign/${userId} (BŁĄD)
-  // Jest: .../assign?userId=${userId} (POPRAWNIE)
-  assignToUser(ticketId: number, userId: number): Observable<Ticket> {
-    return this.http.put<Ticket>(`${this.apiUrl}/${ticketId}/assign?userId=${userId}`, {});
+  // Zmiana statusu
+  changeStatus(id: number, status: string): Observable<Ticket> {
+    return this.http.put<Ticket>(`${this.apiUrl}/${id}/status`, status, {
+       headers: { 'Content-Type': 'application/json' }
+    });
   }
 
-  assignToMe(ticketId: number): Observable<Ticket> {
-    return this.http.put<Ticket>(`${this.apiUrl}/${ticketId}/assign-me`, {});
+  // Zmiana priorytetu
+  changePriority(id: number, priority: string): Observable<Ticket> {
+    return this.http.put<Ticket>(`${this.apiUrl}/${id}/priority`, priority, {
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
-  changeStatus(ticketId: number, status: string): Observable<Ticket> {
-    return this.http.put<Ticket>(`${this.apiUrl}/${ticketId}/status`, status); // Spring wczyta to jako String body
-  }
+  // --- METODY DO OBSŁUGI PRACOWNIKÓW ---
 
-  getComments(ticketId: number): Observable<Comment[]> {
-    return this.http.get<Comment[]>(`${this.apiUrl}/${ticketId}/comments`);
-  }
-
-  addComment(ticketId: number, content: string): Observable<Comment> {
-    return this.http.post<Comment>(`${this.apiUrl}/${ticketId}/comments`, content);
-  }
-
+  // Pobierz listę pracowników (HELPDESK + ADMIN)
   getSupportStaff(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/staff`);
   }
 
-  getStats(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/stats`);
+  // Przypisz zgłoszenie do konkretnego pracownika
+  assignTicket(ticketId: number, userId: number): Observable<Ticket> {
+    return this.http.put<Ticket>(`${this.apiUrl}/${ticketId}/assign?userId=${userId}`, {});
+  }
+
+  // Przypisz zgłoszenie do mnie (zalogowanego użytkownika)
+  assignToMe(ticketId: number): Observable<Ticket> {
+    return this.http.put<Ticket>(`${this.apiUrl}/${ticketId}/assign-me`, {});
   }
 }

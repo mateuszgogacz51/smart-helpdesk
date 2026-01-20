@@ -30,4 +30,9 @@ export class UserService {
   changeRole(id: number, newRole: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}/role`, { role: newRole });
   }
+  changeDefaultPriority(id: number, priority: string): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/${id}/default-priority`, priority, {
+       headers: { 'Content-Type': 'application/json' }
+    });
+  }
 }

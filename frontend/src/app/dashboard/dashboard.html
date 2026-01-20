@@ -12,112 +12,68 @@
 
   <div class="content-area">
 
-    <div class="stats-container" *ngIf="stats && currentUserRole !== 'USER'">
+    <div class="stats-container" *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
       
       <div class="stats-group">
         <h3>Moje Zadania</h3>
-        
         <div class="cards-row">
-          <div class="stat-card blue clickable" 
-               [class.active-filter]="activeFilter === 'OPEN' && viewMode === 'MY'"
-               (click)="viewMode = 'MY'; setFilter('OPEN')">
-            <span class="count">{{ stats.myOpen }}</span>
-            <span class="label">Nowe</span>
+          <div class="stat-card blue clickable" (click)="viewMode = 'MY'; setFilter('OPEN')">
+            <span class="count">{{ stats.myOpen }}</span><span class="label">Nowe</span>
           </div>
-          <div class="stat-card orange clickable" 
-               [class.active-filter]="activeFilter === 'IN_PROGRESS' && viewMode === 'MY'"
-               (click)="viewMode = 'MY'; setFilter('IN_PROGRESS')">
-            <span class="count">{{ stats.myInProgress }}</span>
-            <span class="label">W trakcie</span>
+          <div class="stat-card orange clickable" (click)="viewMode = 'MY'; setFilter('IN_PROGRESS')">
+            <span class="count">{{ stats.myInProgress }}</span><span class="label">W trakcie</span>
           </div>
-          <div class="stat-card green clickable" 
-               [class.active-filter]="activeFilter === 'CLOSED' && viewMode === 'MY'"
-               (click)="viewMode = 'MY'; setFilter('CLOSED')">
-            <span class="count">{{ stats.myClosed }}</span>
-            <span class="label">Gotowe</span>
+          <div class="stat-card green clickable" (click)="viewMode = 'MY'; setFilter('CLOSED')">
+            <span class="count">{{ stats.myClosed }}</span><span class="label">Gotowe</span>
           </div>
         </div>
-
         <div class="cards-row" style="margin-top: 15px;">
-          <div class="stat-card dark clickable" 
-               [class.active-filter]="activeFilter === 'ALL' && viewMode === 'MY'"
-               (click)="viewMode = 'MY'; setFilter('ALL')">
-            <span class="count">{{ stats.myTotal }}</span>
-            <span class="label">Razem</span>
+          <div class="stat-card dark clickable" (click)="viewMode = 'MY'; setFilter('ALL')">
+            <span class="count">{{ stats.myTotal }}</span><span class="label">Razem</span>
           </div>
         </div>
-
       </div>
 
       <div class="stats-group">
         <h3>Cała Firma</h3>
         <div class="cards-row">
-          
-          <div class="stat-card purple clickable" 
-               [class.active-filter]="activeFilter === 'UNASSIGNED' && viewMode === 'ALL'"
-               (click)="viewMode = 'ALL'; setFilter('UNASSIGNED')">
-            <span class="count">{{ stats.globalUnassigned }}</span>
-            <span class="label">Nie przypisane</span>
+          <div class="stat-card purple clickable" (click)="viewMode = 'ALL'; setFilter('UNASSIGNED')">
+            <span class="count">{{ stats.globalUnassigned }}</span><span class="label">Nie przypisane</span>
           </div>
-
-          <div class="stat-card blue clickable" 
-               [class.active-filter]="activeFilter === 'OPEN' && viewMode === 'ALL'"
-               (click)="viewMode = 'ALL'; setFilter('OPEN')">
-            <span class="count">{{ stats.globalOpen }}</span>
-            <span class="label">Wszystkie Nowe</span>
+          <div class="stat-card blue clickable" (click)="viewMode = 'ALL'; setFilter('OPEN')">
+            <span class="count">{{ stats.globalOpen }}</span><span class="label">Wszystkie Nowe</span>
           </div>
-
-          <div class="stat-card orange clickable" 
-               [class.active-filter]="activeFilter === 'IN_PROGRESS' && viewMode === 'ALL'"
-               (click)="viewMode = 'ALL'; setFilter('IN_PROGRESS')">
-            <span class="count">{{ stats.globalInProgress }}</span>
-            <span class="label">W Trakcie</span>
+          <div class="stat-card orange clickable" (click)="viewMode = 'ALL'; setFilter('IN_PROGRESS')">
+            <span class="count">{{ stats.globalInProgress }}</span><span class="label">W Trakcie</span>
           </div>
-
-          <div class="stat-card green clickable" 
-               [class.active-filter]="activeFilter === 'CLOSED' && viewMode === 'ALL'"
-               (click)="viewMode = 'ALL'; setFilter('CLOSED')">
-            <span class="count">{{ stats.globalClosed }}</span>
-            <span class="label">Zakończone</span>
+          <div class="stat-card green clickable" (click)="viewMode = 'ALL'; setFilter('CLOSED')">
+            <span class="count">{{ stats.globalClosed }}</span><span class="label">Zakończone</span>
           </div>
-          
-          <div class="stat-card dark clickable"
-               [class.active-filter]="activeFilter === 'ALL' && viewMode === 'ALL'"
-               (click)="viewMode = 'ALL'; setFilter('ALL')">
-            <span class="count">{{ stats.globalTotal }}</span>
-            <span class="label">Razem</span>
+          <div class="stat-card dark clickable" (click)="viewMode = 'ALL'; setFilter('ALL')">
+            <span class="count">{{ stats.globalTotal }}</span><span class="label">Razem</span>
           </div>
-
         </div>
       </div>
     </div>
 
-<div class="action-bar">
-      <div class="view-toggle" *ngIf="currentUserRole !== 'USER'">
+    <div class="action-bar">
+      <div class="view-toggle" *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
         <button [class.active]="viewMode === 'ALL'" (click)="viewMode = 'ALL'; setFilter('ALL')">Wszystkie</button>
         <button [class.active]="viewMode === 'MY'" (click)="viewMode = 'MY'; setFilter('ALL')">Tylko moje</button>
       </div>
       
-      <div *ngIf="currentUserRole === 'USER'" style="font-weight:bold; color:#2c3e50;">
+      <div *ngIf="currentUserRole === 'USER' || currentUserRole === 'BOARD'" style="font-weight:bold; color:#2c3e50;">
         Twoje zgłoszenia
       </div>
 
       <div class="search-box">
-        <input 
-          type="text" 
-          placeholder="🔍 Szukaj (tytuł, opis, autor, przypisany)..." 
-          [(ngModel)]="searchTerm">
+        <input type="text" placeholder="🔍 Szukaj..." [(ngModel)]="searchTerm">
       </div>
 
       <div style="display: flex; gap: 10px;">
-        
-        <button *ngIf="currentUserRole === 'ADMIN'" 
-                class="add-btn" 
-                style="background: #2c3e50;" 
-                (click)="router.navigate(['/users'])">
+        <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #2c3e50;" (click)="router.navigate(['/users'])">
            👥 Użytkownicy
         </button>
-
         <button class="add-btn" (click)="goToAddTicket()">+ Nowe zgłoszenie</button>
       </div>
     </div>
@@ -129,6 +85,12 @@
             <th (click)="sortTable('id')">ID {{ getSortIcon('id') }}</th>
             <th (click)="sortTable('title')">Tytuł {{ getSortIcon('title') }}</th>
             <th (click)="sortTable('status')">Status {{ getSortIcon('status') }}</th>
+            
+            <th *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'" 
+                (click)="sortTable('priority')">
+                Priorytet {{ getSortIcon('priority') }}
+            </th> 
+
             <th (click)="sortTable('category')">Kategoria {{ getSortIcon('category') }}</th>
             <th (click)="sortTable('author.username')">Autor {{ getSortIcon('author.username') }}</th>
             <th (click)="sortTable('assignedUser.username')">Przypisany {{ getSortIcon('assignedUser.username') }}</th>
@@ -141,6 +103,14 @@
             <td>#{{ ticket.id }}</td>
             <td><strong>{{ ticket.title }}</strong></td>
             <td><span class="status-badge" [ngClass]="ticket.status">{{ ticket.status }}</span></td>
+            
+            <td *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
+              <span *ngIf="ticket.priority === 'HIGH'" class="priority-badge high">🔥 PILNE</span>
+              <span *ngIf="ticket.priority === 'NORMAL'" class="priority-badge normal">Normalny</span>
+              <span *ngIf="ticket.priority === 'LOW'" class="priority-badge low">Niski</span>
+              <span *ngIf="!ticket.priority">-</span>
+            </td>
+
             <td>{{ ticket.category }}</td>
             <td>{{ ticket.author?.username }}</td>
             <td>
@@ -153,9 +123,8 @@
             </td>
           </tr>
           <tr *ngIf="visibleTickets.length === 0">
-            <td colspan="8" style="text-align:center; padding: 40px; color:#95a5a6;">
-              <span *ngIf="searchTerm">Nie znaleziono zgłoszeń pasujących do "<strong>{{ searchTerm }}</strong>".</span>
-              <span *ngIf="!searchTerm">Brak zgłoszeń w tym widoku.</span>
+            <td colspan="9" style="text-align:center; padding: 40px; color:#95a5a6;">
+              Brak zgłoszeń.
             </td>
           </tr>
         </tbody>

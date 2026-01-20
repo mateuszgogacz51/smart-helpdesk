@@ -36,7 +36,7 @@ public class TicketController {
         String username = authentication.getName();
         User user = userRepository.findByUsername(username).orElseThrow();
 
-        if (user.getRole().equals("USER")) {
+        if (user.getRole().equals("USER") || user.getRole().equals("BOARD")) {
             return ticketRepository.findByAuthor(user);
         }
         return ticketRepository.findAll();
@@ -46,21 +46,18 @@ public class TicketController {
     public Map<String, Long> getStats(Authentication authentication) {
         String username = authentication.getName();
         User user = userRepository.findByUsername(username).orElseThrow();
-
         Map<String, Long> stats = new HashMap<>();
 
-        // 1. Statystyki OSOBISTE (Moje) - Pobieramy do zmiennych, żeby zsumować
         long myOpen = ticketRepository.countByAssignedUserAndStatus(user, "OPEN");
         long myInProgress = ticketRepository.countByAssignedUserAndStatus(user, "IN_PROGRESS");
         long myClosed = ticketRepository.countByAssignedUserAndStatus(user, "CLOSED");
-        long myTotal = myOpen + myInProgress + myClosed; // Suma moich
+        long myTotal = myOpen + myInProgress + myClosed;
 
         stats.put("myOpen", myOpen);
         stats.put("myInProgress", myInProgress);
         stats.put("myClosed", myClosed);
-        stats.put("myTotal", myTotal); // <-- NOWE POLE
+        stats.put("myTotal", myTotal);
 
-        // 2. Statystyki GLOBALNE (Cała Firma)
         stats.put("globalUnassigned", ticketRepository.countByAssignedUserIsNull());
         stats.put("globalOpen", ticketRepository.countByStatus("OPEN"));
         stats.put("globalInProgress", ticketRepository.countByStatus("IN_PROGRESS"));
@@ -81,15 +78,25 @@ public class TicketController {
     public Ticket createTicket(@RequestBody Ticket ticket, Authentication authentication) {
         String username = authentication.getName();
         User author = userRepository.findByUsername(username).orElseThrow();
+
         ticket.setAuthor(author);
         ticket.setStatus("OPEN");
         ticket.setCreatedDate(LocalDateTime.now());
         ticket.setLastUpdated(LocalDateTime.now());
+
+        if (author.getDefaultPriority() != null && !author.getDefaultPriority().isEmpty()) {
+            ticket.setPriority(author.getDefaultPriority());
+        } else if ("BOARD".equals(author.getRole())) {
+            ticket.setPriority("HIGH");
+        } else {
+            ticket.setPriority("NORMAL");
+        }
+
         return ticketRepository.save(ticket);
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HELPDESK')") // <--- ZMIANA NA hasAnyAuthority
     public ResponseEntity<Ticket> changeStatus(@PathVariable Long id, @RequestBody String status) {
         return ticketRepository.findById(id).map(ticket -> {
             String cleanStatus = status.replace("\"", "").trim();
@@ -99,8 +106,19 @@ public class TicketController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/{id}/priority")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HELPDESK')") // <--- ZMIANA NA hasAnyAuthority
+    public ResponseEntity<Ticket> changePriority(@PathVariable Long id, @RequestBody String priority) {
+        return ticketRepository.findById(id).map(ticket -> {
+            String cleanPriority = priority.replace("\"", "").trim();
+            ticket.setPriority(cleanPriority);
+            ticket.setLastUpdated(LocalDateTime.now());
+            return ResponseEntity.ok(ticketRepository.save(ticket));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @PutMapping("/{id}/assign")
-    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HELPDESK')") // <--- ZMIANA
     public ResponseEntity<Ticket> assignTicket(@PathVariable Long id, @RequestParam Long userId) {
         return ticketRepository.findById(id).map(ticket -> {
             User staff = userRepository.findById(userId)
@@ -112,7 +130,7 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/assign-me")
-    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HELPDESK')") // <--- ZMIANA
     public ResponseEntity<Ticket> assignToMe(@PathVariable Long id, Authentication authentication) {
         String username = authentication.getName();
         User currentUser = userRepository.findByUsername(username).orElseThrow();
@@ -133,21 +151,19 @@ public class TicketController {
     public Comment addComment(@PathVariable Long id, @RequestBody String content, Authentication authentication) {
         Ticket ticket = ticketRepository.findById(id).orElseThrow();
         User author = userRepository.findByUsername(authentication.getName()).orElseThrow();
-
         Comment comment = new Comment();
         comment.setContent(content);
         comment.setTicket(ticket);
         comment.setAuthor(author);
         comment.setCreatedDate(LocalDateTime.now());
-
         return commentRepository.save(comment);
     }
 
     @GetMapping("/staff")
-    @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HELPDESK')") // <--- ZMIANA
     public List<User> getSupportStaff() {
         return userRepository.findAll().stream()
-                .filter(u -> !u.getRole().equals("USER"))
+                .filter(u -> !u.getRole().equals("USER") && !u.getRole().equals("BOARD"))
                 .toList();
     }
 }

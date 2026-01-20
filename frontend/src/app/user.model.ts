@@ -1,13 +1,16 @@
 export interface User {
   id?: number;
   username: string;
-  password?: string;    // <--- DODAJ TO (potrzebne do rejestracji nowego usera)
-  fullName?: string;    // <--- DODAJ TO (potrzebne, bo używasz tego w tabeli HTML)
+  password?: string;    // <--- Twoje pole (zachowane)
+  fullName?: string;    // <--- Twoje pole (zachowane)
   role: string;
-  
-  // Te pola możesz zostawić na przyszłość, ale na razie są opcjonalne:
+
+  // Twoje pola opcjonalne (zachowane):
   firstName?: string;
   lastName?: string;
   email?: string;
-  department?: string; 
+  department?: string;
+
+  // --- NOWE POLE ---
+  defaultPriority?: string; // <--- Jedyne, co dodajemy
 }

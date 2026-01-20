@@ -304,3 +304,32 @@
   background: #3498db;
   color: white;
 }
+
+/* --- PRIORYTETY (NOWE STYLE) --- */
+.priority-badge {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.priority-badge.high {
+  background-color: #ffebee;
+  color: #c0392b;
+  border: 1px solid #ffccd5;
+  box-shadow: 0 2px 5px rgba(231, 76, 60, 0.2);
+}
+
+.priority-badge.normal {
+  background-color: #eafaf1;
+  color: #27ae60;
+  border: 1px solid #d5f5e3;
+}
+
+.priority-badge.low {
+  background-color: #f4f6f7;
+  color: #7f8c8d;
+  border: 1px solid #e5e8e8;
+}

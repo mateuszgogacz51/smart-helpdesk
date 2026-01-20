@@ -7,9 +7,9 @@ export interface Ticket {
   location: string;
   category: string;
   status: string;
+  priority?: string;
   createdDate?: string;
   author?: User; 
   assignedUser?: User; 
   lastUpdated?: string;
-
 }
