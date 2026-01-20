@@ -11,40 +11,48 @@ import pl.gogacz.smart_helpdesk.repository.UserRepository;
 public class DataInitializer {
 
     @Bean
-    CommandLineRunner initUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    CommandLineRunner initDatabase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
+            // Jeśli baza pusta, dodaj użytkowników
+            if (userRepository.count() == 0) {
 
-            // 1. ADMIN (Bez zmian)
-            if (userRepository.findByUsername("admin").isEmpty()) {
                 User admin = new User();
                 admin.setUsername("admin");
-                admin.setPassword(passwordEncoder.encode("admin123"));
+                admin.setPassword(passwordEncoder.encode("admin"));
                 admin.setRole("ADMIN");
                 admin.setFirstName("Administrator");
+                admin.setLastName("Systemu");
+                admin.setDefaultPriority("HIGH");
                 userRepository.save(admin);
-            }
 
-            // 2. TOMEK - NOWY PRACOWNIK HELPDESKU (Zamiast Marka)
-            if (userRepository.findByUsername("tomek").isEmpty()) {
-                User tomek = new User();
-                tomek.setUsername("tomek");
-                tomek.setPassword(passwordEncoder.encode("tomek123"));
-                tomek.setRole("HELPDESK"); // <--- TO JEST KLUCZOWE
-                tomek.setFirstName("Tomek");
-                tomek.setLastName("Obsługa");
-                userRepository.save(tomek);
-                System.out.println(">>> UTWORZONO UŻYTKOWNIKA: TOMEK (HELPDESK) <<<");
-            }
+                User marek = new User();
+                marek.setUsername("marek");
+                marek.setPassword(passwordEncoder.encode("marek"));
+                marek.setRole("HELPDESK");
+                marek.setFirstName("Marek");
+                marek.setLastName("Serwisant");
+                marek.setDefaultPriority("NORMAL");
+                userRepository.save(marek);
 
-            // 3. JAN - ZWYKŁY USER
-            if (userRepository.findByUsername("jan").isEmpty()) {
+                User prezes = new User();
+                prezes.setUsername("prezes");
+                prezes.setPassword(passwordEncoder.encode("prezes"));
+                prezes.setRole("BOARD");
+                prezes.setFirstName("Pan");
+                prezes.setLastName("Prezes");
+                prezes.setDefaultPriority("HIGH");
+                userRepository.save(prezes);
+
                 User jan = new User();
                 jan.setUsername("jan");
-                jan.setPassword(passwordEncoder.encode("jan123"));
+                jan.setPassword(passwordEncoder.encode("jan"));
                 jan.setRole("USER");
                 jan.setFirstName("Jan");
                 jan.setLastName("Kowalski");
+                jan.setDefaultPriority("LOW");
                 userRepository.save(jan);
+
+                System.out.println("✅ Baza danych zainicjowana poprawnie!");
             }
         };
     }

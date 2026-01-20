@@ -22,13 +22,11 @@ public class User {
     private String lastName;
     private String email;
     private String department;
-    private String role; // USER, HELPDESK, BOARD, ADMIN
+    private String role;
 
-    // --- NOWE POLE (Dla priorytetów) ---
-    private String defaultPriority; // LOW, NORMAL, HIGH
-    // -----------------------------------
+    // To pole jest kluczowe, bez niego Frontend wariuje
+    private String defaultPriority;
 
-    // --- RELACJE ---
     @OneToMany(mappedBy = "author")
     @JsonIgnore
     private List<Ticket> ticketsCreated;
@@ -37,21 +35,7 @@ public class User {
     @JsonIgnore
     private List<Ticket> ticketsAssigned;
 
-    // --- KONSTRUKTORY ---
-    public User() {
-    }
-
-    public User(String username, String password, String firstName, String lastName, String email, String department, String role) {
-        this.username = username;
-        this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.department = department;
-        this.role = role;
-    }
-
-    // --- GETTERY I SETTERY ---
+    public User() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -68,7 +52,7 @@ public class User {
     public String getLastName() { return lastName; }
     public void setLastName(String lastName) { this.lastName = lastName; }
 
-    // Pomocniczy getter dla Frontendu
+    // Frontend potrzebuje tej metody!
     public String getFullName() {
         return (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
     }
@@ -82,13 +66,12 @@ public class User {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
+    public String getDefaultPriority() { return defaultPriority; }
+    public void setDefaultPriority(String defaultPriority) { this.defaultPriority = defaultPriority; }
+
     public List<Ticket> getTicketsCreated() { return ticketsCreated; }
     public void setTicketsCreated(List<Ticket> ticketsCreated) { this.ticketsCreated = ticketsCreated; }
 
     public List<Ticket> getTicketsAssigned() { return ticketsAssigned; }
     public void setTicketsAssigned(List<Ticket> ticketsAssigned) { this.ticketsAssigned = ticketsAssigned; }
-
-    // --- GETTER I SETTER DLA PRIORYTETU ---
-    public String getDefaultPriority() { return defaultPriority; }
-    public void setDefaultPriority(String defaultPriority) { this.defaultPriority = defaultPriority; }
 }

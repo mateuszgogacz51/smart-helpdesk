@@ -84,7 +84,6 @@ public class TicketController {
         ticket.setCreatedDate(LocalDateTime.now());
         ticket.setLastUpdated(LocalDateTime.now());
 
-        // LOGIKA AUTOMATYCZNEGO PRIORYTETU
         if (author.getDefaultPriority() != null && !author.getDefaultPriority().isEmpty()) {
             ticket.setPriority(author.getDefaultPriority());
         } else if ("BOARD".equals(author.getRole())) {
@@ -96,6 +95,7 @@ public class TicketController {
         return ticketRepository.save(ticket);
     }
 
+    // --- ZMIANA NA hasAnyRole ---
     @PutMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
     public ResponseEntity<Ticket> changeStatus(@PathVariable Long id, @RequestBody String status) {
@@ -107,6 +107,7 @@ public class TicketController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    // --- ZMIANA NA hasAnyRole ---
     @PutMapping("/{id}/priority")
     @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
     public ResponseEntity<Ticket> changePriority(@PathVariable Long id, @RequestBody String priority) {
@@ -118,6 +119,7 @@ public class TicketController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    // --- ZMIANA NA hasAnyRole ---
     @PutMapping("/{id}/assign")
     @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
     public ResponseEntity<Ticket> assignTicket(@PathVariable Long id, @RequestParam Long userId) {
@@ -130,12 +132,12 @@ public class TicketController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    // --- ZMIANA NA hasAnyRole ---
     @PutMapping("/{id}/assign-me")
     @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
     public ResponseEntity<Ticket> assignToMe(@PathVariable Long id, Authentication authentication) {
         String username = authentication.getName();
         User currentUser = userRepository.findByUsername(username).orElseThrow();
-
         return ticketRepository.findById(id).map(ticket -> {
             ticket.setAssignedUser(currentUser);
             ticket.setLastUpdated(LocalDateTime.now());
@@ -152,16 +154,15 @@ public class TicketController {
     public Comment addComment(@PathVariable Long id, @RequestBody String content, Authentication authentication) {
         Ticket ticket = ticketRepository.findById(id).orElseThrow();
         User author = userRepository.findByUsername(authentication.getName()).orElseThrow();
-
         Comment comment = new Comment();
         comment.setContent(content);
         comment.setTicket(ticket);
         comment.setAuthor(author);
         comment.setCreatedDate(LocalDateTime.now());
-
         return commentRepository.save(comment);
     }
 
+    // --- ZMIANA NA hasAnyRole ---
     @GetMapping("/staff")
     @PreAuthorize("hasAnyRole('ADMIN', 'HELPDESK')")
     public List<User> getSupportStaff() {

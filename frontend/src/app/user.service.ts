@@ -8,28 +8,28 @@ import { User } from './user.model';
 })
 export class UserService {
   private apiUrl = 'http://localhost:8080/api/users';
+  private authUrl = 'http://localhost:8080/api/auth/register';
 
   constructor(private http: HttpClient) {}
 
-  // Pobierz wszystkich (dla tabeli admina)
   getAllUsers(): Observable<User[]> {
     return this.http.get<User[]>(this.apiUrl);
   }
 
-  // Zarejestruj nowego pracownika
-  registerUser(user: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, user);
+  registerUser(user: User): Observable<any> {
+    return this.http.post(this.authUrl, user);
   }
 
-  // Usuń pracownika
   deleteUser(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-  // Zmień rolę (np. na BOARD lub HELPDESK)
-  changeRole(id: number, newRole: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}/role`, { role: newRole });
+  changeRole(id: number, role: string): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/${id}/role`, role, {
+       headers: { 'Content-Type': 'application/json' }
+    });
   }
+
   changeDefaultPriority(id: number, priority: string): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/${id}/default-priority`, priority, {
        headers: { 'Content-Type': 'application/json' }

@@ -19,12 +19,14 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
+    // --- ZMIANA NA hasAnyRole ---
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
+    // --- ZMIANA NA hasAnyRole ---
     @PutMapping("/{id}/role")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<User> changeRole(@PathVariable Long id, @RequestBody String role) {
@@ -35,6 +37,7 @@ public class UserController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    // --- ZMIANA NA hasAnyRole ---
     @PutMapping("/{id}/default-priority")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<User> changeDefaultPriority(@PathVariable Long id, @RequestBody String priority) {
@@ -45,6 +48,7 @@ public class UserController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    // --- ZMIANA NA hasAnyRole ---
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {

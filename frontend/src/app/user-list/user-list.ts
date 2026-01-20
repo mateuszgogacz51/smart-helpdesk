@@ -16,10 +16,9 @@ export class UserListComponent implements OnInit {
   users: User[] = [];
   isLoading: boolean = false;
   
-  newUser = {
+  newUser: User = {
     username: '',
     password: '',
-    fullName: '',
     role: 'USER'
   };
 
@@ -39,124 +38,52 @@ export class UserListComponent implements OnInit {
     this.userService.getAllUsers().subscribe({
       next: (data) => {
         this.ngZone.run(() => {
-          setTimeout(() => {
-            this.users = data;
-            this.isLoading = false;
-            this.cdr.detectChanges();
-          }, 0);
-        });
-      },
-      error: (err) => {
-        this.ngZone.run(() => {
-          console.error('Błąd:', err);
+          this.users = data;
           this.isLoading = false;
           this.cdr.detectChanges();
         });
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading = false;
       }
     });
   }
 
   createUser(): void {
     if (!this.newUser.username || !this.newUser.password) {
-      alert('Login i hasło są wymagane!');
+      alert('Brak loginu/hasła');
       return;
     }
-
-    this.isLoading = true;
-
+    if (!this.newUser.defaultPriority) this.newUser.defaultPriority = 'NORMAL';
+    
     this.userService.registerUser(this.newUser).subscribe({
-      next: (createdUser: any) => {
-        this.ngZone.run(() => {
-          setTimeout(() => {
-            this.users.push(createdUser); 
-            alert('Użytkownik dodany pomyślnie!');
-            this.newUser = { username: '', password: '', fullName: '', role: 'USER' };
-            this.isLoading = false;
-            this.cdr.detectChanges();
-          }, 0);
-        });
+      next: (u) => {
+        this.users.push(u);
+        alert('Dodano!');
+        this.newUser = { username: '', password: '', role: 'USER' };
       },
-      error: (err) => {
-        this.ngZone.run(() => {
-          console.error(err);
-          alert('Błąd: ' + (err.error?.message || 'Nie udało się dodać użytkownika'));
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        });
-      }
+      error: () => alert('Błąd dodawania')
     });
   }
 
   deleteUser(id?: number): void {
-    if (!id) return;
-    if (!confirm('Czy na pewno chcesz usunąć tego użytkownika?')) return;
-
-    this.isLoading = true;
-    this.userService.deleteUser(id).subscribe({
-      next: () => {
-        this.ngZone.run(() => {
-          setTimeout(() => {
-            this.users = this.users.filter(u => u.id !== id);
-            this.isLoading = false;
-            this.cdr.detectChanges();
-          }, 0);
-        });
-      },
-      error: (err) => {
-        this.ngZone.run(() => {
-          alert('Nie można usunąć użytkownika.');
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        });
-      }
-    });
+    if(!id) return;
+    if(confirm('Usunąć?')) {
+      this.userService.deleteUser(id).subscribe(() => {
+        this.users = this.users.filter(u => u.id !== id);
+      });
+    }
   }
 
   updateRole(user: User, event: Event): void {
-    const selectElement = event.target as HTMLSelectElement;
-    const newRole = selectElement.value;
-
-    if (!user.id) return;
-
-    this.userService.changeRole(user.id, newRole).subscribe({
-      next: () => {
-        this.ngZone.run(() => {
-            console.log(`Zmieniono rolę ${user.username} na ${newRole}`);
-            user.role = newRole;
-            this.cdr.detectChanges();
-        });
-      },
-      error: (err) => {
-        this.ngZone.run(() => {
-            alert('Błąd zmiany roli');
-            this.loadUsers(); 
-        });
-      }
-    });
+    const val = (event.target as HTMLSelectElement).value;
+    if(user.id) this.userService.changeRole(user.id, val).subscribe();
   }
 
-  // --- NOWA METODA ---
   updateDefaultPriority(user: User, event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    const newPriority = select.value;
-
-    if (!user.id) return;
-
-    this.userService.changeDefaultPriority(user.id, newPriority).subscribe({
-      next: () => {
-        this.ngZone.run(() => {
-          console.log(`Zmieniono priorytet ${user.username} na ${newPriority}`);
-          user.defaultPriority = newPriority;
-          this.cdr.detectChanges();
-        });
-      },
-      error: (err) => {
-        this.ngZone.run(() => {
-          alert('Błąd zmiany priorytetu');
-          this.loadUsers();
-        });
-      }
-    });
+    const val = (event.target as HTMLSelectElement).value;
+    if(user.id) this.userService.changeDefaultPriority(user.id, val).subscribe();
   }
 
   goBack(): void {

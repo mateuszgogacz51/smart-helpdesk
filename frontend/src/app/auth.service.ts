@@ -12,47 +12,40 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   login(username: string, password: string) {
-    // Generujemy token Basic Auth (Base64)
+    // 1. Zakoduj hasło
     const token = btoa(username + ':' + password);
+    
+    // 2. Dodaj nagłówek
     const headers = new HttpHeaders({
       Authorization: 'Basic ' + token
     });
 
-    // Próbujemy pobrać bilety, aby zweryfikować poprawność hasła
-    return this.http.get(this.baseUrl + '/tickets', { headers }).pipe(
-      map(response => {
-        // SUKCES: Zapisujemy token i dane użytkownika
+    // 3. UWAGA: TU MA BYĆ .get() !!!
+    // Zmieniamy to, aby pasowało do Backendu.
+        return this.http.get<any>(this.baseUrl + '/auth/login', { headers }).pipe(      map(response => {
         localStorage.setItem('username', username);
         localStorage.setItem('token', token);
         
-        // --- PROSTA LOGIKA RÓL (Zaktualizowana) ---
-        let role = 'USER';
-        
-        // Tutaj ustalamy role "na sztywno" na podstawie loginu (dopóki backend nie zwróci roli)
-        if (username === 'admin') role = 'ADMIN';
-        if (username === 'marek' || username === 'helpdesk') role = 'HELPDESK';
-        if (username === 'prezes') role = 'BOARD'; // <--- DODANE DLA PREZESA
-        
-        localStorage.setItem('role', role);
+        if (response.role) {
+            localStorage.setItem('role', response.role);
+        } else {
+            localStorage.setItem('role', 'USER');
+        }
         return response;
       })
     );
   }
 
   logout() {
-    localStorage.removeItem('username');
-    localStorage.removeItem('role');
-    localStorage.removeItem('token');
+    localStorage.clear();
   }
-
-  // --- METODY POMOCNICZE ---
 
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
-  saveToken(token: string): void {
-    localStorage.setItem('token', token);
+  getRole(): string {
+    return localStorage.getItem('role') || 'USER';
   }
 
   getUsername(): string {
@@ -61,10 +54,5 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return !!this.getToken();
-  }
-
-  // --- BRAKUJĄCA METODA (TO NAPRAWI BŁĄD) ---
-  getRole(): string {
-    return localStorage.getItem('role') || 'USER';
   }
 }

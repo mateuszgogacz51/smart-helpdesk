@@ -84,7 +84,11 @@ export class DashboardComponent implements OnInit {
 
   loadStats(): void {
     this.ticketService.getStats().subscribe({
-      next: (data) => { this.stats = data; this.cdr.detectChanges(); }
+      // --- POPRAWKA TUTAJ: dodano ": any" ---
+      next: (data: any) => { 
+        this.stats = data; 
+        this.cdr.detectChanges(); 
+      }
     });
   }
 
