@@ -1,122 +1,120 @@
-/* Tło całej strony - jasny gradient */
-.add-ticket-container {
-  min-height: 100vh;
+/* Importujemy styl kontenera, żeby był identyczny jak wszędzie */
+.dashboard-container {
+  max-width: 800px; /* Węższy dla formularza, wygląda lepiej */
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: 'Segoe UI', sans-serif;
+  animation: slideUp 0.4s ease-out;
+}
+
+.details-header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin-bottom: 25px;
 }
 
-/* Karta formularza */
-.ticket-card {
-  background: white;
-  width: 100%;
-  max-width: 600px;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  position: relative;
-}
-
-/* Nagłówek */
-.ticket-card h2 {
-  margin-top: 10px;
-  margin-bottom: 30px;
+.section-title {
+  font-size: 1.5rem;
   color: #2c3e50;
-  text-align: center;
-  font-size: 24px;
+  margin: 0;
 }
 
-/* Przycisk powrotu */
 .back-btn {
-  background: none;
-  border: none;
-  color: #7f8c8d;
+  background: white;
+  border: 1px solid #ddd;
+  padding: 10px 20px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  padding: 0;
-  margin-bottom: 10px;
-  display: inline-block;
-  transition: color 0.3s;
+  color: #555;
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
 .back-btn:hover {
-  color: #34495e;
-  text-decoration: underline;
+  background: #f1f1f1;
 }
 
-/* Pola formularza */
+/* KARTA FORMULARZA */
+.card-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05); /* Nieco większy cień dla formularza */
+  border: 1px solid rgba(0,0,0,0.01);
+}
+
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
-  color: #34495e;
   font-weight: 600;
-  font-size: 14px;
+  color: #34495e;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+/* UKŁAD DWUKOLUMNOWY DLA SELECTÓW */
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+
+.half {
+  flex: 1;
+}
+
+/* STYLOWANIE PÓL (Identiko jak w ticket-details) */
+.styled-input, .styled-select {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #dfe6e9;
-  border-radius: 6px;
-  font-size: 15px;
-  box-sizing: border-box; /* Ważne! */
-  transition: border 0.3s, box-shadow 0.3s;
-  background-color: #fdfdfd;
+  padding: 14px;
+  border: 1px solid #dde1e3;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fdfdfd;
+  transition: all 0.2s;
+  box-sizing: border-box;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.styled-input:focus, .styled-select:focus {
+  background: white;
   border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
   outline: none;
 }
 
-/* Przycisk wysyłania */
-.submit-btn {
-  width: 100%;
-  padding: 15px;
-  background-color: #27ae60;
+.form-actions {
+  margin-top: 35px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.save-btn-large {
+  background: #2ecc71; /* Zielony */
   color: white;
-  font-size: 16px;
-  font-weight: bold;
   border: none;
-  border-radius: 6px;
+  padding: 14px 40px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.1s;
-  margin-top: 10px;
+  transition: transform 0.1s, background 0.2s;
+  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
 }
 
-.submit-btn:hover {
-  background-color: #219150;
+.save-btn-large:hover {
+  background: #27ae60;
+  transform: translateY(-2px);
 }
 
-.submit-btn:active {
-  transform: scale(0.98);
+.save-btn-large:active {
+  transform: translateY(0);
 }
 
-.submit-btn:disabled {
-  background-color: #95a5a6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Komunikaty błędów */
-.error-msg {
-  color: #e74c3c;
-  background-color: #fadbd8;
-  padding: 10px;
-  border-radius: 6px;
-  margin-top: 15px;
-  text-align: center;
-  border: 1px solid #f5b7b1;
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }

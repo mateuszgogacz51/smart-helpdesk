@@ -1,118 +1,109 @@
-<div class="details-container" *ngIf="ticket; else loadingTemplate">
+<div class="dashboard-container" *ngIf="ticket; else loadingTemplate">
   
   <header class="details-header">
     <button class="back-btn" (click)="goBack()">← Wróć</button>
-    <div class="header-info">
-      <span class="ticket-id">#{{ ticket.id }}</span>
-      <span class="created-date">Zgłoszono: {{ ticket.createdDate | date:'medium' }}</span>
-    </div>
+    <h2 class="section-title">Szczegóły zgłoszenia #{{ ticket.id }}</h2>
   </header>
 
   <div class="content-grid">
     
-    <main class="main-content">
-      <section class="ticket-card">
-        <h1>{{ ticket.title }}</h1>
+    <main class="main-column">
+      
+      <section class="card-panel ticket-card">
+        <div class="card-header-row">
+          <h1 class="ticket-title">{{ ticket.title }}</h1>
+          <span class="date-badge">{{ ticket.createdDate | date:'medium' }}</span>
+        </div>
         <div class="description-box">
           <p>{{ ticket.description }}</p>
         </div>
       </section>
 
-      <section class="comments-section">
-        <h3>💬 Komentarze ({{ comments.length }})</h3>
+      <section class="card-panel comments-section">
+        <h3 class="panel-title">💬 Komentarze ({{ comments.length }})</h3>
+        
         <div class="comments-list">
           <div class="comment-item" *ngFor="let comment of comments">
-            <div class="comment-header">
+            <div class="comment-meta">
               <strong>{{ comment.author?.username }}</strong>
               <span class="comment-date">{{ comment.createdDate | date:'short' }}</span>
             </div>
             <div class="comment-body">{{ comment.content }}</div>
           </div>
-          <div *ngIf="comments.length === 0" class="no-comments">Brak komentarzy.</div>
+          <div *ngIf="comments.length === 0" class="empty-state">Brak komentarzy. Bądź pierwszy!</div>
         </div>
-        <div class="add-comment-box">
-          <textarea [(ngModel)]="newCommentContent" placeholder="Napisz komentarz..." rows="3"></textarea>
-          <button class="send-btn" (click)="addComment()">Wyślij</button>
+
+        <div class="add-comment-area">
+          <textarea [(ngModel)]="newCommentContent" placeholder="Napisz komentarz..." rows="3" class="styled-input"></textarea>
+          <button class="save-btn" (click)="addComment()">Wyślij komentarz</button>
         </div>
       </section>
     </main>
 
-    <aside class="info-sidebar">
+    <aside class="sidebar-column">
       
-      <div class="info-group">
-        <label>Status:</label>
-        
-        <select *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'" 
-                [ngModel]="ticket.status" 
-                (change)="changeStatus($event)"
-                class="status-select">
-          <option value="OPEN">Nowe</option>
-          <option value="IN_PROGRESS">W trakcie</option>
-          <option value="CLOSED">Zamknięte</option>
-        </select>
+      <div class="card-panel info-card">
+        <h3 class="panel-title">Informacje</h3>
 
-        <div *ngIf="currentUserRole !== 'ADMIN' && currentUserRole !== 'HELPDESK'" class="value">
-          <span class="status-badge" [ngClass]="ticket.status">{{ ticket.status }}</span>
-        </div>
-      </div>
-
-      <div class="info-group" *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
-        <label>Priorytet (Edycja):</label>
-        <select [ngModel]="ticket.priority" 
-                (change)="updatePriority($event)" 
-                [class]="'priority-select ' + ticket.priority">
-          <option value="LOW">Niski</option>
-          <option value="NORMAL">Normalny</option>
-          <option value="HIGH">🔥 PILNE</option>
-        </select>
-      </div>
-      <div class="info-group">
-        <label>Kategoria:</label>
-        <div class="value">{{ ticket.category }}</div>
-      </div>
-
-      <div class="info-group">
-        <label>Lokalizacja:</label>
-        <div class="value">{{ ticket.location }}</div>
-      </div>
-
-      <div class="info-group">
-        <label>Zgłaszający:</label>
-        <div class="value user-value">👤 {{ ticket.author?.username }}</div>
-      </div>
-
-      <div class="info-group">
-        <label>Przypisano do:</label>
-        
-        <div *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
-           <select [ngModel]="ticket.assignedUser?.id" (change)="assignTicket($event)" class="assign-select">
-             <option [ngValue]="null">-- Nie przypisano --</option>
-             <option *ngFor="let staff of supportStaff" [value]="staff.id">
-               {{ staff.username }} ({{ staff.role }})
-             </option>
-           </select>
-           <button class="assign-me-btn" (click)="assignToMe()">Biorę to!</button>
+        <div class="info-group">
+          <label>Status</label>
+          <select *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'" 
+                  [ngModel]="ticket.status" 
+                  (change)="changeStatus($event)"
+                  class="styled-select status-select">
+            <option value="OPEN">Nowe</option>
+            <option value="IN_PROGRESS">W trakcie</option>
+            <option value="CLOSED">Zamknięte</option>
+          </select>
+          <div *ngIf="currentUserRole !== 'ADMIN' && currentUserRole !== 'HELPDESK'">
+            <span class="status-badge" [ngClass]="ticket.status">{{ ticket.status }}</span>
+          </div>
         </div>
 
-        <div *ngIf="currentUserRole !== 'ADMIN' && currentUserRole !== 'HELPDESK'" class="value">
-          <span *ngIf="ticket.assignedUser">{{ ticket.assignedUser?.username }}</span>
-          <span *ngIf="!ticket.assignedUser" style="color: #bdc3c7;">Oczekuje na przypisanie</span>
+        <div class="info-group" *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
+          <label>Priorytet</label>
+          <select [ngModel]="ticket.priority" 
+                  (change)="updatePriority($event)" 
+                  class="styled-select">
+            <option value="LOW">Niski</option>
+            <option value="NORMAL">Normalny</option>
+            <option value="HIGH">🔥 PILNE</option>
+          </select>
         </div>
-      </div>
 
-      <div class="info-footer">
-        <small>Ostatnia zmiana: {{ ticket.lastUpdated | date:'short' }}</small>
+        <div class="info-group">
+          <label>Kategoria</label>
+          <div class="value-text">{{ ticket.category }}</div>
+        </div>
+
+        <div class="info-group">
+          <label>Zgłaszający</label>
+          <div class="value-text user-value">👤 {{ ticket.author?.username }}</div>
+        </div>
+
+        <div class="info-group">
+          <label>Przypisano do</label>
+          <div *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
+             <select [ngModel]="ticket.assignedUser?.id" (change)="assignTicket($event)" class="styled-select">
+               <option [ngValue]="null">-- Brak --</option>
+               <option *ngFor="let staff of supportStaff" [value]="staff.id">
+                 {{ staff.username }}
+               </option>
+             </select>
+             <button class="action-btn-small" (click)="assignToMe()">Przypisz mnie</button>
+          </div>
+          <div *ngIf="currentUserRole !== 'ADMIN' && currentUserRole !== 'HELPDESK'">
+            <span class="value-text">{{ ticket.assignedUser?.username || 'Oczekuje...' }}</span>
+          </div>
+        </div>
       </div>
 
     </aside>
-
   </div>
 </div>
 
 <ng-template #loadingTemplate>
-  <div style="text-align: center; margin-top: 50px; color: #555;">
-    <h2>⏳ Ładowanie szczegółów zgłoszenia...</h2>
-    <p>Pobieram dane z serwera. Proszę czekać.</p>
-    <button (click)="goBack()" style="margin-top: 20px; padding: 10px 20px; cursor: pointer;">← Anuluj i wróć</button>
+  <div class="loading-state">
+    <h2>⏳ Ładowanie danych...</h2>
   </div>
 </ng-template>

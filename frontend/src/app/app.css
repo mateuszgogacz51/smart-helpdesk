@@ -1,153 +1,76 @@
-/* 1. GŁÓWNE USTAWIENIA STRONY */
-:host {
-  display: block;
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* Nowoczesna czcionka */
-  color: #333;
-  background-color: #f8f9fa; /* Delikatne szare tło całej strony */
+/* Główny układ */
+.app-container {
   min-height: 100vh;
-  padding-bottom: 50px;
+  display: flex;
+  flex-direction: column;
 }
 
-h1, h3 {
-  color: #2c3e50;
-  margin-bottom: 15px;
+/* Górna belka nawigacyjna */
+.navbar {
+  background-color: var(--dark-bg); /* Używa zmiennej z styles.css */
+  color: white;
+  padding: 0 20px;
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* 2. KONTENER FORMULARZA */
-div[style*="background: #e3f2fd"] {
-  background: white !important; /* Zmieniamy na biały dla czystości */
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Cień */
-  border: 1px solid #eee;
-  border-radius: 15px !important; /* Mocne zaokrąglenie */
-  transition: transform 0.2s;
+/* Logo / Nazwa aplikacji */
+.navbar-brand {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  text-decoration: none;
 }
 
-div[style*="background: #e3f2fd"]:hover {
-  transform: translateY(-2px); /* Lekkie uniesienie po najechaniu */
+/* Prawa strona belki (Linki) */
+.navbar-nav {
+  display: flex;
+  gap: 15px;
+  align-items: center;
 }
 
-/* 3. INPUTY I SELECTY */
-input, select {
-  border: 2px solid #e0e0e0 !important;
-  border-radius: 8px !important; /* Zaokrąglone rogi */
-  padding: 12px !important;
-  outline: none;
-  transition: all 0.3s ease;
-  background-color: #fff;
+.nav-link {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+  font-size: 0.95rem;
 }
 
-input:focus, select:focus {
-  border-color: #2196F3 !important; /* Niebieska ramka przy pisaniu */
-  box-shadow: 0 0 8px rgba(33, 150, 243, 0.2);
-}
-
-/* 4. PRZYCISKI (Wszystkie) */
-button {
-  border-radius: 8px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.5px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-button:hover {
-  transform: translateY(-1px);
-  filter: brightness(110%);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-button:active {
-  transform: translateY(1px);
-}
-
-/* 5. PASEK FILTRÓW */
-button[style*="border: 1px solid"] {
-  border-radius: 20px !important; /* Pastylkowy kształt filtrów */
-  border-width: 0 !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
-}
-
-/* 6. TABELA */
-table {
-  border-collapse: separate !important;
-  border-spacing: 0;
-  border: none !important;
-  border-radius: 12px;
-  overflow: hidden; /* Żeby rogi były zaokrąglone */
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-  width: 90% !important; /* Szersza tabela */
-  background: white;
-}
-
-thead {
-  background-color: #2c3e50 !important;
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
   color: white;
 }
 
-th {
-  padding: 15px !important;
-  text-transform: uppercase;
-  font-size: 0.85em;
-  letter-spacing: 1px;
-  border: none !important;
+/* Przycisk Wyloguj */
+.logout-btn {
+  background-color: var(--danger-red);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-left: 10px;
 }
 
-td {
-  border-bottom: 1px solid #eee !important;
-  border-right: none !important;
-  border-left: none !important;
-  border-top: none !important;
-  padding: 12px 15px !important;
-  transition: background 0.2s;
+.logout-btn:hover {
+  background-color: var(--danger-hover);
 }
 
-tr:hover td {
-  background-color: #f1f7ff; /* Podświetlenie wiersza */
-}
-
-/* 7. OKNO MODALNE (To co robiliśmy wcześniej) */
-.modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Ciemniejsze tło */
-    backdrop-filter: blur(5px); /* Rozmycie tła pod spodem! (Efekt szkła) */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    animation: fadeIn 0.3s;
-}
-
-.modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 20px; /* Bardzo zaokrąglone */
-    width: 50%;
-    max-width: 600px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-    position: relative;
-    transform: scale(0.9);
-    animation: popIn 0.3s forwards;
-}
-
-.close-btn {
-    top: 15px;
-    right: 20px;
-    font-size: 28px;
-    color: #aaa;
-    transition: color 0.2s;
-}
-
-.close-btn:hover {
-    color: #ff4444;
-}
-
-/* Animacje */
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes popIn { 
-    from { transform: scale(0.8); opacity: 0; } 
-    to { transform: scale(1); opacity: 1; } 
+/* Stopka (opcjonalnie) */
+.footer {
+  margin-top: auto;
+  text-align: center;
+  padding: 20px;
+  color: var(--text-grey);
+  font-size: 0.9rem;
 }

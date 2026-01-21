@@ -1,45 +1,64 @@
-<div class="container">
-  <h2>Zarządzanie Użytkownikami</h2>
+<div class="dashboard-container">
+  
+  <header class="details-header">
+    <button class="back-btn" (click)="goBack()">← Wróć do Dashboardu</button>
+    <h2 class="section-title">👥 Zarządzanie Użytkownikami</h2>
+  </header>
 
-  <table class="user-table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Login</th>
-        <th>Rola</th>
-        <th>Akcje</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of users">
-        <td>{{ user.id }}</td>
-        <td>{{ user.username }}</td>
-        <td>
-          <span [class]="'badge ' + user.role">{{ user.role }}</span>
-        </td>
-        <td>
-          <button (click)="editUser(user)">Edytuj</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="user-card">
+    <table class="user-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Login</th>
+          <th>Rola</th>
+          <th>Imię i Nazwisko</th>
+          <th>Akcje</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>#{{ user.id }}</td>
+          <td><strong>{{ user.username }}</strong></td>
+          <td>
+            <span [class]="'status-badge ' + user.role">{{ user.role }}</span>
+          </td>
+          <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td>
+            <button class="action-btn" (click)="editUser(user)">✏️ Edytuj</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-  <div *ngIf="selectedUser" class="edit-box">
-    <h3>Edytujesz: {{ selectedUser.username }}</h3>
-    
-    <label>Rola:</label>
-    <select [(ngModel)]="newRole">
-      <option value="USER">USER</option>
-      <option value="HELPDESK">HELPDESK</option>
-      <option value="ADMIN">ADMIN</option>
-    </select>
-
-    <label>Nowe Hasło (opcjonalne):</label>
-    <input type="password" [(ngModel)]="newPassword" placeholder="Wpisz by zmienić">
-
-    <div class="actions">
-      <button (click)="saveChanges()">Zapisz</button>
-      <button (click)="selectedUser = null" class="cancel">Anuluj</button>
+    <div *ngIf="users.length === 0" style="text-align: center; padding: 20px; color: #888;">
+      Brak użytkowników do wyświetlenia lub trwa ładowanie...
     </div>
   </div>
+
+  <div *ngIf="selectedUser" class="modal-overlay">
+    <div class="edit-box">
+      <h3>Edycja: {{ selectedUser.username }}</h3>
+      
+      <div class="form-group">
+        <label>Rola:</label>
+        <select [(ngModel)]="newRole" class="styled-input">
+          <option value="USER">USER</option>
+          <option value="HELPDESK">HELPDESK</option>
+          <option value="ADMIN">ADMIN</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Nowe hasło (opcjonalne):</label>
+        <input type="password" [(ngModel)]="newPassword" placeholder="Wpisz nowe hasło..." class="styled-input">
+      </div>
+
+      <div class="actions">
+        <button class="save-btn" (click)="saveChanges()">💾 Zapisz</button>
+        <button class="cancel-btn" (click)="selectedUser = null">Anuluj</button>
+      </div>
+    </div>
+  </div>
+
 </div>

@@ -1,14 +1,43 @@
-/* RESET STYLÓW */
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  overflow: hidden; /* Ważne: blokujemy scroll całej strony */
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  box-sizing: border-box;
+/* Definicja kolorów - Twoja paleta */
+:root {
+  --primary-blue: #3498db;       /* Niebieski (przyciski, aktywne elementy) */
+  --primary-hover: #2980b9;
+  
+  --success-green: #2ecc71;      /* Zielony (Zapisz, Otwarte) */
+  --success-hover: #27ae60;
+  
+  --warning-orange: #f39c12;     /* Pomarańczowy (W trakcie, Helpdesk) */
+  
+  --danger-red: #e74c3c;         /* Czerwony (Anuluj, Admin, Wysoki priorytet) */
+  --danger-hover: #c0392b;
+  
+  --dark-bg: #2c3e50;            /* Ciemny (Belki, Nagłówki, Tekst główny) */
+  --light-bg: #f4f7f6;           /* Jasne szare tło całej strony */
+  --card-bg: #ffffff;            /* Białe karty */
+  
+  --text-grey: #95a5a6;          /* Szary tekst */
+  --border-color: #dfe6e9;
 }
 
-*, *:before, *:after {
-  box-sizing: inherit;
+/* Reset i Baza */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--light-bg); /* To sprawi, że tło wszędzie będzie szare */
+  color: var(--dark-bg);
+}
+
+/* Ujednolicone przyciski dla całej aplikacji */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Styl dla kart (używany w dashboard, add-ticket, details) */
+.card-panel, .dashboard-card, .ticket-card, .login-container, .user-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.02);
 }

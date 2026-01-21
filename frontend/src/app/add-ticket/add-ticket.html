@@ -1,44 +1,46 @@
-<div class="add-ticket-container">
-  <div class="ticket-card">
-    <button class="back-btn" (click)="goBack()">← Anuluj i wróć</button>
-    
-    <h2>Nowe Zgłoszenie</h2>
+<div class="dashboard-container">
+  
+  <header class="details-header">
+    <button class="back-btn" (click)="goBack()">← Anuluj</button>
+    <h2 class="section-title">📝 Nowe Zgłoszenie</h2>
+  </header>
 
+  <div class="card-panel form-card">
     <div class="form-group">
-      <label>Tytuł zgłoszenia *</label>
-      <input type="text" [(ngModel)]="ticketData.title" placeholder="Np. Awaria drukarki">
+      <label>Tytuł zgłoszenia</label>
+      <input type="text" [(ngModel)]="ticket.title" placeholder="Krótko opisz problem..." class="styled-input">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group half">
+        <label>Kategoria</label>
+        <select [(ngModel)]="ticket.category" class="styled-select">
+          <option value="" disabled selected>-- Wybierz --</option>
+          <option value="IT">IT / Sprzęt</option>
+          <option value="SOFTWARE">Oprogramowanie</option>
+          <option value="HR">Kadry / HR</option>
+          <option value="OTHER">Inne</option>
+        </select>
+      </div>
+
+      <div class="form-group half">
+        <label>Priorytet</label>
+        <select [(ngModel)]="ticket.priority" class="styled-select">
+          <option value="LOW">Niski</option>
+          <option value="NORMAL">Normalny</option>
+          <option value="HIGH">🔥 PILNE</option>
+        </select>
+      </div>
     </div>
 
     <div class="form-group">
-      <label>Kategoria</label>
-      <select [(ngModel)]="ticketData.category">
-        <option value="IT">IT / Komputery</option>
-        <option value="MAINTENANCE">Utrzymanie Ruchu / Naprawy</option>
-        <option value="HR">Kadry / HR</option>
-        <option value="OTHER">Inne</option>
-      </select>
+      <label>Opis szczegółowy</label>
+      <textarea [(ngModel)]="ticket.description" rows="6" placeholder="Opisz dokładnie co się stało..." class="styled-input"></textarea>
     </div>
 
-    <div class="form-group">
-      <label>Lokalizacja (opcjonalnie)</label>
-      <input type="text" [(ngModel)]="ticketData.location" placeholder="Np. Biuro 102, Magazyn A">
+    <div class="form-actions">
+      <button class="save-btn-large" (click)="submitTicket()">Wyślij zgłoszenie</button>
     </div>
-
-    <div class="form-group">
-      <label>Opis problemu *</label>
-      <textarea [(ngModel)]="ticketData.description" rows="5" placeholder="Opisz dokładnie, co się stało..."></textarea>
-    </div>
-
-    <button 
-      class="submit-btn" 
-      (click)="submitTicket()" 
-      [disabled]="isSubmitting">
-      
-      <span *ngIf="!isSubmitting">Wyślij zgłoszenie</span>
-      <span *ngIf="isSubmitting">Wysyłanie... ⏳</span>
-      
-    </button>
-
-    <p class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</p>
   </div>
+
 </div>

@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { TicketService } from '../ticket.service';
+import { Router } from '@angular/router';
+import { Ticket } from '../ticket.model'; // <--- 1. Importujemy interfejs Ticket
 
 @Component({
   selector: 'app-add-ticket',
@@ -12,37 +13,33 @@ import { TicketService } from '../ticket.service';
   styleUrls: ['./add-ticket.css']
 })
 export class AddTicketComponent {
-  ticketData = {
+  
+  // <--- 2. Dodajemy typ ': Ticket' i uzupełniamy brakujące pola (status, location)
+  ticket: Ticket = {
     title: '',
     description: '',
-    category: 'IT',
-    location: ''
+    category: '', 
+    priority: 'NORMAL',
+    status: 'OPEN',         // Wymagane przez model (domyślnie otwarte)
+    location: 'Brak danych' // Wymagane przez model (możesz tu wpisać cokolwiek lub dodać input w HTML)
   };
-
-  isSubmitting = false;
-  errorMessage = '';
 
   constructor(private ticketService: TicketService, private router: Router) {}
 
   submitTicket() {
-    if (!this.ticketData.title || !this.ticketData.description) {
-      this.errorMessage = 'Tytuł i opis są wymagane!';
+    if (!this.ticket.title.trim() || !this.ticket.category) {
+      alert('Proszę uzupełnić tytuł i wybrać kategorię!');
       return;
     }
 
-    this.isSubmitting = true;
-    this.errorMessage = '';
-
-    // TUTAJ POPRAWKA: Dodano "as any", żeby TypeScript nie krzyczał o brakujące ID/Status
-    this.ticketService.createTicket(this.ticketData as any).subscribe({
+    this.ticketService.createTicket(this.ticket).subscribe({
       next: () => {
-        alert('Zgłoszenie zostało wysłane pomyślnie!');
+        alert('Zgłoszenie zostało pomyślnie dodane!');
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        console.error(err);
-        this.isSubmitting = false;
-        this.errorMessage = 'Nie udało się wysłać zgłoszenia. Sprawdź konsolę.';
+        console.error('Błąd dodawania zgłoszenia:', err);
+        alert('Wystąpił błąd podczas wysyłania zgłoszenia. Sprawdź konsolę.');
       }
     });
   }

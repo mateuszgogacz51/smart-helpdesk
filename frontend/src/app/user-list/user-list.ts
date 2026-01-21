@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router'; // Do nawigacji
 
 @Component({
   selector: 'app-user-list',
@@ -16,7 +17,11 @@ export class UserListComponent implements OnInit {
   newPassword = '';
   newRole = '';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef, // Do odświeżania widoku
+    private router: Router          // Do przycisku "Wróć"
+  ) {}
 
   ngOnInit() {
     this.loadUsers();
@@ -24,15 +29,18 @@ export class UserListComponent implements OnInit {
 
   loadUsers() {
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
-      next: (data) => this.users = data,
-      error: (err) => console.error(err)
+      next: (data) => {
+        this.users = data;
+        this.cdr.detectChanges(); // <--- Ważne: wymusza pokazanie danych
+      },
+      error: (err) => console.error('Błąd pobierania użytkowników:', err)
     });
   }
 
   editUser(user: any) {
     this.selectedUser = user;
     this.newRole = user.role;
-    this.newPassword = ''; // Hasło puste na start
+    this.newPassword = ''; 
   }
 
   saveChanges() {
@@ -48,9 +56,13 @@ export class UserListComponent implements OnInit {
         next: () => {
           alert('Zapisano zmiany!');
           this.selectedUser = null;
-          this.loadUsers();
+          this.loadUsers(); // Przeładuj listę
         },
         error: (err) => alert('Błąd zapisu')
       });
+  }
+
+  goBack() {
+    this.router.navigate(['/dashboard']);
   }
 }
