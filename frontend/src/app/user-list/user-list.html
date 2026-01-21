@@ -1,86 +1,45 @@
-<div class="users-container">
-  
-  <div class="header-bar">
-    <button class="back-btn" (click)="goBack()">← Wróć do Dashboardu</button>
-    <h2>Zarządzanie Użytkownikami</h2>
-  </div>
+<div class="container">
+  <h2>Zarządzanie Użytkownikami</h2>
 
-  <div class="content-wrapper">
+  <table class="user-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Login</th>
+        <th>Rola</th>
+        <th>Akcje</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>
+          <span [class]="'badge ' + user.role">{{ user.role }}</span>
+        </td>
+        <td>
+          <button (click)="editUser(user)">Edytuj</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="selectedUser" class="edit-box">
+    <h3>Edytujesz: {{ selectedUser.username }}</h3>
     
-    <div class="card add-user-section">
-      <h3>➕ Dodaj nowego pracownika</h3>
-      <div class="form-row">
-        <input type="text" placeholder="Login *" [(ngModel)]="newUser.username">
-        <input type="password" placeholder="Hasło *" [(ngModel)]="newUser.password">
-        <input type="text" placeholder="Imię i Nazwisko" [(ngModel)]="newUser.fullName">
-        
-        <select [(ngModel)]="newUser.role">
-          <option value="USER">Zwykły User</option>
-          <option value="HELPDESK">Helpdesk (Serwisant)</option>
-          <option value="BOARD">Zarząd (VIP)</option>
-          <option value="ADMIN">Administrator</option>
-        </select>
-        
-        <button class="save-btn" (click)="createUser()" [disabled]="isLoading">
-          {{ isLoading ? '...' : 'Zapisz' }}
-        </button>
-      </div>
+    <label>Rola:</label>
+    <select [(ngModel)]="newRole">
+      <option value="USER">USER</option>
+      <option value="HELPDESK">HELPDESK</option>
+      <option value="ADMIN">ADMIN</option>
+    </select>
+
+    <label>Nowe Hasło (opcjonalne):</label>
+    <input type="password" [(ngModel)]="newPassword" placeholder="Wpisz by zmienić">
+
+    <div class="actions">
+      <button (click)="saveChanges()">Zapisz</button>
+      <button (click)="selectedUser = null" class="cancel">Anuluj</button>
     </div>
-
-    <div class="card list-section">
-      <h3>👥 Lista pracowników ({{ users.length }})</h3>
-      
-      <div *ngIf="isLoading" style="text-align: center; padding: 20px; color: #7f8c8d;">
-        ⏳ Pobieranie danych...
-      </div>
-
-      <table class="users-table" *ngIf="!isLoading">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Login</th>
-            <th>Rola</th>
-            <th>Domyślny Priorytet</th> <th>Akcje</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let user of users">
-            <td>#{{ user.id }}</td>
-            <td style="font-weight: bold;">
-              {{ user.username }}
-              <div style="font-size: 11px; color: #95a5a6; font-weight: normal;">{{ user.fullName }}</div>
-            </td>
-            
-            <td>
-              <select [ngModel]="user.role" (change)="updateRole(user, $event)" 
-                      [class]="'role-select ' + user.role">
-                <option value="USER">USER</option>
-                <option value="HELPDESK">HELPDESK</option>
-                <option value="BOARD">BOARD</option>
-                <option value="ADMIN">ADMIN</option>
-              </select>
-            </td>
-
-            <td>
-              <select [ngModel]="user.defaultPriority || 'NORMAL'" 
-                      (change)="updateDefaultPriority(user, $event)"
-                      [class]="'priority-select ' + (user.defaultPriority || 'NORMAL')">
-                <option value="LOW">Niski</option>
-                <option value="NORMAL">Normalny</option>
-                <option value="HIGH">🔥 PILNE</option>
-              </select>
-            </td>
-
-            <td>
-              <button class="delete-btn" (click)="deleteUser(user.id)">🗑 Usuń</button>
-            </td>
-          </tr>
-          <tr *ngIf="users.length === 0">
-            <td colspan="5" style="text-align: center; padding: 20px;">Brak użytkowników</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
   </div>
 </div>

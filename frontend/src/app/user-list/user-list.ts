@@ -1,9 +1,7 @@
-import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { UserService } from '../user.service';
-import { User } from '../user.model';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-list',
@@ -13,80 +11,46 @@ import { Router } from '@angular/router';
   styleUrls: ['./user-list.css']
 })
 export class UserListComponent implements OnInit {
-  users: User[] = [];
-  isLoading: boolean = false;
-  
-  newUser: User = {
-    username: '',
-    password: '',
-    role: 'USER'
-  };
+  users: any[] = [];
+  selectedUser: any = null;
+  newPassword = '';
+  newRole = '';
 
-  constructor(
-    private userService: UserService, 
-    private router: Router,
-    private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
-  ) {}
+  constructor(private http: HttpClient) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadUsers();
   }
 
-  loadUsers(): void {
-    this.isLoading = true;
-    this.userService.getAllUsers().subscribe({
-      next: (data) => {
-        this.ngZone.run(() => {
-          this.users = data;
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        });
-      },
-      error: (err) => {
-        console.error(err);
-        this.isLoading = false;
-      }
+  loadUsers() {
+    this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
+      next: (data) => this.users = data,
+      error: (err) => console.error(err)
     });
   }
 
-  createUser(): void {
-    if (!this.newUser.username || !this.newUser.password) {
-      alert('Brak loginu/hasła');
-      return;
+  editUser(user: any) {
+    this.selectedUser = user;
+    this.newRole = user.role;
+    this.newPassword = ''; // Hasło puste na start
+  }
+
+  saveChanges() {
+    if (!this.selectedUser) return;
+
+    const payload: any = { role: this.newRole };
+    if (this.newPassword) {
+      payload.password = this.newPassword;
     }
-    if (!this.newUser.defaultPriority) this.newUser.defaultPriority = 'NORMAL';
-    
-    this.userService.registerUser(this.newUser).subscribe({
-      next: (u) => {
-        this.users.push(u);
-        alert('Dodano!');
-        this.newUser = { username: '', password: '', role: 'USER' };
-      },
-      error: () => alert('Błąd dodawania')
-    });
-  }
 
-  deleteUser(id?: number): void {
-    if(!id) return;
-    if(confirm('Usunąć?')) {
-      this.userService.deleteUser(id).subscribe(() => {
-        this.users = this.users.filter(u => u.id !== id);
+    this.http.put(`http://localhost:8080/api/users/${this.selectedUser.id}`, payload, { responseType: 'text' })
+      .subscribe({
+        next: () => {
+          alert('Zapisano zmiany!');
+          this.selectedUser = null;
+          this.loadUsers();
+        },
+        error: (err) => alert('Błąd zapisu')
       });
-    }
-  }
-
-  updateRole(user: User, event: Event): void {
-    const val = (event.target as HTMLSelectElement).value;
-    if(user.id) this.userService.changeRole(user.id, val).subscribe();
-  }
-
-  updateDefaultPriority(user: User, event: Event): void {
-    const val = (event.target as HTMLSelectElement).value;
-    if(user.id) this.userService.changeDefaultPriority(user.id, val).subscribe();
-  }
-
-  goBack(): void {
-    this.router.navigate(['/dashboard']);
   }
 }

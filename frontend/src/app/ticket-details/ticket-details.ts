@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // <--- 1. Import
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -21,8 +21,6 @@ export class TicketDetailsComponent implements OnInit {
   comments: Comment[] = [];
   newCommentContent: string = '';
   supportStaff: User[] = []; 
-  
-  // Domyślnie pusta, ale zaraz ją wypełnimy
   currentUserRole: string = '';
 
   constructor(
@@ -30,13 +28,13 @@ export class TicketDetailsComponent implements OnInit {
     private router: Router,
     private ticketService: TicketService,
     private commentService: CommentService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef // <--- 2. Wstrzyknięcie detektora zmian
   ) {}
 
   ngOnInit(): void {
-    // 1. NAJWAŻNIEJSZE: Pobierz rolę od razu przy wejściu
     this.currentUserRole = this.authService.getRole();
-    console.log('Aktualna rola użytkownika:', this.currentUserRole); // Sprawdź w konsoli F12 co tu się wypisuje
+    console.log('TicketDetails - Rola:', this.currentUserRole);
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
     
@@ -45,30 +43,48 @@ export class TicketDetailsComponent implements OnInit {
       this.loadComments(id);
     }
 
-    // Pobieramy listę pracowników tylko jeśli jesteś ADMIN lub HELPDESK
     if (this.currentUserRole === 'ADMIN' || this.currentUserRole === 'HELPDESK') {
       this.loadSupportStaff();
     }
   }
 
   loadTicket(id: number): void {
+    console.log('Pobieranie biletu ID:', id);
     this.ticketService.getTicket(id).subscribe({
-      next: (data) => this.ticket = data,
-      error: (err) => console.error(err)
+      next: (data) => {
+        this.ticket = data;
+        console.log('Załadowano bilet:', data);
+        
+        // 3. WYMUSZENIE ODŚWIEŻENIA WIDOKU
+        // To sprawi, że Angular natychmiast zauważy zmianę i usunie ekran ładowania
+        this.cdr.detectChanges(); 
+      },
+      error: (err) => {
+        console.error('Błąd pobierania biletu:', err);
+        if (err.status === 401) {
+          alert('Sesja wygasła. Zaloguj się ponownie.');
+          this.authService.logout();
+        }
+      }
     });
   }
 
   loadComments(id: number): void {
-    // Używamy rzutowania 'as any' dla bezpieczeństwa kompilacji
     (this.commentService as any).getComments(id).subscribe({
-      next: (data: any) => this.comments = data,
-      error: (err: any) => console.error(err)
+      next: (data: any) => {
+        this.comments = data;
+        this.cdr.detectChanges(); // Tutaj też warto odświeżyć
+      },
+      error: (err: any) => console.error('Błąd pobierania komentarzy:', err)
     });
   }
 
   loadSupportStaff(): void {
     this.ticketService.getSupportStaff().subscribe({
-      next: (data) => this.supportStaff = data,
+      next: (data) => {
+        this.supportStaff = data;
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Błąd pobierania pracowników', err)
     });
   }
@@ -80,8 +96,9 @@ export class TicketDetailsComponent implements OnInit {
       next: (comment: any) => {
         this.comments.push(comment);
         this.newCommentContent = '';
+        this.cdr.detectChanges(); // Odśwież po dodaniu komentarza
       },
-      error: (err: any) => console.error(err)
+      error: (err: any) => console.error('Błąd dodawania komentarza:', err)
     });
   }
 
@@ -93,6 +110,7 @@ export class TicketDetailsComponent implements OnInit {
       this.ticketService.changeStatus(this.ticket.id, newStatus).subscribe({
         next: (updatedTicket) => {
           this.ticket = updatedTicket;
+          this.cdr.detectChanges();
           alert('Status zmieniony!');
         },
         error: (err) => alert('Błąd zmiany statusu')
@@ -100,24 +118,20 @@ export class TicketDetailsComponent implements OnInit {
     }
   }
 
-  // --- ZMIANA PRIORYTETU ---
   updatePriority(event: Event): void {
     const select = event.target as HTMLSelectElement;
     const newPriority = select.value;
-
-    console.log('Próba zmiany priorytetu na:', newPriority);
 
     if (this.ticket?.id) {
       this.ticketService.changePriority(this.ticket.id, newPriority).subscribe({
         next: (updatedTicket) => {
           this.ticket = updatedTicket;
-          // Wymuszamy aktualizację widoku lokalnie
-          if (this.ticket) this.ticket.priority = newPriority;
+          this.cdr.detectChanges();
           alert('Priorytet został zmieniony.');
         },
         error: (err) => {
           console.error(err);
-          alert('Błąd podczas zmiany priorytetu. Sprawdź konsolę.');
+          alert('Błąd podczas zmiany priorytetu.');
         }
       });
     }
@@ -127,10 +141,12 @@ export class TicketDetailsComponent implements OnInit {
     const select = event.target as HTMLSelectElement;
     const staffId = Number(select.value);
 
-    if (this.ticket?.id && !isNaN(staffId)) {
+    // Warunek staffId !== 0, bo Number("null") w JS bywa mylące, a value z selecta może być stringiem
+    if (this.ticket?.id && !isNaN(staffId) && staffId !== 0) {
         this.ticketService.assignTicket(this.ticket.id, staffId).subscribe({
             next: (updatedTicket) => {
                 this.ticket = updatedTicket;
+                this.cdr.detectChanges();
                 alert('Przypisano pracownika!');
             },
             error: (err) => alert('Błąd przypisywania')
@@ -143,6 +159,7 @@ export class TicketDetailsComponent implements OnInit {
       this.ticketService.assignToMe(this.ticket.id).subscribe({
         next: (updatedTicket) => {
           this.ticket = updatedTicket;
+          this.cdr.detectChanges();
           alert('Zgłoszenie przypisane do Ciebie!');
         },
         error: (err) => alert('Błąd przypisywania')

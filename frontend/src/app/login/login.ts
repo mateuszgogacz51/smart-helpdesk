@@ -19,8 +19,7 @@ export class LoginComponent {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  login() {
-    // Pakujemy dane w obiekt dopiero tutaj
+login() {
     const loginData = { 
       username: this.username, 
       password: this.password 
@@ -29,7 +28,12 @@ export class LoginComponent {
     this.http.post<any>('http://localhost:8080/api/auth/login', loginData)
       .subscribe({
         next: (response) => {
-          localStorage.setItem('token', response.token);
+          // --- POPRAWKA ---
+          // Backend nie zwraca tokena, więc musimy go utworzyć sami dla Basic Auth.
+          // Tworzymy ciąg "login:hasło" zakodowany w Base64
+          const token = btoa(this.username + ':' + this.password);
+          
+          localStorage.setItem('token', token); // Zapisujemy wygenerowany token
           localStorage.setItem('username', response.username);
           
           if (response.role) {
@@ -46,4 +50,4 @@ export class LoginComponent {
         }
       });
   }
-}
+  }

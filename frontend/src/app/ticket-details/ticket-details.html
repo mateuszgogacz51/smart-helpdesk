@@ -1,4 +1,4 @@
-<div class="details-container" *ngIf="ticket">
+<div class="details-container" *ngIf="ticket; else loadingTemplate">
   
   <header class="details-header">
     <button class="back-btn" (click)="goBack()">← Wróć</button>
@@ -108,3 +108,11 @@
 
   </div>
 </div>
+
+<ng-template #loadingTemplate>
+  <div style="text-align: center; margin-top: 50px; color: #555;">
+    <h2>⏳ Ładowanie szczegółów zgłoszenia...</h2>
+    <p>Pobieram dane z serwera. Proszę czekać.</p>
+    <button (click)="goBack()" style="margin-top: 20px; padding: 10px 20px; cursor: pointer;">← Anuluj i wróć</button>
+  </div>
+</ng-template>

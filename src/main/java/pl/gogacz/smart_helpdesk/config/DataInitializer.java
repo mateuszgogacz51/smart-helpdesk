@@ -3,56 +3,48 @@ package pl.gogacz.smart_helpdesk.config;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder; // <--- Import
 import pl.gogacz.smart_helpdesk.model.User;
 import pl.gogacz.smart_helpdesk.repository.UserRepository;
 
 @Configuration
 public class DataInitializer {
 
+    // Wstrzykujemy PasswordEncoder, żeby zakodować hasła przed zapisem
     @Bean
-    CommandLineRunner initDatabase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public CommandLineRunner initData(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            // Jeśli baza pusta, dodaj użytkowników
+            // Sprawdzamy czy baza jest pusta, żeby nie dublować użytkowników
             if (userRepository.count() == 0) {
 
+                // Tworzymy ADMINA
                 User admin = new User();
                 admin.setUsername("admin");
-                admin.setPassword(passwordEncoder.encode("admin"));
+                admin.setPassword(passwordEncoder.encode("admin")); // <--- KODOWANIE HASŁA!
                 admin.setRole("ADMIN");
-                admin.setFirstName("Administrator");
-                admin.setLastName("Systemu");
-                admin.setDefaultPriority("HIGH");
+                admin.setFirstName("Admin");
+                admin.setLastName("Systemowy");
                 userRepository.save(admin);
 
-                User marek = new User();
-                marek.setUsername("marek");
-                marek.setPassword(passwordEncoder.encode("marek"));
-                marek.setRole("HELPDESK");
-                marek.setFirstName("Marek");
-                marek.setLastName("Serwisant");
-                marek.setDefaultPriority("NORMAL");
-                userRepository.save(marek);
+                // Tworzymy zwykłego użytkownika
+                User user = new User();
+                user.setUsername("user");
+                user.setPassword(passwordEncoder.encode("user")); // <--- KODOWANIE HASŁA!
+                user.setRole("USER");
+                user.setFirstName("Jan");
+                user.setLastName("Kowalski");
+                userRepository.save(user);
 
-                User prezes = new User();
-                prezes.setUsername("prezes");
-                prezes.setPassword(passwordEncoder.encode("prezes"));
-                prezes.setRole("BOARD");
-                prezes.setFirstName("Pan");
-                prezes.setLastName("Prezes");
-                prezes.setDefaultPriority("HIGH");
-                userRepository.save(prezes);
+                // Tworzymy pracownika Helpdesk
+                User support = new User();
+                support.setUsername("support");
+                support.setPassword(passwordEncoder.encode("support")); // <--- KODOWANIE HASŁA!
+                support.setRole("HELPDESK");
+                support.setFirstName("Piotr");
+                support.setLastName("Nowak");
+                userRepository.save(support);
 
-                User jan = new User();
-                jan.setUsername("jan");
-                jan.setPassword(passwordEncoder.encode("jan"));
-                jan.setRole("USER");
-                jan.setFirstName("Jan");
-                jan.setLastName("Kowalski");
-                jan.setDefaultPriority("LOW");
-                userRepository.save(jan);
-
-                System.out.println("✅ Baza danych zainicjowana poprawnie!");
+                System.out.println("✅ Pomyślnie utworzono użytkowników z zakodowanymi hasłami!");
             }
         };
     }
