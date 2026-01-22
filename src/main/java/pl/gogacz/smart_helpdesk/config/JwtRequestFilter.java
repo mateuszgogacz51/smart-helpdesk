@@ -29,16 +29,21 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        // --- DIAGNOSTYKA START ---
-        final String authorizationHeader = request.getHeader("Authorization");
-        String path = request.getRequestURI();
+        // --- RĘCZNE WYMUSZENIE CORS (ROZWIĄZANIE OSTATECZNE) ---
+        // Ustawiamy nagłówki "na sztywno" dla każdego zapytania
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
 
-        // Nie loguj zapytań publicznych (żeby nie śmiecić)
-        if (!path.contains("/auth/login") && !path.contains("/h2-console")) {
-            System.out.println("\n[JWT DEBUG] Sprawdzam zapytanie: " + request.getMethod() + " " + path);
-            System.out.println("[JWT DEBUG] Nagłówek Authorization: " + (authorizationHeader != null ? "OBECNY (długość: " + authorizationHeader.length() + ")" : "BRAK"));
+        // Jeśli to zapytanie OPTIONS (pre-flight), odsyłamy OK i kończymy (nie sprawdzamy tokena)
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            return;
         }
-        // -------------------------
+        // -------------------------------------------------------
+
+        final String authorizationHeader = request.getHeader("Authorization");
 
         String username = null;
         String jwt = null;
@@ -47,12 +52,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
-                // System.out.println("[JWT DEBUG] Token poprawny, użytkownik: " + username);
             } catch (Exception e) {
-                System.err.println("[JWT DEBUG] BŁĄD tokena: " + e.getMessage());
+                // Token nieprawidłowy lub wygasł
             }
-        } else if (authorizationHeader != null && !path.contains("/auth/login")) {
-            System.out.println("[JWT DEBUG] Nagłówek jest, ale nie zaczyna się od 'Bearer '!");
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -63,12 +65,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("[JWT DEBUG] Autoryzacja SUKCES dla: " + username);
-            } else {
-                System.out.println("[JWT DEBUG] Walidacja tokena nieudana (wygasł lub zły podpis).");
             }
         }
-
         chain.doFilter(request, response);
     }
 }
