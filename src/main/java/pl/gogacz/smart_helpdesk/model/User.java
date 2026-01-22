@@ -1,11 +1,9 @@
 package pl.gogacz.smart_helpdesk.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "app_users")
 public class User {
 
     @Id
@@ -18,25 +16,19 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    private String role; // USER, ADMIN, HELPDESK
+
     private String firstName;
     private String lastName;
     private String email;
     private String department;
-    private String role;
 
-    // To pole jest kluczowe, bez niego Frontend wariuje
-    private String defaultPriority;
-
-    @OneToMany(mappedBy = "author")
-    @JsonIgnore
-    private List<Ticket> ticketsCreated;
-
-    @OneToMany(mappedBy = "assignedUser")
-    @JsonIgnore
-    private List<Ticket> ticketsAssigned;
+    // To pole decyduje, czy zgłoszenia użytkownika są domyślnie "HIGH" czy "NORMAL"
+    private String defaultPriority = "NORMAL";
 
     public User() {}
 
+    // Gettery i Settery
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -46,16 +38,14 @@ public class User {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
 
     public String getLastName() { return lastName; }
     public void setLastName(String lastName) { this.lastName = lastName; }
-
-    // Frontend potrzebuje tej metody!
-    public String getFullName() {
-        return (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
-    }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -63,15 +53,11 @@ public class User {
     public String getDepartment() { return department; }
     public void setDepartment(String department) { this.department = department; }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
-
     public String getDefaultPriority() { return defaultPriority; }
     public void setDefaultPriority(String defaultPriority) { this.defaultPriority = defaultPriority; }
 
-    public List<Ticket> getTicketsCreated() { return ticketsCreated; }
-    public void setTicketsCreated(List<Ticket> ticketsCreated) { this.ticketsCreated = ticketsCreated; }
-
-    public List<Ticket> getTicketsAssigned() { return ticketsAssigned; }
-    public void setTicketsAssigned(List<Ticket> ticketsAssigned) { this.ticketsAssigned = ticketsAssigned; }
+    // Helper dla frontendu (opcjonalny, ale przydatny)
+    public String getFullName() {
+        return (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
+    }
 }

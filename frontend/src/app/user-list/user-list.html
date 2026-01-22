@@ -3,62 +3,97 @@
   <header class="details-header">
     <button class="back-btn" (click)="goBack()">← Wróć do Dashboardu</button>
     <h2 class="section-title">👥 Zarządzanie Użytkownikami</h2>
+    <button class="save-btn" (click)="openCreateModal()" style="margin-left: auto;">+ Dodaj Użytkownika</button>
   </header>
 
   <div class="user-card">
     <table class="user-table">
       <thead>
         <tr>
-          <th>ID</th>
           <th>Login</th>
           <th>Rola</th>
+          <th>Priorytet</th>
           <th>Imię i Nazwisko</th>
+          <th>Dział</th>
           <th>Akcje</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let user of users">
-          <td>#{{ user.id }}</td>
           <td><strong>{{ user.username }}</strong></td>
+          <td><span [class]="'status-badge ' + user.role">{{ user.role }}</span></td>
           <td>
-            <span [class]="'status-badge ' + user.role">{{ user.role }}</span>
+            <span *ngIf="user.defaultPriority === 'HIGH'" style="color: #e74c3c; font-weight: bold;">🔥 PILNY</span>
+            <span *ngIf="user.defaultPriority !== 'HIGH'" style="color: #95a5a6;">Normalny</span>
           </td>
           <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td>{{ user.department || '-' }}</td>
           <td>
             <button class="action-btn" (click)="editUser(user)">✏️ Edytuj</button>
           </td>
         </tr>
       </tbody>
     </table>
-
-    <div *ngIf="users.length === 0" style="text-align: center; padding: 20px; color: #888;">
-      Brak użytkowników do wyświetlenia lub trwa ładowanie...
-    </div>
   </div>
 
-  <div *ngIf="selectedUser" class="modal-overlay">
-    <div class="edit-box">
-      <h3>Edycja: {{ selectedUser.username }}</h3>
+  <div *ngIf="selectedUser || isCreating" class="modal-overlay">
+    <div class="edit-box" style="width: 500px;">
+      <h3 *ngIf="isCreating">Nowy Użytkownik</h3>
+      <h3 *ngIf="!isCreating">Edycja: {{ selectedUser?.username }}</h3>
       
-      <div class="form-group">
-        <label>Rola:</label>
-        <select [(ngModel)]="newRole" class="styled-input">
-          <option value="USER">USER</option>
-          <option value="HELPDESK">HELPDESK</option>
-          <option value="ADMIN">ADMIN</option>
-        </select>
+      <div style="display: flex; gap: 15px;">
+        <div class="form-group" style="flex:1">
+          <label>Imię</label>
+          <input [(ngModel)]="newUser.firstName" class="styled-input">
+        </div>
+        <div class="form-group" style="flex:1">
+          <label>Nazwisko</label>
+          <input [(ngModel)]="newUser.lastName" class="styled-input">
+        </div>
       </div>
 
       <div class="form-group">
-        <label>Nowe hasło (opcjonalne):</label>
-        <input type="password" [(ngModel)]="newPassword" placeholder="Wpisz nowe hasło..." class="styled-input">
+        <label>Login *</label>
+        <input [(ngModel)]="newUser.username" class="styled-input" [disabled]="!isCreating">
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input [(ngModel)]="newUser.email" type="email" class="styled-input">
+      </div>
+
+      <div style="display: flex; gap: 15px;">
+        <div class="form-group" style="flex:1">
+          <label>Rola</label>
+          <select [(ngModel)]="newUser.role" class="styled-select">
+            <option value="USER">USER</option>
+            <option value="HELPDESK">HELPDESK</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1">
+          <label>Priorytet</label>
+          <select [(ngModel)]="newUser.defaultPriority" class="styled-select">
+            <option value="NORMAL">Normalny</option>
+            <option value="HIGH">🔥 PILNY (VIP)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Hasło <span *ngIf="isCreating">*</span></label>
+        <input type="password" [(ngModel)]="newUser.password" placeholder="***" class="styled-input">
+      </div>
+
+      <div class="form-group">
+        <label>Dział</label>
+        <input [(ngModel)]="newUser.department" class="styled-input">
       </div>
 
       <div class="actions">
         <button class="save-btn" (click)="saveChanges()">💾 Zapisz</button>
-        <button class="cancel-btn" (click)="selectedUser = null">Anuluj</button>
+        <button class="cancel-btn" (click)="closeModal()">Anuluj</button>
       </div>
     </div>
   </div>
-
 </div>

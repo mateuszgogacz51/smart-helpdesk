@@ -186,6 +186,20 @@
   font-weight: 600;
 }
 
+.styled-input, .styled-select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1em;
+  box-sizing: border-box;
+  background: white; /* Ważne dla selecta */
+}
+
+.styled-select {
+  cursor: pointer;
+}
+
 .cancel-btn:hover { background: #c0392b; }
 
 @keyframes fadeIn {

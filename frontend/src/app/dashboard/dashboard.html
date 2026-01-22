@@ -13,36 +13,54 @@
   <div class="content-area">
 
     <div class="stats-container" *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
+      
       <div class="stats-group">
-        <h3>Moje Zadania</h3>
+        <h3>Moje Zadania (Przypisane)</h3>
         <div class="cards-row">
-            <div class="stat-card blue clickable" (click)="viewMode = 'MY'; setFilter('OPEN')"><span class="count">{{ stats.myOpen }}</span><span class="label">Nowe</span></div>
-            <div class="stat-card orange clickable" (click)="viewMode = 'MY'; setFilter('IN_PROGRESS')"><span class="count">{{ stats.myInProgress }}</span><span class="label">W trakcie</span></div>
-            <div class="stat-card green clickable" (click)="viewMode = 'MY'; setFilter('CLOSED')"><span class="count">{{ stats.myClosed }}</span><span class="label">Gotowe</span></div>
+            <div class="stat-card blue clickable" (click)="viewMode = 'MY'; setFilter('OPEN')">
+                <span class="count">{{ stats.myOpen }}</span>
+                <span class="label">Nowe</span>
+            </div>
+            <div class="stat-card orange clickable" (click)="viewMode = 'MY'; setFilter('IN_PROGRESS')">
+                <span class="count">{{ stats.myInProgress }}</span>
+                <span class="label">W trakcie</span>
+            </div>
+            <div class="stat-card green clickable" (click)="viewMode = 'MY'; setFilter('CLOSED')">
+                <span class="count">{{ stats.myClosed }}</span>
+                <span class="label">Gotowe</span>
+            </div>
         </div>
       </div>
+
       <div class="stats-group">
         <h3>Cała Firma</h3>
         <div class="cards-row">
-             <div class="stat-card blue clickable" (click)="viewMode = 'ALL'; setFilter('OPEN')"><span class="count">{{ stats.globalOpen }}</span><span class="label">Wszystkie Nowe</span></div>
-             <div class="stat-card dark clickable" (click)="viewMode = 'ALL'; setFilter('ALL')"><span class="count">{{ stats.globalTotal }}</span><span class="label">Razem</span></div>
+             <div class="stat-card blue clickable" (click)="viewMode = 'ALL'; setFilter('OPEN')">
+                 <span class="count">{{ stats.globalOpen }}</span>
+                 <span class="label">Wszystkie Nowe</span>
+             </div>
+             <div class="stat-card dark clickable" (click)="viewMode = 'ALL'; setFilter('ALL')">
+                 <span class="count">{{ stats.globalTotal }}</span>
+                 <span class="label">Razem</span>
+             </div>
         </div>
       </div>
     </div>
 
     <div class="action-bar">
+      
       <div class="view-toggle" *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
         <button [class.active]="viewMode === 'ALL'" (click)="viewMode = 'ALL'; setFilter('ALL')">Wszystkie</button>
         <button [class.active]="viewMode === 'MY'" (click)="viewMode = 'MY'; setFilter('ALL')">Tylko moje</button>
       </div>
       
       <div class="search-box">
-        <input type="text" placeholder="🔍 Szukaj..." [(ngModel)]="searchTerm">
+        <input type="text" placeholder="🔍 Szukaj..." [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()">
       </div>
 
       <div style="display: flex; gap: 10px;">
         <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #2c3e50;" (click)="router.navigate(['/users'])">
-           👥 Użytkownicy
+            👥 Użytkownicy
         </button>
         <button class="add-btn" (click)="goToAddTicket()">+ Nowe zgłoszenie</button>
       </div>
@@ -91,6 +109,10 @@
           </tr>
         </tbody>
       </table>
+
+      <div *ngIf="visibleTickets.length === 0" style="padding: 20px; text-align: center; color: #888;">
+          Brak zgłoszeń spełniających kryteria.
+      </div>
     </div>
   </div>
 </div>
