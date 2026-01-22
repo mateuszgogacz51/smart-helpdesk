@@ -12,7 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:4200")
+// USUNIĘTO @CrossOrigin
 public class UserController {
 
     private final UserRepository userRepository;
@@ -29,7 +29,6 @@ public class UserController {
         return userRepository.findAll();
     }
 
-    // --- NOWOŚĆ: TWORZENIE UŻYTKOWNIKA ---
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> createUser(@RequestBody User user) {
@@ -37,19 +36,16 @@ public class UserController {
             return ResponseEntity.badRequest().body("Użytkownik o takim loginie już istnieje!");
         }
 
-        // Kodujemy hasło
         if (user.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
-        // Domyślne wartości
         if (user.getDefaultPriority() == null) user.setDefaultPriority("NORMAL");
         if (user.getRole() == null) user.setRole("USER");
 
         userRepository.save(user);
         return ResponseEntity.ok("Utworzono użytkownika");
     }
-    // -------------------------------------
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")

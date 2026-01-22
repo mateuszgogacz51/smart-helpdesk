@@ -16,7 +16,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController { // BRAK @CrossOrigin
+// USUNIĘTO @CrossOrigin
+public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
@@ -41,7 +42,7 @@ public class AuthController { // BRAK @CrossOrigin
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
             String jwtToken = jwtUtil.generateToken(userDetails);
 

@@ -16,7 +16,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/comments")
-public class CommentController { // BRAK @CrossOrigin
+// USUNIĘTO @CrossOrigin
+public class CommentController {
 
     private final CommentRepository commentRepository;
     private final TicketRepository ticketRepository;
@@ -37,12 +38,17 @@ public class CommentController { // BRAK @CrossOrigin
     public Comment addComment(@PathVariable Long ticketId, @RequestBody Map<String, String> payload) {
         String content = payload.get("content");
         if (content == null || content.isBlank()) {
-            throw new RuntimeException("Treść pusta");
+            throw new RuntimeException("Treść komentarza nie może być pusta");
         }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User author = userRepository.findByUsername(auth.getName()).orElseThrow();
-        Ticket ticket = ticketRepository.findById(ticketId).orElseThrow();
+        String currentUsername = auth.getName();
+
+        User author = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono zgłoszenia"));
 
         Comment comment = new Comment();
         comment.setContent(content);

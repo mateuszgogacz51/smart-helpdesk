@@ -36,15 +36,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                // Używamy naszej konfiguracji CORS zdefiniowanej niżej
+                // Ustawiamy CORS z naszej metody poniżej
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // Zezwalamy na OPTIONS (CORS preflight) dla wszystkiego
+                        // KLUCZOWA POPRAWKA: Zezwalamy na wszystkie zapytania wstępne (OPTIONS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Logowanie i konsola H2 dostępne publicznie
+                        // Publiczne endpointy
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
-                        // Wszystko inne wymaga tokena
+                        // Reszta wymaga logowania
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -54,17 +54,13 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // DEFINICJA CORS (Jedno źródło prawdy)
+    // Konfiguracja CORS w jednym miejscu
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Adres twojego Frontendu
         configuration.setAllowedOrigins(List.of("http://localhost:4200"));
-        // Metody HTTP
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
-        // Nagłówki
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        // Ciasteczka/Tokeny
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

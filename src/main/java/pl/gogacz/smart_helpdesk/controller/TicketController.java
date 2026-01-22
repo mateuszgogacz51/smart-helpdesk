@@ -1,8 +1,8 @@
 package pl.gogacz.smart_helpdesk.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.gogacz.smart_helpdesk.model.Ticket;
 import pl.gogacz.smart_helpdesk.model.User;
@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tickets")
+// USUNIĘTO @CrossOrigin - to naprawi konflikt!
 public class TicketController {
 
     private final TicketRepository ticketRepository;
@@ -61,7 +62,6 @@ public class TicketController {
         ticket.setLastUpdated(LocalDateTime.now());
         ticket.setStatus("OPEN");
 
-        // Automatyzacja priorytetu z encji User
         if (author.getDefaultPriority() != null) {
             ticket.setPriority(author.getDefaultPriority());
         } else {
@@ -71,7 +71,6 @@ public class TicketController {
         return ticketRepository.save(ticket);
     }
 
-    // --- METODY DO EDYCJI ---
     @PutMapping("/{id}/status")
     public Ticket changeStatus(@PathVariable Long id, @RequestBody String status) {
         return ticketRepository.findById(id).map(ticket -> {
@@ -118,7 +117,6 @@ public class TicketController {
                 .toList();
     }
 
-    // --- POPRAWIONE STATYSTYKI ---
     @GetMapping("/stats")
     public Map<String, Long> getStats() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -131,8 +129,8 @@ public class TicketController {
         long globalTotal = allTickets.size();
 
         boolean isStaff = "ADMIN".equals(currentUser.getRole()) || "HELPDESK".equals(currentUser.getRole());
-        List<Ticket> myTickets;
 
+        List<Ticket> myTickets;
         if (isStaff) {
             myTickets = allTickets.stream()
                     .filter(t -> t.getAssignedUser() != null && t.getAssignedUser().getId().equals(currentUser.getId()))
