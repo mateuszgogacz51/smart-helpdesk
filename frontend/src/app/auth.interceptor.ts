@@ -1,23 +1,31 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  // 1. Pobieramy token prosto z "szuflady" przeglądarki
   const token = localStorage.getItem('token'); 
+  const router = inject(Router);
 
-  // 2. Logujemy, żebyś widział w konsoli czy działa (F12)
+  let authReq = req;
+
   if (token) {
-    console.log('✅ INTERCEPTOR: Mam token, doklejam go!', token.substring(0, 10) + '...');
-    
-    const cloned = req.clone({
+    authReq = req.clone({
       setHeaders: {
-        Authorization: `Basic ${token}`
+        Authorization: `Bearer ${token}` // <--- Tu musi być Bearer, nie Basic
       }
     });
-    return next(cloned);
-  } else {
-    console.warn('⚠️ INTERCEPTOR: Brak tokenu w localStorage! Zapytanie leci bez autoryzacji.');
   }
 
-  return next(req);
+  return next(authReq).pipe(
+    catchError((error) => {
+      // Jeśli dostaniesz 401/403 (brak dostępu), dopiero wtedy wyloguj
+      if (error.status === 401 || error.status === 403) {
+        console.warn('Błąd autoryzacji - wylogowywanie...');
+        localStorage.clear();
+        router.navigate(['/login']);
+      }
+      return throwError(() => error);
+    })
+  );
 };

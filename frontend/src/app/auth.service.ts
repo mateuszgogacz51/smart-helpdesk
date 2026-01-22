@@ -7,43 +7,36 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class AuthService {
-
   private baseUrl = 'http://localhost:8080/api';
 
   constructor(private http: HttpClient, private router: Router) { }
 
   login(username: string, password: string) {
-    // 1. Tworzymy token
+    // Generujemy token Basic Auth
     const token = btoa(username + ':' + password);
-    
-    const headers = new HttpHeaders({
-      Authorization: 'Basic ' + token
-    });
+    const headers = new HttpHeaders({ Authorization: 'Basic ' + token });
 
-    console.log('AUTH SERVICE: Próba logowania użytkownika:', username);
-
-    // 2. Wysyłamy GET (zgodnie z Twoim Backendem)
+    // Backend oczekuje GET na /auth/login
     return this.http.get<any>(this.baseUrl + '/auth/login', { headers }).pipe(
       map(response => {
-        console.log('AUTH SERVICE: Logowanie udane! Zapisuję dane.');
+        console.log('AUTH: Logowanie udane. Zapisuję token.');
         
-        // 3. ZAPIS DANYCH (Kluczowy moment)
+        // Zapisujemy token i dane użytkownika
         localStorage.setItem('username', username);
-        localStorage.setItem('token', token); // <--- Tutaj zapisujemy "klucz"
+        localStorage.setItem('token', token);
         
         if (response.role) {
             localStorage.setItem('role', response.role);
         } else {
             localStorage.setItem('role', 'USER');
         }
-        
         return response;
       })
     );
   }
 
   logout() {
-    console.log('AUTH SERVICE: Wylogowano.');
+    console.log('AUTH: Wylogowywanie...');
     localStorage.clear();
     this.router.navigate(['/login']);
   }

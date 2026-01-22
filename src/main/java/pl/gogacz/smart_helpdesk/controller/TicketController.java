@@ -32,13 +32,8 @@ public class TicketController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
 
-        // Sprawdzamy rolę
         boolean isStaff = auth.getAuthorities().stream()
-                .anyMatch(a -> {
-                    String r = a.getAuthority();
-                    return r.equals("ROLE_ADMIN") || r.equals("ADMIN") ||
-                            r.equals("ROLE_HELPDESK") || r.equals("HELPDESK");
-                });
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_HELPDESK"));
 
         if (isStaff) {
             return ticketRepository.findAll();
@@ -67,8 +62,7 @@ public class TicketController {
         ticket.setLastUpdated(LocalDateTime.now());
         ticket.setStatus("OPEN");
 
-        // --- AUTOMATYZACJA PRIORYTETU ---
-        // Ignorujemy to co przyszło z Frontendu, ustawiamy na podstawie Usera
+        // Automatyzacja priorytetu z encji User
         if (author.getDefaultPriority() != null) {
             ticket.setPriority(author.getDefaultPriority());
         } else {
@@ -78,6 +72,7 @@ public class TicketController {
         return ticketRepository.save(ticket);
     }
 
+    // --- METODY DO EDYCJI ---
     @PutMapping("/{id}/status")
     public Ticket changeStatus(@PathVariable Long id, @RequestBody String status) {
         return ticketRepository.findById(id).map(ticket -> {
@@ -124,6 +119,7 @@ public class TicketController {
                 .toList();
     }
 
+    // --- POPRAWIONE STATYSTYKI ---
     @GetMapping("/stats")
     public Map<String, Long> getStats() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -132,16 +128,12 @@ public class TicketController {
 
         List<Ticket> allTickets = ticketRepository.findAll();
 
-        // 1. Statystyki GLOBALNE
         long globalOpen = allTickets.stream().filter(t -> "OPEN".equals(t.getStatus())).count();
         long globalTotal = allTickets.size();
 
-        // 2. Statystyki MOJE
-        // Jeśli jesteś Adminem/Helpdesk -> "Moje" to te przypisane do Ciebie
-        // Jeśli jesteś Userem -> "Moje" to te utworzone przez Ciebie
         boolean isStaff = "ADMIN".equals(currentUser.getRole()) || "HELPDESK".equals(currentUser.getRole());
-
         List<Ticket> myTickets;
+
         if (isStaff) {
             myTickets = allTickets.stream()
                     .filter(t -> t.getAssignedUser() != null && t.getAssignedUser().getId().equals(currentUser.getId()))
@@ -152,17 +144,12 @@ public class TicketController {
                     .collect(Collectors.toList());
         }
 
-        long myOpen = myTickets.stream().filter(t -> "OPEN".equals(t.getStatus())).count();
-        long myInProgress = myTickets.stream().filter(t -> "IN_PROGRESS".equals(t.getStatus())).count();
-        long myClosed = myTickets.stream().filter(t -> "CLOSED".equals(t.getStatus())).count();
-
-        // Klucze muszą pasować do tych w dashboard.ts
         return Map.of(
                 "globalOpen", globalOpen,
                 "globalTotal", globalTotal,
-                "myOpen", myOpen,
-                "myInProgress", myInProgress,
-                "myClosed", myClosed
+                "myOpen", myTickets.stream().filter(t -> "OPEN".equals(t.getStatus())).count(),
+                "myInProgress", myTickets.stream().filter(t -> "IN_PROGRESS".equals(t.getStatus())).count(),
+                "myClosed", myTickets.stream().filter(t -> "CLOSED".equals(t.getStatus())).count()
         );
     }
 }

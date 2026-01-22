@@ -12,14 +12,13 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
   styleUrls: ['./login.css']
 })
 export class LoginComponent {
-  // Zmienne bezpośrednio w klasie (pasują do [(ngModel)]="username" w HTML)
   username = '';
   password = '';
   errorMessage: string = '';
 
   constructor(private http: HttpClient, private router: Router) {}
 
-login() {
+  login() {
     const loginData = { 
       username: this.username, 
       password: this.password 
@@ -28,26 +27,21 @@ login() {
     this.http.post<any>('http://localhost:8080/api/auth/login', loginData)
       .subscribe({
         next: (response) => {
-          // --- POPRAWKA ---
-          // Backend nie zwraca tokena, więc musimy go utworzyć sami dla Basic Auth.
-          // Tworzymy ciąg "login:hasło" zakodowany w Base64
-          const token = btoa(this.username + ':' + this.password);
-          
-          localStorage.setItem('token', token); // Zapisujemy wygenerowany token
-          localStorage.setItem('username', response.username);
-          
-          if (response.role) {
-            localStorage.setItem('role', response.role.toUpperCase());
+          if (response.token) {
+              // Zapisujemy token JWT
+              localStorage.setItem('token', response.token); 
+              localStorage.setItem('username', response.username);
+              localStorage.setItem('role', response.role ? response.role.toUpperCase() : 'USER');
+              
+              this.router.navigate(['/dashboard']);
           } else {
-            localStorage.setItem('role', 'USER');
+              this.errorMessage = 'Błąd: Serwer nie zwrócił tokena.';
           }
-
-          this.router.navigate(['/dashboard']);
         },
         error: (err) => {
           console.error(err);
-          this.errorMessage = 'Błędny login lub hasło';
+          this.errorMessage = 'Nieprawidłowy login lub hasło';
         }
       });
   }
-  }
+}
