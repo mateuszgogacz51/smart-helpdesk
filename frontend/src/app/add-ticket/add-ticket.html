@@ -11,8 +11,7 @@
       <input type="text" [(ngModel)]="ticket.title" placeholder="Krótko opisz problem..." class="styled-input">
     </div>
 
-    <div class="form-row">
-      <div class="form-group half">
+    <div class="form-group">
         <label>Kategoria</label>
         <select [(ngModel)]="ticket.category" class="styled-select">
           <option value="" disabled selected>-- Wybierz --</option>
@@ -21,16 +20,6 @@
           <option value="HR">Kadry / HR</option>
           <option value="OTHER">Inne</option>
         </select>
-      </div>
-
-      <div class="form-group half">
-        <label>Priorytet</label>
-        <select [(ngModel)]="ticket.priority" class="styled-select">
-          <option value="LOW">Niski</option>
-          <option value="NORMAL">Normalny</option>
-          <option value="HIGH">🔥 PILNE</option>
-        </select>
-      </div>
     </div>
 
     <div class="form-group">

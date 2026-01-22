@@ -1,10 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // <--- 1. Import
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TicketService } from '../ticket.service';
 import { CommentService } from '../comment.service';
 import { AuthService } from '../auth.service';
+import { FormsModule } from '@angular/forms';
 import { Ticket } from '../ticket.model';
 import { Comment } from '../comment.model';
 import { User } from '../user.model';
@@ -17,157 +17,139 @@ import { User } from '../user.model';
   styleUrls: ['./ticket-details.css']
 })
 export class TicketDetailsComponent implements OnInit {
-  ticket?: Ticket;
+  ticket: Ticket | null = null;
   comments: Comment[] = [];
   newCommentContent: string = '';
-  supportStaff: User[] = []; 
+  ticketId: number = 0;
+  
   currentUserRole: string = '';
+  currentUserId: number = 0;
+  supportStaff: User[] = [];
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private ticketService: TicketService,
     private commentService: CommentService,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef // <--- 2. Wstrzyknięcie detektora zmian
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.currentUserRole = this.authService.getRole();
-    console.log('TicketDetails - Rola:', this.currentUserRole);
+    const userIdStr = localStorage.getItem('userId');
+    if (userIdStr) this.currentUserId = parseInt(userIdStr);
 
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    // Pobranie ID z adresu URL
+    this.ticketId = Number(this.route.snapshot.paramMap.get('id'));
     
-    if (id) {
-      this.loadTicket(id);
-      this.loadComments(id);
+    if (this.ticketId) {
+      this.loadTicket();
+      this.loadComments();
     }
-
+    
+    // Pobranie listy pracowników tylko dla Admina/Helpdesku
     if (this.currentUserRole === 'ADMIN' || this.currentUserRole === 'HELPDESK') {
       this.loadSupportStaff();
     }
   }
 
-  loadTicket(id: number): void {
-    console.log('Pobieranie biletu ID:', id);
-    this.ticketService.getTicket(id).subscribe({
+  loadTicket() {
+    this.ticketService.getTicket(this.ticketId).subscribe({
       next: (data) => {
         this.ticket = data;
-        console.log('Załadowano bilet:', data);
-        
-        // 3. WYMUSZENIE ODŚWIEŻENIA WIDOKU
-        // To sprawi, że Angular natychmiast zauważy zmianę i usunie ekran ładowania
-        this.cdr.detectChanges(); 
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Błąd pobierania biletu:', err);
-        if (err.status === 401) {
-          alert('Sesja wygasła. Zaloguj się ponownie.');
-          this.authService.logout();
+        // Ignorujemy 401/403 (robi to interceptor), reagujemy na inne błędy
+        if (err.status !== 401 && err.status !== 403) {
+            alert('Nie udało się pobrać szczegółów zgłoszenia.');
+            this.router.navigate(['/dashboard']);
         }
       }
     });
   }
 
-  loadComments(id: number): void {
-    (this.commentService as any).getComments(id).subscribe({
-      next: (data: any) => {
-        this.comments = data;
-        this.cdr.detectChanges(); // Tutaj też warto odświeżyć
-      },
-      error: (err: any) => console.error('Błąd pobierania komentarzy:', err)
-    });
-  }
-
-  loadSupportStaff(): void {
-    this.ticketService.getSupportStaff().subscribe({
+  loadComments() {
+    this.commentService.getComments(this.ticketId).subscribe({
       next: (data) => {
-        this.supportStaff = data;
+        this.comments = data;
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('Błąd pobierania pracowników', err)
+      error: (err) => console.error('Błąd pobierania komentarzy', err)
     });
   }
 
-  addComment(): void {
-    if (!this.newCommentContent.trim() || !this.ticket?.id) return;
-
-    (this.commentService as any).addComment(this.ticket.id, this.newCommentContent).subscribe({
-      next: (comment: any) => {
-        this.comments.push(comment);
-        this.newCommentContent = '';
-        this.cdr.detectChanges(); // Odśwież po dodaniu komentarza
-      },
-      error: (err: any) => console.error('Błąd dodawania komentarza:', err)
-    });
+  addComment() {
+      if (!this.newCommentContent.trim()) return;
+      
+      // UWAGA: Twój CommentService.addComment przyjmuje (ticketId, content: string)
+      // Wysyłamy więc sam tekst komentarza, a nie obiekt.
+      this.commentService.addComment(this.ticketId, this.newCommentContent).subscribe({
+        next: () => {
+          this.newCommentContent = '';
+          this.loadComments(); // Odśwież listę po dodaniu
+        },
+        error: (err) => alert('Błąd dodawania komentarza')
+      });
   }
 
-  changeStatus(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    const newStatus = select.value;
-
-    if (this.ticket?.id) {
-      this.ticketService.changeStatus(this.ticket.id, newStatus).subscribe({
-        next: (updatedTicket) => {
-          this.ticket = updatedTicket;
-          this.cdr.detectChanges();
-          alert('Status zmieniony!');
+  changeStatus(event: any) {
+      const newStatus = event.target.value;
+      // POPRAWKA: Używamy metody 'changeStatus' z TicketService (nie updateStatus)
+      this.ticketService.changeStatus(this.ticketId, newStatus).subscribe({
+        next: () => {
+          if (this.ticket) this.ticket.status = newStatus;
+          // Opcjonalnie: alert('Status zmieniony');
         },
         error: (err) => alert('Błąd zmiany statusu')
       });
-    }
   }
 
-  updatePriority(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    const newPriority = select.value;
-
-    if (this.ticket?.id) {
-      this.ticketService.changePriority(this.ticket.id, newPriority).subscribe({
-        next: (updatedTicket) => {
-          this.ticket = updatedTicket;
-          this.cdr.detectChanges();
-          alert('Priorytet został zmieniony.');
+  updatePriority(event: any) {
+      const newPriority = event.target.value;
+      // POPRAWKA: Używamy metody 'changePriority' z TicketService (nie updatePriority)
+      this.ticketService.changePriority(this.ticketId, newPriority).subscribe({
+        next: () => {
+          if (this.ticket) this.ticket.priority = newPriority;
         },
-        error: (err) => {
-          console.error(err);
-          alert('Błąd podczas zmiany priorytetu.');
-        }
+        error: (err) => alert('Błąd zmiany priorytetu')
       });
-    }
   }
 
-  assignTicket(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    const staffId = Number(select.value);
-
-    // Warunek staffId !== 0, bo Number("null") w JS bywa mylące, a value z selecta może być stringiem
-    if (this.ticket?.id && !isNaN(staffId) && staffId !== 0) {
-        this.ticketService.assignTicket(this.ticket.id, staffId).subscribe({
-            next: (updatedTicket) => {
-                this.ticket = updatedTicket;
-                this.cdr.detectChanges();
-                alert('Przypisano pracownika!');
-            },
-            error: (err) => alert('Błąd przypisywania')
-        });
-    }
-  }
-
-  assignToMe(): void {
-    if (this.ticket?.id) {
-      this.ticketService.assignToMe(this.ticket.id).subscribe({
-        next: (updatedTicket) => {
-          this.ticket = updatedTicket;
+  assignTicket(event: any) {
+      const val = event.target.value;
+      if (val === 'null' || val === '') {
+          return; 
+      }
+      const userId = Number(val);
+      this.ticketService.assignTicket(this.ticketId, userId).subscribe({
+        next: (updated) => {
+          this.ticket = updated;
           this.cdr.detectChanges();
-          alert('Zgłoszenie przypisane do Ciebie!');
         },
         error: (err) => alert('Błąd przypisywania')
       });
-    }
   }
 
-  goBack(): void {
+  assignToMe() {
+      this.ticketService.assignToMe(this.ticketId).subscribe({
+        next: (updated) => {
+          this.ticket = updated;
+          this.cdr.detectChanges();
+        },
+        error: (err) => alert('Błąd przypisywania')
+      });
+  }
+
+  loadSupportStaff() {
+      this.ticketService.getSupportStaff().subscribe(data => {
+          this.supportStaff = data;
+      });
+  }
+
+  goBack() {
     this.router.navigate(['/dashboard']);
   }
 }

@@ -12,6 +12,7 @@ import pl.gogacz.smart_helpdesk.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -31,6 +32,7 @@ public class TicketController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
 
+        // Sprawdzamy rolę
         boolean isStaff = auth.getAuthorities().stream()
                 .anyMatch(a -> {
                     String r = a.getAuthority();
@@ -65,8 +67,8 @@ public class TicketController {
         ticket.setLastUpdated(LocalDateTime.now());
         ticket.setStatus("OPEN");
 
-        // AUTOMATYZACJA PRIORYTETU
-        // Jeśli użytkownik ma ustawiony domyślny priorytet (np. HIGH), używamy go.
+        // --- AUTOMATYZACJA PRIORYTETU ---
+        // Ignorujemy to co przyszło z Frontendu, ustawiamy na podstawie Usera
         if (author.getDefaultPriority() != null) {
             ticket.setPriority(author.getDefaultPriority());
         } else {
@@ -76,16 +78,13 @@ public class TicketController {
         return ticketRepository.save(ticket);
     }
 
-    // --- Reszta metod bez zmian (changeStatus, changePriority, assign) ---
-    // Dla pewności, że plik jest kompletny:
-
     @PutMapping("/{id}/status")
     public Ticket changeStatus(@PathVariable Long id, @RequestBody String status) {
         return ticketRepository.findById(id).map(ticket -> {
             ticket.setStatus(status);
             ticket.setLastUpdated(LocalDateTime.now());
             return ticketRepository.save(ticket);
-        }).orElseThrow();
+        }).orElseThrow(() -> new RuntimeException("Brak biletu"));
     }
 
     @PutMapping("/{id}/priority")
@@ -94,7 +93,7 @@ public class TicketController {
             ticket.setPriority(priority);
             ticket.setLastUpdated(LocalDateTime.now());
             return ticketRepository.save(ticket);
-        }).orElseThrow();
+        }).orElseThrow(() -> new RuntimeException("Brak biletu"));
     }
 
     @PutMapping("/{id}/assign")
@@ -127,10 +126,43 @@ public class TicketController {
 
     @GetMapping("/stats")
     public Map<String, Long> getStats() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+        User currentUser = userRepository.findByUsername(currentUsername).orElseThrow();
+
+        List<Ticket> allTickets = ticketRepository.findAll();
+
+        // 1. Statystyki GLOBALNE
+        long globalOpen = allTickets.stream().filter(t -> "OPEN".equals(t.getStatus())).count();
+        long globalTotal = allTickets.size();
+
+        // 2. Statystyki MOJE
+        // Jeśli jesteś Adminem/Helpdesk -> "Moje" to te przypisane do Ciebie
+        // Jeśli jesteś Userem -> "Moje" to te utworzone przez Ciebie
+        boolean isStaff = "ADMIN".equals(currentUser.getRole()) || "HELPDESK".equals(currentUser.getRole());
+
+        List<Ticket> myTickets;
+        if (isStaff) {
+            myTickets = allTickets.stream()
+                    .filter(t -> t.getAssignedUser() != null && t.getAssignedUser().getId().equals(currentUser.getId()))
+                    .collect(Collectors.toList());
+        } else {
+            myTickets = allTickets.stream()
+                    .filter(t -> t.getAuthor().getId().equals(currentUser.getId()))
+                    .collect(Collectors.toList());
+        }
+
+        long myOpen = myTickets.stream().filter(t -> "OPEN".equals(t.getStatus())).count();
+        long myInProgress = myTickets.stream().filter(t -> "IN_PROGRESS".equals(t.getStatus())).count();
+        long myClosed = myTickets.stream().filter(t -> "CLOSED".equals(t.getStatus())).count();
+
+        // Klucze muszą pasować do tych w dashboard.ts
         return Map.of(
-                "open", ticketRepository.findAll().stream().filter(t -> "OPEN".equals(t.getStatus())).count(),
-                "inProgress", ticketRepository.findAll().stream().filter(t -> "IN_PROGRESS".equals(t.getStatus())).count(),
-                "closed", ticketRepository.findAll().stream().filter(t -> "CLOSED".equals(t.getStatus())).count()
+                "globalOpen", globalOpen,
+                "globalTotal", globalTotal,
+                "myOpen", myOpen,
+                "myInProgress", myInProgress,
+                "myClosed", myClosed
         );
     }
 }
