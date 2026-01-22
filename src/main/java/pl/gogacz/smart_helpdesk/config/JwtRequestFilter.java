@@ -28,7 +28,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+
+        // --- DIAGNOSTYKA START ---
         final String authorizationHeader = request.getHeader("Authorization");
+        String path = request.getRequestURI();
+
+        // Nie loguj zapytań publicznych (żeby nie śmiecić)
+        if (!path.contains("/auth/login") && !path.contains("/h2-console")) {
+            System.out.println("\n[JWT DEBUG] Sprawdzam zapytanie: " + request.getMethod() + " " + path);
+            System.out.println("[JWT DEBUG] Nagłówek Authorization: " + (authorizationHeader != null ? "OBECNY (długość: " + authorizationHeader.length() + ")" : "BRAK"));
+        }
+        // -------------------------
 
         String username = null;
         String jwt = null;
@@ -37,20 +47,28 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
+                // System.out.println("[JWT DEBUG] Token poprawny, użytkownik: " + username);
             } catch (Exception e) {
-                // Ignorujemy błędy parsowania
+                System.err.println("[JWT DEBUG] BŁĄD tokena: " + e.getMessage());
             }
+        } else if (authorizationHeader != null && !path.contains("/auth/login")) {
+            System.out.println("[JWT DEBUG] Nagłówek jest, ale nie zaczyna się od 'Bearer '!");
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+
             if (jwtUtil.validateToken(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("[JWT DEBUG] Autoryzacja SUKCES dla: " + username);
+            } else {
+                System.out.println("[JWT DEBUG] Walidacja tokena nieudana (wygasł lub zły podpis).");
             }
         }
+
         chain.doFilter(request, response);
     }
 }
