@@ -12,7 +12,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
-// USUNIĘTO @CrossOrigin
 public class UserController {
 
     private final UserRepository userRepository;

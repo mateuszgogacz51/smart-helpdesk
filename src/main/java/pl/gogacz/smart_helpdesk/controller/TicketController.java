@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tickets")
-// USUNIĘTO @CrossOrigin - to naprawi konflikt!
 public class TicketController {
 
     private final TicketRepository ticketRepository;
@@ -124,7 +123,6 @@ public class TicketController {
         User currentUser = userRepository.findByUsername(currentUsername).orElseThrow();
 
         List<Ticket> allTickets = ticketRepository.findAll();
-
         long globalOpen = allTickets.stream().filter(t -> "OPEN".equals(t.getStatus())).count();
         long globalTotal = allTickets.size();
 

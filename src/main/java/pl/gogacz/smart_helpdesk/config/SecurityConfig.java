@@ -36,15 +36,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                // Ustawiamy CORS z naszej metody poniżej
+                // Ustawiamy CORS tutaj, korzystając z Beana poniżej
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // KLUCZOWA POPRAWKA: Zezwalamy na wszystkie zapytania wstępne (OPTIONS)
+                        // WAŻNE: Zezwalamy na OPTIONS dla wszystkiego (naprawia błąd 403 w przeglądarce)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Publiczne endpointy
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
-                        // Reszta wymaga logowania
+                        // Reszta wymaga tokena
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -54,13 +54,16 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Konfiguracja CORS w jednym miejscu
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        // Adres Twojego Frontendu
         configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        // Dozwolone metody
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Dozwolone nagłówki
         configuration.setAllowedHeaders(List.of("*"));
+        // Zezwolenie na przesyłanie poświadczeń (tokenów)
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
