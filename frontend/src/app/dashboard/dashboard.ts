@@ -94,9 +94,16 @@ export class DashboardComponent implements OnInit {
       temp = temp.filter(t => t.status === this.currentStatusFilter);
     }
 
-    if (this.searchTerm) {
+ if (this.searchTerm) {
       const lowerTerm = this.searchTerm.toLowerCase();
-      temp = temp.filter(t => t.title.toLowerCase().includes(lowerTerm));
+      temp = temp.filter(t => 
+        // Szukanie w tytule
+        t.title.toLowerCase().includes(lowerTerm) ||
+        // Szukanie w nazwie autora (bezpieczne sprawdzanie czy istnieje)
+        (t.author?.username && t.author.username.toLowerCase().includes(lowerTerm)) ||
+        // Szukanie w nazwie przypisanego pracownika
+        (t.assignedUser?.username && t.assignedUser.username.toLowerCase().includes(lowerTerm))
+      );
     }
 
     this.visibleTickets = temp;
@@ -118,7 +125,7 @@ export class DashboardComponent implements OnInit {
   }
 
   goToDetails(id: number) {
-    this.router.navigate(['/ticket-details', id]);
+    this.router.navigate(['/ticket', id]);
   }
 
   logout() {

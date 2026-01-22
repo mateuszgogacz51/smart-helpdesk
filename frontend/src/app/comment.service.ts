@@ -7,18 +7,22 @@ import { Comment } from './comment.model';
   providedIn: 'root'
 })
 export class CommentService {
-  // Adres backendu (upewnij się, że port 8080 jest poprawny)
-  private apiUrl = 'http://localhost:8080/api/tickets';
+  // ZMIANA 1: Zmiana bazowego adresu na /api/comments
+  private apiUrl = 'http://localhost:8080/api/comments';
 
   constructor(private http: HttpClient) {}
 
   // Pobieranie komentarzy dla zgłoszenia
   getComments(ticketId: number): Observable<Comment[]> {
-    return this.http.get<Comment[]>(`${this.apiUrl}/${ticketId}/comments`);
+    // ZMIANA 2: Poprawna ścieżka zgodna z CommentController ( @GetMapping("/ticket/{ticketId}") )
+    return this.http.get<Comment[]>(`${this.apiUrl}/ticket/${ticketId}`);
   }
 
-  // Dodawanie komentarza (Backend przyjmuje String w body)
+  // Dodawanie komentarza
   addComment(ticketId: number, content: string): Observable<Comment> {
-    return this.http.post<Comment>(`${this.apiUrl}/${ticketId}/comments`, content);
+    // ZMIANA 3: Poprawna ścieżka oraz wysyłanie obiektu JSON { content: ... }
+    // Backend oczekuje @RequestBody Map<String, String>, więc musimy wysłać obiekt.
+    const body = { content: content };
+    return this.http.post<Comment>(`${this.apiUrl}/ticket/${ticketId}`, body);
   }
 }
