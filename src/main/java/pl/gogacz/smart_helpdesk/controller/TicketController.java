@@ -5,7 +5,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import pl.gogacz.smart_helpdesk.model.Ticket;
+import pl.gogacz.smart_helpdesk.model.TicketHistory; // <--- NOWE
 import pl.gogacz.smart_helpdesk.model.User;
+import pl.gogacz.smart_helpdesk.repository.TicketHistoryRepository; // <--- NOWE
 import pl.gogacz.smart_helpdesk.repository.TicketRepository;
 import pl.gogacz.smart_helpdesk.repository.UserRepository;
 
@@ -20,25 +22,30 @@ public class TicketController {
 
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private final TicketHistoryRepository historyRepository; // <--- NOWE
 
-    public TicketController(TicketRepository ticketRepository, UserRepository userRepository) {
+    // Aktualizacja konstruktora
+    public TicketController(TicketRepository ticketRepository, UserRepository userRepository, TicketHistoryRepository historyRepository) {
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
+        this.historyRepository = historyRepository;
+    }
+
+    // Pomocnicza metoda do pobierania aktualnego użytkownika (tego co klika)
+    private User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return userRepository.findByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
     }
 
     @GetMapping
     public List<Ticket> getAllTickets() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = auth.getName();
-
-        boolean isStaff = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_HELPDESK"));
+        User currentUser = getCurrentUser();
+        boolean isStaff = "ADMIN".equals(currentUser.getRole()) || "HELPDESK".equals(currentUser.getRole());
 
         if (isStaff) {
             return ticketRepository.findAll();
         } else {
-            User currentUser = userRepository.findByUsername(currentUsername)
-                    .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
             return ticketRepository.findByAuthor(currentUser);
         }
     }
@@ -50,11 +57,16 @@ public class TicketController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // --- NOWY ENDPOINT DO HISTORII ---
+    @GetMapping("/{id}/history")
+    public List<TicketHistory> getTicketHistory(@PathVariable Long id) {
+        return historyRepository.findByTicketIdOrderByTimestampDesc(id);
+    }
+    // ---------------------------------
+
     @PostMapping
     public Ticket createTicket(@RequestBody Ticket ticket) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User author = userRepository.findByUsername(auth.getName())
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+        User author = getCurrentUser();
 
         ticket.setAuthor(author);
         ticket.setCreatedDate(LocalDateTime.now());
@@ -72,41 +84,74 @@ public class TicketController {
 
     @PutMapping("/{id}/status")
     public Ticket changeStatus(@PathVariable Long id, @RequestBody String status) {
-        return ticketRepository.findById(id).map(ticket -> {
-            ticket.setStatus(status);
-            ticket.setLastUpdated(LocalDateTime.now());
-            return ticketRepository.save(ticket);
-        }).orElseThrow(() -> new RuntimeException("Brak biletu"));
+        Ticket ticket = ticketRepository.findById(id).orElseThrow();
+        User modifier = getCurrentUser();
+
+        // Logika historii
+        String oldStatus = ticket.getStatus();
+        if (!oldStatus.equals(status)) {
+            TicketHistory history = new TicketHistory(ticket, modifier, "STATUS_CHANGE", oldStatus, status);
+            historyRepository.save(history);
+        }
+
+        ticket.setStatus(status);
+        ticket.setLastUpdated(LocalDateTime.now());
+        return ticketRepository.save(ticket);
     }
 
     @PutMapping("/{id}/priority")
     public Ticket changePriority(@PathVariable Long id, @RequestBody String priority) {
-        return ticketRepository.findById(id).map(ticket -> {
-            ticket.setPriority(priority);
-            ticket.setLastUpdated(LocalDateTime.now());
-            return ticketRepository.save(ticket);
-        }).orElseThrow(() -> new RuntimeException("Brak biletu"));
+        Ticket ticket = ticketRepository.findById(id).orElseThrow();
+        User modifier = getCurrentUser();
+
+        String oldPriority = ticket.getPriority();
+        if (oldPriority == null) oldPriority = "BRAK";
+
+        if (!oldPriority.equals(priority)) {
+            TicketHistory history = new TicketHistory(ticket, modifier, "PRIORITY_CHANGE", oldPriority, priority);
+            historyRepository.save(history);
+        }
+
+        ticket.setPriority(priority);
+        ticket.setLastUpdated(LocalDateTime.now());
+        return ticketRepository.save(ticket);
     }
 
     @PutMapping("/{id}/assign")
     public Ticket assignTicket(@PathVariable Long id, @RequestParam Long userId) {
+        Ticket ticket = ticketRepository.findById(id).orElseThrow();
         User staff = userRepository.findById(userId).orElseThrow();
-        return ticketRepository.findById(id).map(ticket -> {
-            ticket.setAssignedUser(staff);
-            ticket.setLastUpdated(LocalDateTime.now());
-            return ticketRepository.save(ticket);
-        }).orElseThrow();
+        User modifier = getCurrentUser();
+
+        String oldAssignee = ticket.getAssignedUser() != null ? ticket.getAssignedUser().getUsername() : "Brak";
+        String newAssignee = staff.getUsername();
+
+        if (!oldAssignee.equals(newAssignee)) {
+            TicketHistory history = new TicketHistory(ticket, modifier, "ASSIGNMENT_CHANGE", oldAssignee, newAssignee);
+            historyRepository.save(history);
+        }
+
+        ticket.setAssignedUser(staff);
+        ticket.setLastUpdated(LocalDateTime.now());
+        return ticketRepository.save(ticket);
     }
 
     @PutMapping("/{id}/assign-me")
     public Ticket assignToMe(@PathVariable Long id) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User staff = userRepository.findByUsername(auth.getName()).orElseThrow();
-        return ticketRepository.findById(id).map(ticket -> {
-            ticket.setAssignedUser(staff);
-            ticket.setLastUpdated(LocalDateTime.now());
-            return ticketRepository.save(ticket);
-        }).orElseThrow();
+        Ticket ticket = ticketRepository.findById(id).orElseThrow();
+        User modifier = getCurrentUser(); // Tutaj modyfikujący jest też nowym przypisanym
+
+        String oldAssignee = ticket.getAssignedUser() != null ? ticket.getAssignedUser().getUsername() : "Brak";
+        String newAssignee = modifier.getUsername();
+
+        if (!oldAssignee.equals(newAssignee)) {
+            TicketHistory history = new TicketHistory(ticket, modifier, "ASSIGNMENT_CHANGE", oldAssignee, newAssignee);
+            historyRepository.save(history);
+        }
+
+        ticket.setAssignedUser(modifier);
+        ticket.setLastUpdated(LocalDateTime.now());
+        return ticketRepository.save(ticket);
     }
 
     @GetMapping("/staff")
@@ -118,11 +163,9 @@ public class TicketController {
 
     @GetMapping("/stats")
     public Map<String, Long> getStats() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = auth.getName();
-        User currentUser = userRepository.findByUsername(currentUsername).orElseThrow();
-
+        User currentUser = getCurrentUser();
         List<Ticket> allTickets = ticketRepository.findAll();
+
         long globalOpen = allTickets.stream().filter(t -> "OPEN".equals(t.getStatus())).count();
         long globalTotal = allTickets.size();
 

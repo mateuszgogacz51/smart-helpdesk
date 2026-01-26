@@ -1,8 +1,7 @@
 <div class="dashboard-container" *ngIf="ticket; else loadingTemplate">
   
   <header class="details-header">
-    <button class="back-btn" (click)="goBack()">← Wróć</button>
-    <h2 class="section-title">Szczegóły zgłoszenia #{{ ticket.id }}</h2>
+    <button class="back-btn" (click)="goBack()">← Wróć do listy</button>
   </header>
 
   <div class="content-grid">
@@ -11,12 +10,44 @@
       
       <section class="card-panel ticket-card">
         <div class="card-header-row">
-          <h1 class="ticket-title">{{ ticket.title }}</h1>
+          <h1 class="ticket-title">#{{ ticket.id }} {{ ticket.title }}</h1>
           <span class="date-badge">{{ ticket.createdDate | date:'medium' }}</span>
         </div>
         <div class="description-box">
           <p>{{ ticket.description }}</p>
         </div>
+      </section>
+
+      <section class="card-panel history-section">
+        <h3 class="panel-title">📜 Dziennik Zdarzeń</h3>
+        
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Kto</th>
+              <th>Akcja</th>
+              <th>Zmiana</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of history">
+              <td>{{ entry.timestamp | date:'short' }}</td>
+              <td><strong>{{ entry.modifier?.username }}</strong></td>
+              <td>
+                <span *ngIf="entry.changeType === 'STATUS_CHANGE'">Status</span>
+                <span *ngIf="entry.changeType === 'PRIORITY_CHANGE'">Priorytet</span>
+                <span *ngIf="entry.changeType === 'ASSIGNMENT_CHANGE'">Przypisanie</span>
+              </td>
+              <td>
+                <span style="color: #999; text-decoration: line-through;">{{ entry.oldValue }}</span> 
+                ➝ 
+                <span style="color: #2c3e50; font-weight: bold;">{{ entry.newValue }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="history.length === 0" style="text-align: center; padding: 15px; color: #aaa;">Brak historii zmian.</div>
       </section>
 
       <section class="card-panel comments-section">
@@ -30,14 +61,17 @@
             </div>
             <div class="comment-body">{{ comment.content }}</div>
           </div>
-          <div *ngIf="comments.length === 0" class="empty-state">Brak komentarzy. Bądź pierwszy!</div>
+          <div *ngIf="comments.length === 0" class="empty-state" style="padding: 20px; text-align: center; color: #999;">
+            Brak komentarzy. Rozpocznij dyskusję!
+          </div>
         </div>
 
         <div class="add-comment-area">
-          <textarea [(ngModel)]="newCommentContent" placeholder="Napisz komentarz..." rows="3" class="styled-input"></textarea>
+          <textarea [(ngModel)]="newCommentContent" placeholder="Napisz notatkę lub odpowiedź..." rows="3" class="styled-input"></textarea>
           <button class="save-btn" (click)="addComment()">Wyślij komentarz</button>
         </div>
       </section>
+
     </main>
 
     <aside class="sidebar-column">
@@ -47,28 +81,30 @@
 
         <div class="info-group">
           <label>Status</label>
-          <select *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'" 
-                  [ngModel]="ticket.status" 
-                  (change)="changeStatus($event)"
-                  class="styled-select status-select">
-            <option value="OPEN">Nowe</option>
-            <option value="IN_PROGRESS">W trakcie</option>
-            <option value="CLOSED">Zamknięte</option>
-          </select>
-          <div *ngIf="currentUserRole !== 'ADMIN' && currentUserRole !== 'HELPDESK'">
-            <span class="status-badge" [ngClass]="ticket.status">{{ ticket.status }}</span>
+          <div *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'; else readOnlyStatus">
+             <select [ngModel]="ticket.status" (change)="changeStatus($event)" class="styled-select">
+                <option value="OPEN">Nowe</option>
+                <option value="IN_PROGRESS">W trakcie</option>
+                <option value="CLOSED">Zamknięte</option>
+             </select>
           </div>
+          <ng-template #readOnlyStatus>
+             <span class="status-badge" [ngClass]="ticket.status">{{ ticket.status }}</span>
+          </ng-template>
         </div>
 
-        <div class="info-group" *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
+        <div class="info-group">
           <label>Priorytet</label>
-          <select [ngModel]="ticket.priority" 
-                  (change)="updatePriority($event)" 
-                  class="styled-select">
-            <option value="LOW">Niski</option>
-            <option value="NORMAL">Normalny</option>
-            <option value="HIGH">🔥 PILNE</option>
-          </select>
+          <div *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'; else readOnlyPriority">
+            <select [ngModel]="ticket.priority" (change)="updatePriority($event)" class="styled-select">
+              <option value="LOW">Niski</option>
+              <option value="NORMAL">Normalny</option>
+              <option value="HIGH">🔥 PILNE</option>
+            </select>
+          </div>
+          <ng-template #readOnlyPriority>
+            <span class="value-text">{{ ticket.priority }}</span>
+          </ng-template>
         </div>
 
         <div class="info-group">
@@ -83,7 +119,7 @@
 
         <div class="info-group">
           <label>Przypisano do</label>
-          <div *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
+          <div *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'; else readOnlyAssignee">
              <select [ngModel]="ticket.assignedUser?.id" (change)="assignTicket($event)" class="styled-select">
                <option [ngValue]="null">-- Brak --</option>
                <option *ngFor="let staff of supportStaff" [value]="staff.id">
@@ -92,9 +128,9 @@
              </select>
              <button class="action-btn-small" (click)="assignToMe()">Przypisz mnie</button>
           </div>
-          <div *ngIf="currentUserRole !== 'ADMIN' && currentUserRole !== 'HELPDESK'">
-            <span class="value-text">{{ ticket.assignedUser?.username || 'Oczekuje...' }}</span>
-          </div>
+          <ng-template #readOnlyAssignee>
+            <span class="value-text" style="color: #2980b9;">{{ ticket.assignedUser?.username || 'Brak' }}</span>
+          </ng-template>
         </div>
       </div>
 
@@ -103,7 +139,7 @@
 </div>
 
 <ng-template #loadingTemplate>
-  <div class="loading-state">
-    <h2>⏳ Ładowanie danych...</h2>
+  <div class="loading-state" style="text-align: center; padding: 50px; color: #666;">
+    <h2>⏳ Ładowanie zgłoszenia...</h2>
   </div>
 </ng-template>

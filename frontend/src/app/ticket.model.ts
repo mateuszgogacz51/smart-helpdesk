@@ -13,3 +13,12 @@ export interface Ticket {
   assignedUser?: User; 
   lastUpdated?: string;
 }
+
+export interface TicketHistory {
+  id: number;
+  modifier: { username: string }; // Użytkownik, który zmienił
+  changeType: string;             // np. STATUS_CHANGE
+  oldValue: string;
+  newValue: string;
+  timestamp: string;
+}

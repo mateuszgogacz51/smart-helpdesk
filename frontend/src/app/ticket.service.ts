@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Ticket } from './ticket.model';
 import { User } from './user.model';
+import { TicketHistory } from './ticket.model';
 
 @Injectable({
   providedIn: 'root'
@@ -63,5 +64,8 @@ export class TicketService {
   // Pobranie listy pracowników (do dropdowna przypisywania)
   getSupportStaff(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/staff`);
+  }
+  getHistory(id: number): Observable<TicketHistory[]> {
+    return this.http.get<TicketHistory[]>(`${this.apiUrl}/${id}/history`);
   }
 }

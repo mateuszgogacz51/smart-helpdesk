@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TicketService } from '../ticket.service';
 import { CommentService } from '../comment.service';
 import { AuthService } from '../auth.service';
-import { Ticket } from '../ticket.model';
+import { Ticket, TicketHistory } from '../ticket.model'; // Dodano TicketHistory
 import { Comment } from '../comment.model';
 import { User } from '../user.model';
 
@@ -19,6 +19,7 @@ import { User } from '../user.model';
 export class TicketDetailsComponent implements OnInit {
   ticket: Ticket | null = null;
   comments: Comment[] = [];
+  history: TicketHistory[] = []; // Nowa lista historii
   newCommentContent: string = '';
   supportStaff: User[] = []; 
   currentUserRole: string = '';
@@ -40,6 +41,7 @@ export class TicketDetailsComponent implements OnInit {
     if (this.ticketId) {
       this.loadTicket();
       this.loadComments();
+      this.loadHistory(); // Ładujemy historię przy starcie
     }
 
     if (this.currentUserRole === 'ADMIN' || this.currentUserRole === 'HELPDESK') {
@@ -54,7 +56,6 @@ export class TicketDetailsComponent implements OnInit {
         this.cdr.detectChanges(); 
       },
       error: (err) => {
-        // Ignorujemy 401/403 bo interceptor to obsłuży
         if (err.status !== 401 && err.status !== 403) {
            alert('Nie udało się pobrać szczegółów zgłoszenia.');
            this.router.navigate(['/dashboard']);
@@ -73,6 +74,17 @@ export class TicketDetailsComponent implements OnInit {
     });
   }
 
+  // Nowa metoda do pobierania historii
+  loadHistory(): void {
+    this.ticketService.getHistory(this.ticketId).subscribe({
+      next: (data) => {
+        this.history = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Błąd historii', err)
+    });
+  }
+
   loadSupportStaff(): void {
     this.ticketService.getSupportStaff().subscribe({
       next: (data) => {
@@ -86,11 +98,11 @@ export class TicketDetailsComponent implements OnInit {
   addComment(): void {
     if (!this.newCommentContent.trim()) return;
 
-    // Poprawka: CommentService oczekuje (id, string)
     this.commentService.addComment(this.ticketId, this.newCommentContent).subscribe({
       next: () => {
         this.newCommentContent = '';
-        this.loadComments(); // Odśwież listę
+        this.loadComments();
+        this.loadHistory(); // Odśwież historię, bo komentarz zmienia lastUpdated (opcjonalne)
       },
       error: (err) => alert('Błąd dodawania komentarza')
     });
@@ -103,6 +115,7 @@ export class TicketDetailsComponent implements OnInit {
     this.ticketService.changeStatus(this.ticketId, newStatus).subscribe({
         next: () => {
           if (this.ticket) this.ticket.status = newStatus;
+          this.loadHistory(); // Odświeżamy historię po zmianie
           this.cdr.detectChanges();
         },
         error: (err) => alert('Błąd zmiany statusu')
@@ -116,6 +129,7 @@ export class TicketDetailsComponent implements OnInit {
     this.ticketService.changePriority(this.ticketId, newPriority).subscribe({
         next: () => {
           if (this.ticket) this.ticket.priority = newPriority;
+          this.loadHistory(); // Odświeżamy historię po zmianie
           this.cdr.detectChanges();
         },
         error: (err) => alert('Błąd zmiany priorytetu')
@@ -131,6 +145,7 @@ export class TicketDetailsComponent implements OnInit {
     this.ticketService.assignTicket(this.ticketId, staffId).subscribe({
         next: (updated) => {
             this.ticket = updated;
+            this.loadHistory(); // Odświeżamy historię po zmianie
             this.cdr.detectChanges();
         },
         error: (err) => alert('Błąd przypisywania')
@@ -141,6 +156,7 @@ export class TicketDetailsComponent implements OnInit {
     this.ticketService.assignToMe(this.ticketId).subscribe({
         next: (updated) => {
           this.ticket = updated;
+          this.loadHistory(); // Odświeżamy historię po zmianie
           this.cdr.detectChanges();
         },
         error: (err) => alert('Błąd przypisywania')
