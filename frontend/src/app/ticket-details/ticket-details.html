@@ -18,6 +18,30 @@
         </div>
       </section>
 
+      <section class="card-panel attachments-section">
+        <h3 class="panel-title">📎 Załączniki ({{ attachments.length }})</h3>
+
+        <div class="attachments-list" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+          <div *ngFor="let file of attachments" style="background: #f8f9fa; padding: 10px 15px; border-radius: 6px; border: 1px solid #e9ecef; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.2rem;">📄</span>
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-weight: 600; font-size: 0.9rem; color: #333;">{{ file.filename }}</span>
+              <a [href]="ticketService.getDownloadUrl(file.id)" target="_blank" style="font-size: 0.8rem; color: #3498db; text-decoration: none; margin-top: 2px;">Pobierz</a>
+            </div>
+          </div>
+          <div *ngIf="attachments.length === 0" style="color: #999; font-style: italic; font-size: 0.9rem; padding: 5px;">
+             Brak załączników.
+          </div>
+        </div>
+
+        <div class="upload-area" style="border-top: 1px solid #f0f0f0; padding-top: 15px; display: flex; align-items: center; gap: 10px;">
+          <input type="file" id="fileInput" (change)="onFileSelected($event)" style="font-size: 0.9rem;">
+          <button (click)="uploadFile()" [disabled]="!selectedFile || isUploading" class="save-btn" style="width: auto; margin-top: 0; padding: 8px 16px; background: #3498db;">
+            {{ isUploading ? 'Wysyłanie...' : 'Wgraj plik' }}
+          </button>
+        </div>
+      </section>
+
       <section class="card-panel history-section">
         <h3 class="panel-title">📜 Dziennik Zdarzeń</h3>
         

@@ -13,7 +13,7 @@ public class Attachment {
     private String filename;
     private String fileType;
 
-    @Lob // Informuje bazę, że to duży obiekt binarny (BLOB)
+    @Lob // Duży obiekt binarny (plik)
     private byte[] data;
 
     private LocalDateTime createdDate;
@@ -22,7 +22,6 @@ public class Attachment {
     @JoinColumn(name = "ticket_id", nullable = false)
     private Ticket ticket;
 
-    // Konstruktory
     public Attachment() {}
 
     public Attachment(String filename, String fileType, byte[] data, Ticket ticket) {

@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TicketService } from '../ticket.service';
 import { CommentService } from '../comment.service';
 import { AuthService } from '../auth.service';
-import { Ticket, TicketHistory } from '../ticket.model'; // Dodano TicketHistory
+import { Ticket, TicketHistory } from '../ticket.model';
 import { Comment } from '../comment.model';
 import { User } from '../user.model';
 
@@ -19,16 +19,22 @@ import { User } from '../user.model';
 export class TicketDetailsComponent implements OnInit {
   ticket: Ticket | null = null;
   comments: Comment[] = [];
-  history: TicketHistory[] = []; // Nowa lista historii
+  history: TicketHistory[] = []; // Lista historii
   newCommentContent: string = '';
   supportStaff: User[] = []; 
   currentUserRole: string = '';
   ticketId: number = 0;
 
+  // --- ZMIENNE DO ZAŁĄCZNIKÓW ---
+  attachments: any[] = [];
+  selectedFile: File | null = null;
+  isUploading: boolean = false;
+  // ------------------------------
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private ticketService: TicketService,
+    public ticketService: TicketService, // public, aby użyć w HTML
     private commentService: CommentService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef
@@ -41,7 +47,8 @@ export class TicketDetailsComponent implements OnInit {
     if (this.ticketId) {
       this.loadTicket();
       this.loadComments();
-      this.loadHistory(); // Ładujemy historię przy starcie
+      this.loadHistory();      // Ładowanie historii
+      this.loadAttachments();  // Ładowanie załączników
     }
 
     if (this.currentUserRole === 'ADMIN' || this.currentUserRole === 'HELPDESK') {
@@ -74,7 +81,6 @@ export class TicketDetailsComponent implements OnInit {
     });
   }
 
-  // Nowa metoda do pobierania historii
   loadHistory(): void {
     this.ticketService.getHistory(this.ticketId).subscribe({
       next: (data) => {
@@ -84,6 +90,44 @@ export class TicketDetailsComponent implements OnInit {
       error: (err) => console.error('Błąd historii', err)
     });
   }
+
+  // --- METODY OBSŁUGI ZAŁĄCZNIKÓW ---
+  loadAttachments(): void {
+    this.ticketService.getAttachments(this.ticketId).subscribe({
+      next: (data) => {
+        this.attachments = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Błąd załączników', err)
+    });
+  }
+
+  onFileSelected(event: any): void {
+    this.selectedFile = event.target.files[0] ?? null;
+  }
+
+  uploadFile(): void {
+    if (!this.selectedFile) return;
+
+    this.isUploading = true;
+    this.ticketService.uploadAttachment(this.ticketId, this.selectedFile).subscribe({
+      next: () => {
+        this.selectedFile = null;
+        this.isUploading = false;
+        
+        // Reset inputa w HTML
+        const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+
+        this.loadAttachments(); // Odśwież listę po wgraniu
+      },
+      error: () => {
+        alert('Błąd wysyłania pliku');
+        this.isUploading = false;
+      }
+    });
+  }
+  // ----------------------------------
 
   loadSupportStaff(): void {
     this.ticketService.getSupportStaff().subscribe({
@@ -102,7 +146,7 @@ export class TicketDetailsComponent implements OnInit {
       next: () => {
         this.newCommentContent = '';
         this.loadComments();
-        this.loadHistory(); // Odśwież historię, bo komentarz zmienia lastUpdated (opcjonalne)
+        this.loadHistory();
       },
       error: (err) => alert('Błąd dodawania komentarza')
     });
@@ -115,7 +159,7 @@ export class TicketDetailsComponent implements OnInit {
     this.ticketService.changeStatus(this.ticketId, newStatus).subscribe({
         next: () => {
           if (this.ticket) this.ticket.status = newStatus;
-          this.loadHistory(); // Odświeżamy historię po zmianie
+          this.loadHistory();
           this.cdr.detectChanges();
         },
         error: (err) => alert('Błąd zmiany statusu')
@@ -129,7 +173,7 @@ export class TicketDetailsComponent implements OnInit {
     this.ticketService.changePriority(this.ticketId, newPriority).subscribe({
         next: () => {
           if (this.ticket) this.ticket.priority = newPriority;
-          this.loadHistory(); // Odświeżamy historię po zmianie
+          this.loadHistory();
           this.cdr.detectChanges();
         },
         error: (err) => alert('Błąd zmiany priorytetu')
@@ -145,7 +189,7 @@ export class TicketDetailsComponent implements OnInit {
     this.ticketService.assignTicket(this.ticketId, staffId).subscribe({
         next: (updated) => {
             this.ticket = updated;
-            this.loadHistory(); // Odświeżamy historię po zmianie
+            this.loadHistory();
             this.cdr.detectChanges();
         },
         error: (err) => alert('Błąd przypisywania')
@@ -156,7 +200,7 @@ export class TicketDetailsComponent implements OnInit {
     this.ticketService.assignToMe(this.ticketId).subscribe({
         next: (updated) => {
           this.ticket = updated;
-          this.loadHistory(); // Odświeżamy historię po zmianie
+          this.loadHistory();
           this.cdr.detectChanges();
         },
         error: (err) => alert('Błąd przypisywania')
