@@ -3,6 +3,7 @@ package pl.gogacz.smart_helpdesk.controller;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional; // <--- WAŻNY IMPORT
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.gogacz.smart_helpdesk.model.Attachment;
@@ -26,11 +27,11 @@ public class AttachmentController {
         this.ticketRepository = ticketRepository;
     }
 
-    // 1. Pobieranie listy plików dla zgłoszenia (tylko nazwy, bez danych binarnych)
+    // 1. Pobieranie listy plików dla zgłoszenia
     @GetMapping("/ticket/{ticketId}")
+    @Transactional(readOnly = true) // <--- TO NAPRAWIA BŁĄD "Large Objects"
     public List<Map<String, Object>> getAttachmentsByTicket(@PathVariable Long ticketId) {
         return attachmentRepository.findByTicketId(ticketId).stream()
-                // FIX: Wymuszenie typów <String, Object>, aby Java nie zgłaszała błędu
                 .map(att -> Map.<String, Object>of(
                         "id", att.getId(),
                         "filename", att.getFilename(),
@@ -42,6 +43,7 @@ public class AttachmentController {
 
     // 2. Pobieranie konkretnego pliku (download)
     @GetMapping("/{id}")
+    @Transactional(readOnly = true) // <--- TUTAJ TEŻ POTRZEBNE
     public ResponseEntity<byte[]> getAttachment(@PathVariable Long id) {
         Attachment attachment = attachmentRepository.findById(id).orElseThrow();
 
@@ -53,6 +55,7 @@ public class AttachmentController {
 
     // 3. Wysyłanie pliku
     @PostMapping("/upload")
+    @Transactional // <--- DOBRA PRAKTYKA PRZY ZAPISIE
     public ResponseEntity<?> uploadAttachment(@RequestParam("ticketId") Long ticketId,
                                               @RequestParam("file") MultipartFile file) {
         try {

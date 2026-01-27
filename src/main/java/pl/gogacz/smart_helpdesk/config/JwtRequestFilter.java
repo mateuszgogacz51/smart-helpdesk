@@ -29,8 +29,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        // CZYSTO: Usunęliśmy ręczne nagłówki CORS. Teraz zajmuje się tym SecurityConfig.
-
         final String authorizationHeader = request.getHeader("Authorization");
 
         String username = null;
@@ -41,7 +39,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtil.extractUsername(jwt);
             } catch (Exception e) {
-                // Token nieważny - ignorujemy, SecurityContext pozostaje pusty -> 403
+                // DIAGNOSTYKA: Wypisz błąd w konsoli IntelliJ
+                System.out.println("❌ TOKEN INVALID: " + e.getMessage());
             }
         }
 
@@ -53,8 +52,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                System.out.println("❌ TOKEN WALIDACJA NIEUDANA DLA: " + username);
             }
         }
+
         chain.doFilter(request, response);
     }
 }

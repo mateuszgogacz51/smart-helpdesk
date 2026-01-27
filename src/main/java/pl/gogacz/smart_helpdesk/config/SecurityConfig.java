@@ -34,10 +34,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // <--- KLUCZOWE DLA ZAŁĄCZNIKÓW
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/attachments/**").authenticated() // Pozwala na dostęp zalogowanym
+                        .requestMatchers("/api/attachments/**").authenticated() // Wymaga logowania
                         .requestMatchers("/api/users/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -47,20 +47,23 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // --- Konfiguracja CORS (Pozwala Angularowi rozmawiać z Javą) ---
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200")); // Adres Angulara
+        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+
+        // --- KLUCZOWA ZMIANA ---
+        // Pozwalamy na WSZYSTKIE nagłówki. W Twoim pliku było tylko 'Authorization',
+        // co powodowało błąd 403, gdy przeglądarka wysyłała np. 'Accept'.
+        configuration.setAllowedHeaders(List.of("*"));
+
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-    // -------------------------------------------------------------
 
     @Bean
     public PasswordEncoder passwordEncoder() {
