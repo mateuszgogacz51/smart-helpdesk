@@ -29,19 +29,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        // --- RĘCZNE WYMUSZENIE CORS (ROZWIĄZANIE OSTATECZNE) ---
-        // Ustawiamy nagłówki "na sztywno" dla każdego zapytania
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
-        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
-
-        // Jeśli to zapytanie OPTIONS (pre-flight), odsyłamy OK i kończymy (nie sprawdzamy tokena)
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return;
-        }
-        // -------------------------------------------------------
+        // CZYSTO: Usunęliśmy ręczne nagłówki CORS. Teraz zajmuje się tym SecurityConfig.
 
         final String authorizationHeader = request.getHeader("Authorization");
 
@@ -53,7 +41,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtil.extractUsername(jwt);
             } catch (Exception e) {
-                // Token nieprawidłowy lub wygasł
+                // Token nieważny - ignorujemy, SecurityContext pozostaje pusty -> 403
             }
         }
 

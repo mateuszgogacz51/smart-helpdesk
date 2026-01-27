@@ -21,7 +21,6 @@ export class AddTicketComponent {
     category: '', 
     priority: 'NORMAL',
     status: 'OPEN',         // Wymagane przez model (domyślnie otwarte)
-    location: 'Brak danych' // Wymagane przez model (możesz tu wpisać cokolwiek lub dodać input w HTML)
   };
 
   constructor(private ticketService: TicketService, private router: Router) {}

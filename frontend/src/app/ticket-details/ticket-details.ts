@@ -19,22 +19,19 @@ import { User } from '../user.model';
 export class TicketDetailsComponent implements OnInit {
   ticket: Ticket | null = null;
   comments: Comment[] = [];
-  history: TicketHistory[] = []; // Lista historii
+  history: TicketHistory[] = [];
   newCommentContent: string = '';
   supportStaff: User[] = []; 
   currentUserRole: string = '';
   ticketId: number = 0;
 
-  // --- ZMIENNE DO ZAŁĄCZNIKÓW ---
   attachments: any[] = [];
-  selectedFile: File | null = null;
   isUploading: boolean = false;
-  // ------------------------------
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    public ticketService: TicketService, // public, aby użyć w HTML
+    public ticketService: TicketService,
     private commentService: CommentService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef
@@ -47,8 +44,8 @@ export class TicketDetailsComponent implements OnInit {
     if (this.ticketId) {
       this.loadTicket();
       this.loadComments();
-      this.loadHistory();      // Ładowanie historii
-      this.loadAttachments();  // Ładowanie załączników
+      this.loadHistory();
+      this.loadAttachments();
     }
 
     if (this.currentUserRole === 'ADMIN' || this.currentUserRole === 'HELPDESK') {
@@ -91,7 +88,6 @@ export class TicketDetailsComponent implements OnInit {
     });
   }
 
-  // --- METODY OBSŁUGI ZAŁĄCZNIKÓW ---
   loadAttachments(): void {
     this.ticketService.getAttachments(this.ticketId).subscribe({
       next: (data) => {
@@ -102,32 +98,28 @@ export class TicketDetailsComponent implements OnInit {
     });
   }
 
+  // --- ZMIANA TUTAJ: Wyślij od razu po wybraniu ---
   onFileSelected(event: any): void {
-    this.selectedFile = event.target.files[0] ?? null;
+    const file = event.target.files[0];
+    if (file) {
+      this.uploadFile(file);
+    }
   }
 
-  uploadFile(): void {
-    if (!this.selectedFile) return;
-
+  uploadFile(file: File): void {
     this.isUploading = true;
-    this.ticketService.uploadAttachment(this.ticketId, this.selectedFile).subscribe({
+    this.ticketService.uploadAttachment(this.ticketId, file).subscribe({
       next: () => {
-        this.selectedFile = null;
         this.isUploading = false;
-        
-        // Reset inputa w HTML
-        const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
-
         this.loadAttachments(); // Odśwież listę po wgraniu
       },
       error: () => {
-        alert('Błąd wysyłania pliku');
+        alert('Błąd wysyłania pliku (Sprawdź czy plik nie jest za duży)');
         this.isUploading = false;
       }
     });
   }
-  // ----------------------------------
+  // ------------------------------------------------
 
   loadSupportStaff(): void {
     this.ticketService.getSupportStaff().subscribe({

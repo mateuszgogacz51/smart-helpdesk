@@ -17,6 +17,7 @@ export interface Ticket {
   assignedUser?: User;
 }
 
+// TEGO BRAKUJE W TWOIM KODZIE:
 export interface TicketHistory {
   id: number;
   modifier: { username: string };

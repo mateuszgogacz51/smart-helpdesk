@@ -34,10 +34,14 @@
           </div>
         </div>
 
-        <div class="upload-area" style="border-top: 1px solid #f0f0f0; padding-top: 15px; display: flex; align-items: center; gap: 10px;">
-          <input type="file" id="fileInput" (change)="onFileSelected($event)" style="font-size: 0.9rem;">
-          <button (click)="uploadFile()" [disabled]="!selectedFile || isUploading" class="save-btn" style="width: auto; margin-top: 0; padding: 8px 16px; background: #3498db;">
-            {{ isUploading ? 'Wysyłanie...' : 'Wgraj plik' }}
+        <div class="upload-area" style="border-top: 1px solid #f0f0f0; padding-top: 15px;">
+          <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;">
+          
+          <button (click)="fileInput.click()" 
+                  [disabled]="isUploading" 
+                  class="save-btn" 
+                  style="width: auto; margin-top: 0; padding: 10px 20px; background: #3498db;">
+            {{ isUploading ? '⏳ Wysyłanie...' : '📎 Dodaj plik' }}
           </button>
         </div>
       </section>
