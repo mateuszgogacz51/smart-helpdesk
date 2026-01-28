@@ -23,13 +23,13 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')") // Teraz to zadziała, bo w Service też jest "ADMIN"
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> createUser(@RequestBody User user) {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body("Użytkownik o takim loginie już istnieje!");
@@ -47,10 +47,9 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody Map<String, String> updates) {
         return userRepository.findById(id).map(user -> {
-
             if (updates.containsKey("username")) user.setUsername(updates.get("username"));
             if (updates.containsKey("firstName")) user.setFirstName(updates.get("firstName"));
             if (updates.containsKey("lastName")) user.setLastName(updates.get("lastName"));
@@ -69,7 +68,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         return userRepository.findById(id).map(user -> {
             userRepository.delete(user);

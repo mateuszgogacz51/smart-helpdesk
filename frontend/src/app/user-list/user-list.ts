@@ -58,6 +58,18 @@ export class UserListComponent implements OnInit {
     this.newUser.password = ''; // Hasło czyścimy
   }
 
+  deleteUser(user: User) {
+    if (!confirm(`Czy na pewno chcesz usunąć użytkownika ${user.username}?`)) return;
+
+    this.http.delete(`http://localhost:8080/api/users/${user.id}`).subscribe({
+      next: () => {
+        // alert('Usunięto użytkownika'); // Opcjonalnie, jeśli chcesz komunikat
+        this.loadUsers();
+      },
+      error: (err) => alert('Nie udało się usunąć użytkownika.')
+    });
+  }
+
   closeModal() {
     this.selectedUser = null;
     this.isCreating = false;
