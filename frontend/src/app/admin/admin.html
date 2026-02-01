@@ -1,0 +1,65 @@
+<div class="admin-container">
+  
+  <header class="admin-header">
+    <div class="header-content">
+      
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <button (click)="goBack()" class="back-btn">← Wróć</button>
+        <div class="welcome-section">
+          <h2>Panel Administratora</h2>
+        </div>
+      </div>
+      
+      <button (click)="goToUsers()" class="users-btn">
+        👥 Zarządzaj Użytkownikami
+      </button>
+
+    </div>
+  </header>
+
+  <div class="content-area">
+    <div class="charts-grid">
+      
+      <div class="chart-card">
+        <h3>🏆 Skuteczność (Zamknięte Zgłoszenia)</h3>
+        
+        <div class="chart-content">
+          <div *ngFor="let item of stats.users" class="chart-row">
+            <div class="chart-label">{{ item.label }}</div>
+            <div class="chart-bar-container">
+              <div class="chart-bar blue" [style.width.%]="(item.value / maxUserVal) * 100">
+                <span class="bar-value">{{ item.value }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="stats.users.length === 0" class="empty-state">
+            <p>Brak danych.</p>
+            <small>Zamknij zgłoszenie, aby zobaczyć statystyki pracownika.</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>📂 Najpopularniejsze Kategorie</h3>
+        
+        <div class="chart-content">
+          <div *ngFor="let item of stats.categories" class="chart-row">
+            <div class="chart-label">{{ item.label }}</div>
+            <div class="chart-bar-container">
+              <div class="chart-bar orange" [style.width.%]="(item.value / maxCatVal) * 100">
+                <span class="bar-value">{{ item.value }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="stats.categories.length === 0" class="empty-state">
+            <p>Brak danych.</p>
+            <small>Utwórz zgłoszenia z różnymi kategoriami.</small>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

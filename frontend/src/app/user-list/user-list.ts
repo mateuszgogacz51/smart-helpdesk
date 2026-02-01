@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { User } from '../user.model';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-user-list',
@@ -14,16 +15,17 @@ import { User } from '../user.model';
 })
 export class UserListComponent implements OnInit {
   users: User[] = [];
-  selectedUser: any = null;
-  isCreating = false; // Flaga czy tworzymy nowego
-
-  // Obiekt do formularza (używany zarówno przy edycji jak i tworzeniu)
-  newUser: any = {};
+  
+  // Zmienne do obsługi Modala i Formularza
+  newUser: any = {}; 
+  isEditing = false;  // Zmieniono nazwę flagi, aby pasowała do HTML
+  showModal = false;  // Nowa flaga do wyświetlania okna
 
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -40,9 +42,10 @@ export class UserListComponent implements OnInit {
     });
   }
 
-  openCreateModal() {
-    this.isCreating = true;
-    this.selectedUser = null;
+  // Otwieranie okna dodawania (pasuje do przycisku w HTML)
+  openAddModal() {
+    this.isEditing = false;
+    this.showModal = true;
     this.newUser = { 
         role: 'USER', 
         defaultPriority: 'NORMAL',
@@ -50,33 +53,31 @@ export class UserListComponent implements OnInit {
     };
   }
 
+  // Otwieranie okna edycji
   editUser(user: User) {
-    this.isCreating = false;
-    this.selectedUser = user;
-    // Kopiujemy dane do obiektu formularza
+    this.isEditing = true;
+    this.showModal = true;
+    // Kopiujemy dane
     this.newUser = { ...user };
-    this.newUser.password = ''; // Hasło czyścimy
+    this.newUser.password = ''; // Czyścimy hasło dla bezpieczeństwa
   }
 
   deleteUser(user: User) {
     if (!confirm(`Czy na pewno chcesz usunąć użytkownika ${user.username}?`)) return;
 
     this.http.delete(`http://localhost:8080/api/users/${user.id}`).subscribe({
-      next: () => {
-        // alert('Usunięto użytkownika'); // Opcjonalnie, jeśli chcesz komunikat
-        this.loadUsers();
-      },
+      next: () => this.loadUsers(),
       error: (err) => alert('Nie udało się usunąć użytkownika.')
     });
   }
 
   closeModal() {
-    this.selectedUser = null;
-    this.isCreating = false;
+    this.showModal = false;
   }
 
-  saveChanges() {
-    if (this.isCreating) {
+  // Metoda zapisu (z Twoją logiką responseType: 'text')
+  saveUser() {
+    if (!this.isEditing) {
       // TWORZENIE
       if (!this.newUser.username || !this.newUser.password) {
         alert('Login i hasło są wymagane!');
@@ -84,7 +85,6 @@ export class UserListComponent implements OnInit {
       }
       this.http.post('http://localhost:8080/api/users', this.newUser, { responseType: 'text' }).subscribe({
         next: () => {
-          alert('Utworzono użytkownika!');
           this.closeModal();
           this.loadUsers();
         },
@@ -95,9 +95,8 @@ export class UserListComponent implements OnInit {
       const updates = { ...this.newUser };
       if (!updates.password) delete updates.password; // Nie wysyłaj pustego hasła
 
-      this.http.put(`http://localhost:8080/api/users/${this.selectedUser.id}`, updates, { responseType: 'text' }).subscribe({
+      this.http.put(`http://localhost:8080/api/users/${this.newUser.id}`, updates, { responseType: 'text' }).subscribe({
         next: () => {
-          alert('Zapisano zmiany!');
           this.closeModal();
           this.loadUsers();
         },
@@ -106,6 +105,7 @@ export class UserListComponent implements OnInit {
     }
   }
 
+  // WAŻNE: Powrót do Admina (a nie Dashboardu), bo teraz tam jest wejście
   goBack() {
     this.router.navigate(['/dashboard']);
   }

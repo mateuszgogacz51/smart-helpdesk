@@ -66,6 +66,7 @@
                 <span *ngIf="entry.changeType === 'STATUS_CHANGE'">Status</span>
                 <span *ngIf="entry.changeType === 'PRIORITY_CHANGE'">Priorytet</span>
                 <span *ngIf="entry.changeType === 'ASSIGNMENT_CHANGE'">Przypisanie</span>
+                <span *ngIf="entry.changeType === 'CATEGORY_CHANGE'">Kategoria</span>
               </td>
               <td>
                 <span style="color: #999; text-decoration: line-through;">{{ entry.oldValue }}</span> 
@@ -137,9 +138,15 @@
 
         <div class="info-group">
           <label>Kategoria</label>
-          <div class="value-text">{{ ticket.category }}</div>
+          <div *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'; else readOnlyCategory">
+             <select [ngModel]="ticket.category" (ngModelChange)="changeCategory($event)" class="styled-select">
+                <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+             </select>
+          </div>
+          <ng-template #readOnlyCategory>
+            <div class="value-text">{{ ticket.category }}</div>
+          </ng-template>
         </div>
-
         <div class="info-group">
           <label>Zgłaszający</label>
           <div class="value-text user-value">👤 {{ ticket.author?.username }}</div>

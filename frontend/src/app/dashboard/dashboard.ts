@@ -20,21 +20,25 @@ export class DashboardComponent implements OnInit {
   currentUser: string = '';
   currentUserRole: string = '';
   
+  // ZAKTUALIZOWANA STRUKTURA STATYSTYK
+  // Dodałem pola 'users' i 'categories' dla Admina
   stats: any = {
     myOpen: 0,
     myInProgress: 0,
     myClosed: 0,
     globalOpen: 0,
-    globalTotal: 0
+    globalTotal: 0,
+    users: [],      // <--- NOWE
+    categories: []  // <--- NOWE
   };
 
   viewMode: 'ALL' | 'MY' = 'ALL'; 
   currentStatusFilter: string = 'ALL'; 
   searchTerm: string = ''; 
 
-  // --- NOWE ZMIENNE DO SORTOWANIA ---
-  sortColumn: string = 'id'; // Domyślna kolumna: ID
-  sortDirection: 'asc' | 'desc' = 'desc'; // Domyślnie: MALEJĄCO (od największego)
+  // --- TWOJE SORTOWANIE ---
+  sortColumn: string = 'id'; 
+  sortDirection: 'asc' | 'desc' = 'desc'; 
 
   constructor(
     private ticketService: TicketService,
@@ -59,6 +63,9 @@ export class DashboardComponent implements OnInit {
     this.ticketService.getStats().subscribe({
       next: (data) => {
         this.stats = data;
+        // Zabezpieczenie na wypadek gdyby backend zwrócił null dla list
+        if (!this.stats.users) this.stats.users = [];
+        if (!this.stats.categories) this.stats.categories = [];
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Błąd pobierania statystyk', err)
@@ -69,7 +76,7 @@ export class DashboardComponent implements OnInit {
     this.ticketService.getTickets().subscribe({
       next: (data) => {
         this.tickets = data;
-        this.applyFilters(); // To od razu posortuje zgodnie z domyślnymi ustawieniami
+        this.applyFilters(); 
       },
       error: (err) => console.error('Błąd pobierania biletów', err)
     });
@@ -80,23 +87,20 @@ export class DashboardComponent implements OnInit {
     this.applyFilters();
   }
 
-  // --- POPRAWIONA METODA SORTOWANIA ---
   sortTable(column: string) {
     if (this.sortColumn === column) {
-      // Jeśli kliknięto w tę samą kolumnę -> odwróć kolejność
       this.sortDirection = this.sortDirection === 'desc' ? 'asc' : 'desc';
     } else {
-      // Jeśli nowa kolumna -> ustaw nową i zacznij od MALEJĄCEGO (zgodnie z życzeniem)
       this.sortColumn = column;
       this.sortDirection = 'desc';
     }
-    this.applyFilters(); // Zastosuj sortowanie
+    this.applyFilters();
   }
 
   applyFilters() {
-    let temp = [...this.tickets]; // Tworzymy kopię, żeby nie psuć oryginału
+    let temp = [...this.tickets];
 
-    // 1. Filtrowanie (Widok Moje/Wszystkie)
+    // 1. Filtrowanie (Widok)
     if (this.viewMode === 'MY') {
       if (this.currentUserRole === 'ADMIN' || this.currentUserRole === 'HELPDESK') {
         temp = temp.filter(t => t.assignedUser?.username === this.currentUser);
@@ -120,14 +124,13 @@ export class DashboardComponent implements OnInit {
       );
     }
 
-    // 4. SORTOWANIE (Teraz zintegrowane tutaj)
+    // 4. SORTOWANIE
     temp.sort((a: any, b: any) => {
        const valA = this.resolveFieldData(a, this.sortColumn);
        const valB = this.resolveFieldData(b, this.sortColumn);
        
        let comparison = 0;
        
-       // Obsługa nulli (puste wartości na koniec)
        if (valA === valB) return 0;
        if (valA === null || valA === undefined) return 1;
        if (valB === null || valB === undefined) return -1;
@@ -138,7 +141,6 @@ export class DashboardComponent implements OnInit {
          comparison = (valA < valB ? -1 : 1);
        }
 
-       // Odwróć wynik jeśli sortDirection to 'desc'
        return this.sortDirection === 'asc' ? comparison : -comparison;
     });
 
@@ -146,7 +148,6 @@ export class DashboardComponent implements OnInit {
     this.cdr.detectChanges();
   }
   
-  // Pomocnicza funkcja do wyciągania zagnieżdżonych pól (np. author.username)
   resolveFieldData(data: any, field: string): any {
     if (data && field) {
       return field.split('.').reduce((prev, curr) => (prev ? prev[curr] : null), data);
@@ -165,5 +166,10 @@ export class DashboardComponent implements OnInit {
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  // Metoda do nawigacji do użytkowników (używana w HTML)
+  goToUsers() {
+    this.router.navigate(['/users']);
   }
 }

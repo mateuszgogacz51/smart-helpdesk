@@ -28,10 +28,13 @@ export class TicketDetailsComponent implements OnInit {
   attachments: any[] = [];
   isUploading: boolean = false;
 
+  // Lista dostępnych kategorii do edycji
+  categories = ['Awaria sprzętu', 'Oprogramowanie', 'Dostęp/Konta', 'Sieć/Internet', 'Inne'];
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    public ticketService: TicketService,
+    public ticketService: TicketService, // Public, żeby html widział
     private commentService: CommentService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef
@@ -98,7 +101,6 @@ export class TicketDetailsComponent implements OnInit {
     });
   }
 
-  // --- ZMIANA TUTAJ: Wyślij od razu po wybraniu ---
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
@@ -111,7 +113,7 @@ export class TicketDetailsComponent implements OnInit {
     this.ticketService.uploadAttachment(this.ticketId, file).subscribe({
       next: () => {
         this.isUploading = false;
-        this.loadAttachments(); // Odśwież listę po wgraniu
+        this.loadAttachments();
       },
       error: () => {
         alert('Błąd wysyłania pliku (Sprawdź czy plik nie jest za duży)');
@@ -119,7 +121,6 @@ export class TicketDetailsComponent implements OnInit {
       }
     });
   }
-  // ------------------------------------------------
 
   loadSupportStaff(): void {
     this.ticketService.getSupportStaff().subscribe({
@@ -171,6 +172,24 @@ export class TicketDetailsComponent implements OnInit {
         error: (err) => alert('Błąd zmiany priorytetu')
     });
   }
+
+  // --- NOWA METODA: Zmiana Kategorii ---
+// --- POPRAWIONA METODA ZMIANY KATEGORII ---
+  changeCategory(newCategory: string): void {
+    // 1. Dodajemy sprawdzenie: Jeśli nie ma biletu LUB nie ma ID, przerwij
+    if (!this.ticket || !this.ticket.id) return;
+
+    // 2. Teraz TypeScript wie, że this.ticket.id na pewno istnieje (jest liczbą)
+    this.ticketService.changeCategory(this.ticket.id, newCategory).subscribe({
+      next: (updatedTicket) => {
+        this.ticket = updatedTicket;
+        this.loadHistory();
+        this.cdr.detectChanges();
+      },
+      error: () => alert('Błąd zmiany kategorii')
+    });
+  }
+  // -------------------------------------
 
   assignTicket(event: Event): void {
     const select = event.target as HTMLSelectElement;

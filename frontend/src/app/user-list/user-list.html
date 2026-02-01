@@ -1,99 +1,119 @@
 <div class="dashboard-container">
   
-  <header class="details-header">
-    <button class="back-btn" (click)="goBack()">← Wróć do Dashboardu</button>
-    <h2 class="section-title">👥 Zarządzanie Użytkownikami</h2>
-    <button class="save-btn" (click)="openCreateModal()" style="margin-left: auto;">+ Dodaj Użytkownika</button>
+  <header class="top-bar">
+    <div class="header-content">
+      
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <button (click)="goBack()" class="back-btn">← Wróć</button>
+        <div class="title-section">
+          <h2>Zarządzanie Użytkownikami</h2>
+        </div>
+      </div>
+
+      <button (click)="openAddModal()" class="add-btn">
+        + Dodaj Pracownika
+      </button>
+
+    </div>
   </header>
 
-  <div class="user-card">
-    <table class="user-table">
-      <thead>
-        <tr>
-          <th>Login</th>
-          <th>Rola</th>
-          <th>Priorytet</th>
-          <th>Imię i Nazwisko</th>
-          <th>Dział</th>
-          <th>Akcje</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of users">
-          <td><strong>{{ user.username }}</strong></td>
-          <td><span [class]="'status-badge ' + user.role">{{ user.role }}</span></td>
-          <td>
-            <span *ngIf="user.defaultPriority === 'HIGH'" style="color: #e74c3c; font-weight: bold;">🔥 PILNY</span>
-            <span *ngIf="user.defaultPriority !== 'HIGH'" style="color: #95a5a6;">Normalny</span>
-          </td>
-          <td>{{ user.firstName }} {{ user.lastName }}</td>
-          <td>{{ user.department || '-' }}</td>
-          <td>
-            <button class="action-btn" (click)="editUser(user)">✏️ Edytuj</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div *ngIf="selectedUser || isCreating" class="modal-overlay">
-    <div class="edit-box" style="width: 500px;">
-      <h3 *ngIf="isCreating">Nowy Użytkownik</h3>
-      <h3 *ngIf="!isCreating">Edycja: {{ selectedUser?.username }}</h3>
+  <div class="content-area">
+    <div class="table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Login</th>
+            <th>Imię i Nazwisko</th>
+            <th>Rola</th>
+            <th>Dział</th>
+            <th>Priorytet</th>
+            <th>Akcje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>#{{ user.id }}</td>
+            <td><strong>{{ user.username }}</strong></td>
+            <td>{{ user.firstName }} {{ user.lastName }}</td>
+            
+            <td>
+              <span class="role-badge" [ngClass]="user.role">{{ user.role }}</span>
+            </td>
+            
+            <td>{{ user.department || '-' }}</td>
+            <td>{{ user.defaultPriority || 'NORMAL' }}</td>
+            
+            <td style="display: flex; gap: 8px;">
+              <button class="action-btn edit" (click)="editUser(user)">✏️</button>
+              <button class="action-btn delete" (click)="deleteUser(user)">🗑️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
       
-      <div style="display: flex; gap: 15px;">
-        <div class="form-group" style="flex:1">
-          <label>Imię</label>
-          <input [(ngModel)]="newUser.firstName" class="styled-input">
-        </div>
-        <div class="form-group" style="flex:1">
-          <label>Nazwisko</label>
-          <input [(ngModel)]="newUser.lastName" class="styled-input">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Login *</label>
-        <input [(ngModel)]="newUser.username" class="styled-input" [disabled]="!isCreating">
-      </div>
-
-      <div class="form-group">
-        <label>Email</label>
-        <input [(ngModel)]="newUser.email" type="email" class="styled-input">
-      </div>
-
-      <div style="display: flex; gap: 15px;">
-        <div class="form-group" style="flex:1">
-          <label>Rola</label>
-          <select [(ngModel)]="newUser.role" class="styled-select">
-            <option value="USER">USER</option>
-            <option value="HELPDESK">HELPDESK</option>
-            <option value="ADMIN">ADMIN</option>
-          </select>
-        </div>
-        <div class="form-group" style="flex:1">
-          <label>Priorytet</label>
-          <select [(ngModel)]="newUser.defaultPriority" class="styled-select">
-            <option value="NORMAL">Normalny</option>
-            <option value="HIGH">🔥 PILNY (VIP)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Hasło <span *ngIf="isCreating">*</span></label>
-        <input type="password" [(ngModel)]="newUser.password" placeholder="***" class="styled-input">
-      </div>
-
-      <div class="form-group">
-        <label>Dział</label>
-        <input [(ngModel)]="newUser.department" class="styled-input">
-      </div>
-
-      <div class="actions">
-        <button class="save-btn" (click)="saveChanges()">💾 Zapisz</button>
-        <button class="cancel-btn" (click)="closeModal()">Anuluj</button>
+      <div *ngIf="users.length === 0" class="empty-state">
+        Brak użytkowników w systemie.
       </div>
     </div>
   </div>
+
+  <div class="modal-overlay" *ngIf="showModal">
+    <div class="modal-box">
+      <h3>{{ isEditing ? 'Edytuj Użytkownika' : 'Nowy Pracownik' }}</h3>
+      
+      <form (ngSubmit)="saveUser()">
+        <div class="form-group">
+          <label>Login</label>
+          <input [(ngModel)]="newUser.username" name="username" required>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Imię</label>
+                <input [(ngModel)]="newUser.firstName" name="firstName">
+            </div>
+            <div class="form-group">
+                <label>Nazwisko</label>
+                <input [(ngModel)]="newUser.lastName" name="lastName">
+            </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input [(ngModel)]="newUser.email" name="email" type="email">
+        </div>
+
+        <div class="form-group">
+          <label>Hasło (zostaw puste aby nie zmieniać)</label>
+          <input [(ngModel)]="newUser.password" name="password" type="password">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+              <label>Rola</label>
+              <select [(ngModel)]="newUser.role" name="role">
+                <option value="USER">Użytkownik</option>
+                <option value="HELPDESK">Serwisant (Helpdesk)</option>
+                <option value="ADMIN">Administrator</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Domyślny Priorytet</label>
+              <select [(ngModel)]="newUser.defaultPriority" name="defaultPriority">
+                <option value="LOW">Niski</option>
+                <option value="NORMAL">Normalny</option>
+                <option value="HIGH">Wysoki</option>
+              </select>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="closeModal()">Anuluj</button>
+          <button type="submit" class="save-btn">Zapisz</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 </div>

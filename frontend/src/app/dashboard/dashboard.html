@@ -59,9 +59,14 @@
       </div>
 
       <div style="display: flex; gap: 10px;">
-        <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #2c3e50;" (click)="router.navigate(['/users'])">
+        <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #e74c3c;" (click)="router.navigate(['/admin'])">
+            📊 Panel Admina
+        </button>
+
+        <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #8e44ad;" (click)="router.navigate(['/users'])">
             👥 Użytkownicy
         </button>
+        
         <button class="add-btn" (click)="goToAddTicket()">+ Nowe zgłoszenie</button>
       </div>
     </div>
@@ -70,19 +75,21 @@
       <table class="tickets-table">
         <thead>
           <tr>
-            <th (click)="sortTable('id')">ID</th>
-            <th (click)="sortTable('title')">Tytuł</th>
-            <th (click)="sortTable('status')">Status</th>
+            <th (click)="sortTable('id')" class="sortable">
+                ID <span *ngIf="sortColumn === 'id'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th (click)="sortTable('title')" class="sortable">Tytuł</th>
+            <th (click)="sortTable('status')" class="sortable">Status</th>
             
             <th *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'" 
-                (click)="sortTable('priority')">
+                (click)="sortTable('priority')" class="sortable">
                 Priorytet
             </th> 
 
-            <th (click)="sortTable('category')">Kategoria</th>
-            <th (click)="sortTable('author.username')">Autor</th>
-            <th (click)="sortTable('assignedUser.username')">Przypisany</th>
-            <th>Data</th>
+            <th (click)="sortTable('category')" class="sortable">Kategoria</th>
+            <th (click)="sortTable('author.username')" class="sortable">Autor</th>
+            <th (click)="sortTable('assignedUser.username')" class="sortable">Przypisany</th>
+            <th (click)="sortTable('createdDate')" class="sortable">Data</th>
             <th>Akcja</th>
           </tr>
         </thead>

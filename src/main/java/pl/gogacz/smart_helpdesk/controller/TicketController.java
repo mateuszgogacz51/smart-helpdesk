@@ -5,13 +5,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import pl.gogacz.smart_helpdesk.model.Ticket;
-import pl.gogacz.smart_helpdesk.model.TicketHistory; // <--- NOWE
+import pl.gogacz.smart_helpdesk.model.TicketHistory;
 import pl.gogacz.smart_helpdesk.model.User;
-import pl.gogacz.smart_helpdesk.repository.TicketHistoryRepository; // <--- NOWE
+import pl.gogacz.smart_helpdesk.repository.TicketHistoryRepository;
 import pl.gogacz.smart_helpdesk.repository.TicketRepository;
 import pl.gogacz.smart_helpdesk.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,16 +23,14 @@ public class TicketController {
 
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
-    private final TicketHistoryRepository historyRepository; // <--- NOWE
+    private final TicketHistoryRepository historyRepository;
 
-    // Aktualizacja konstruktora
     public TicketController(TicketRepository ticketRepository, UserRepository userRepository, TicketHistoryRepository historyRepository) {
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
         this.historyRepository = historyRepository;
     }
 
-    // Pomocnicza metoda do pobierania aktualnego użytkownika (tego co klika)
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return userRepository.findByUsername(auth.getName())
@@ -41,6 +40,8 @@ public class TicketController {
     @GetMapping
     public List<Ticket> getAllTickets() {
         User currentUser = getCurrentUser();
+        // Sprawdzenie czy użytkownik to ADMIN lub HELPDESK
+        // Uwaga: Upewnij się, że w bazie role to "ADMIN", "HELPDESK" (bez ROLE_) - tak jak ustaliśmy wcześniej
         boolean isStaff = "ADMIN".equals(currentUser.getRole()) || "HELPDESK".equals(currentUser.getRole());
 
         if (isStaff) {
@@ -57,12 +58,10 @@ public class TicketController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // --- NOWY ENDPOINT DO HISTORII ---
     @GetMapping("/{id}/history")
     public List<TicketHistory> getTicketHistory(@PathVariable Long id) {
         return historyRepository.findByTicketIdOrderByTimestampDesc(id);
     }
-    // ---------------------------------
 
     @PostMapping
     public Ticket createTicket(@RequestBody Ticket ticket) {
@@ -79,15 +78,23 @@ public class TicketController {
             ticket.setPriority("NORMAL");
         }
 
+        // Zabezpieczenie przed brakiem kategorii
+        if (ticket.getCategory() == null) {
+            ticket.setCategory("Inne");
+        }
+
         return ticketRepository.save(ticket);
     }
 
     @PutMapping("/{id}/status")
-    public Ticket changeStatus(@PathVariable Long id, @RequestBody String status) {
+    public Ticket changeStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        // Obsługa JSON: { "status": "CLOSED" }
+        // Jeśli Twój frontend wysyła czysty string, można zmienić @RequestBody na String status
+        String status = body.get("status");
+
         Ticket ticket = ticketRepository.findById(id).orElseThrow();
         User modifier = getCurrentUser();
 
-        // Logika historii
         String oldStatus = ticket.getStatus();
         if (!oldStatus.equals(status)) {
             TicketHistory history = new TicketHistory(ticket, modifier, "STATUS_CHANGE", oldStatus, status);
@@ -100,7 +107,9 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/priority")
-    public Ticket changePriority(@PathVariable Long id, @RequestBody String priority) {
+    public Ticket changePriority(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String priority = body.get("priority");
+
         Ticket ticket = ticketRepository.findById(id).orElseThrow();
         User modifier = getCurrentUser();
 
@@ -118,7 +127,9 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/assign")
-    public Ticket assignTicket(@PathVariable Long id, @RequestParam Long userId) {
+    public Ticket assignTicket(@PathVariable Long id, @RequestBody Map<String, Long> body) {
+        Long userId = body.get("userId");
+
         Ticket ticket = ticketRepository.findById(id).orElseThrow();
         User staff = userRepository.findById(userId).orElseThrow();
         User modifier = getCurrentUser();
@@ -136,10 +147,30 @@ public class TicketController {
         return ticketRepository.save(ticket);
     }
 
+    @PutMapping("/{id}/category")
+    public Ticket changeCategory(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String category = body.get("category");
+
+        Ticket ticket = ticketRepository.findById(id).orElseThrow();
+        User modifier = getCurrentUser(); // Metoda pomocnicza, którą już masz w klasie
+
+        String oldCategory = ticket.getCategory();
+        if (oldCategory == null) oldCategory = "Brak";
+
+        if (!oldCategory.equals(category)) {
+            // Logujemy zmianę w historii
+            TicketHistory history = new TicketHistory(ticket, modifier, "CATEGORY_CHANGE", oldCategory, category);
+            historyRepository.save(history);
+        }
+
+        ticket.setCategory(category);
+        ticket.setLastUpdated(LocalDateTime.now());
+        return ticketRepository.save(ticket);
+    }
     @PutMapping("/{id}/assign-me")
     public Ticket assignToMe(@PathVariable Long id) {
         Ticket ticket = ticketRepository.findById(id).orElseThrow();
-        User modifier = getCurrentUser(); // Tutaj modyfikujący jest też nowym przypisanym
+        User modifier = getCurrentUser();
 
         String oldAssignee = ticket.getAssignedUser() != null ? ticket.getAssignedUser().getUsername() : "Brak";
         String newAssignee = modifier.getUsername();
@@ -161,17 +192,25 @@ public class TicketController {
                 .toList();
     }
 
+    // --- ZMODYFIKOWANY ENDPOINT STATYSTYK ---
+    // Łączy Twoje stare liczniki z nowymi danymi dla Admina
     @GetMapping("/stats")
-    public Map<String, Long> getStats() {
+    public Map<String, Object> getStats() {
         User currentUser = getCurrentUser();
+        boolean isAdmin = "ADMIN".equals(currentUser.getRole());
+
+        // Używamy HashMap<String, Object>, żeby móc wrzucić tam i Long, i Listy
+        Map<String, Object> response = new HashMap<>();
+
         List<Ticket> allTickets = ticketRepository.findAll();
 
+        // 1. Stare Liczniki (Globalne i Osobiste)
         long globalOpen = allTickets.stream().filter(t -> "OPEN".equals(t.getStatus())).count();
         long globalTotal = allTickets.size();
 
         boolean isStaff = "ADMIN".equals(currentUser.getRole()) || "HELPDESK".equals(currentUser.getRole());
-
         List<Ticket> myTickets;
+
         if (isStaff) {
             myTickets = allTickets.stream()
                     .filter(t -> t.getAssignedUser() != null && t.getAssignedUser().getId().equals(currentUser.getId()))
@@ -182,12 +221,33 @@ public class TicketController {
                     .collect(Collectors.toList());
         }
 
-        return Map.of(
-                "globalOpen", globalOpen,
-                "globalTotal", globalTotal,
-                "myOpen", myTickets.stream().filter(t -> "OPEN".equals(t.getStatus())).count(),
-                "myInProgress", myTickets.stream().filter(t -> "IN_PROGRESS".equals(t.getStatus())).count(),
-                "myClosed", myTickets.stream().filter(t -> "CLOSED".equals(t.getStatus())).count()
-        );
+        response.put("globalOpen", globalOpen);
+        response.put("globalTotal", globalTotal);
+        response.put("myOpen", myTickets.stream().filter(t -> "OPEN".equals(t.getStatus())).count());
+        response.put("myInProgress", myTickets.stream().filter(t -> "IN_PROGRESS".equals(t.getStatus())).count());
+        response.put("myClosed", myTickets.stream().filter(t -> "CLOSED".equals(t.getStatus())).count());
+
+        // 2. Nowe Dane dla Admina (Wykresy)
+        if (isAdmin) {
+            // Statystyka Pracowników (Kto ile zamknął)
+            List<Object[]> userResults = ticketRepository.countClosedTicketsByUser();
+            List<Map<String, Object>> userStats = userResults.stream()
+                    .map(row -> Map.of("label", row[0], "value", row[1]))
+                    .collect(Collectors.toList());
+            response.put("users", userStats);
+
+            // Statystyka Kategorii (Popularność)
+            List<Object[]> categoryResults = ticketRepository.countTicketsByCategory();
+            List<Map<String, Object>> categoryStats = categoryResults.stream()
+                    .map(row -> Map.of("label", row[0], "value", row[1]))
+                    .collect(Collectors.toList());
+            response.put("categories", categoryStats);
+        } else {
+            // Puste listy dla nie-admina (żeby frontend nie zgłaszał błędów undefined)
+            response.put("users", List.of());
+            response.put("categories", List.of());
+        }
+
+        return response;
     }
 }
