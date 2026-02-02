@@ -9,10 +9,23 @@ import { User } from './user.model';
 })
 export class TicketService {
   private apiUrl = 'http://localhost:8080/api/tickets';
-  // Poprawiony adres do załączników (bezpośrednio do kontrolera)
   private attachmentUrl = 'http://localhost:8080/api/attachments';
+  private categoryUrl = 'http://localhost:8080/api/categories'; // <--- NOWY URL
 
   constructor(private http: HttpClient) {}
+
+  // --- KATEGORIE (Dynamiczne) ---
+  getCategories(): Observable<any[]> {
+    return this.http.get<any[]>(this.categoryUrl);
+  }
+
+  addCategory(name: string): Observable<any> {
+    return this.http.post<any>(this.categoryUrl, { name });
+  }
+
+  deleteCategory(id: number): Observable<any> {
+    return this.http.delete(`${this.categoryUrl}/${id}`);
+  }
 
   // --- BILETY ---
   getTickets(): Observable<Ticket[]> {
@@ -31,34 +44,25 @@ export class TicketService {
     return this.http.get<any>(`${this.apiUrl}/stats`);
   }
 
-  // --- ZMIANY STANU (Teraz wysyłamy Obiekty JSON {}, bo tak chce Backend) ---
-  
   changeStatus(id: number, status: string): Observable<Ticket> {
-    // Backend czeka na body: { "status": "OPEN" }
     return this.http.put<Ticket>(`${this.apiUrl}/${id}/status`, { status });
   }
 
   changePriority(id: number, priority: string): Observable<Ticket> {
-    // Backend czeka na body: { "priority": "HIGH" }
     return this.http.put<Ticket>(`${this.apiUrl}/${id}/priority`, { priority });
   }
 
   changeCategory(id: number, category: string): Observable<Ticket> {
-    // Backend czeka na body: { "category": "Awaria" }
     return this.http.put<Ticket>(`${this.apiUrl}/${id}/category`, { category });
   }
 
   assignTicket(id: number, userId: number): Observable<Ticket> {
-    // Backend czeka na body: { "userId": 123 }
     return this.http.put<Ticket>(`${this.apiUrl}/${id}/assign`, { userId });
   }
 
   assignToMe(id: number): Observable<Ticket> {
-    // Backend czeka na pusty JSON {} (dla zachowania spójności)
     return this.http.put<Ticket>(`${this.apiUrl}/${id}/assign-me`, {});
   }
-
-  // --- RESZTA ---
 
   getSupportStaff(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/staff`);

@@ -1,35 +1,38 @@
-<div class="dashboard-container">
-  
-  <header class="details-header">
-    <button class="back-btn" (click)="goBack()">← Anuluj</button>
-    <h2 class="section-title">📝 Nowe Zgłoszenie</h2>
-  </header>
+<div class="add-ticket-container">
+  <div class="add-ticket-card">
+    <h2>📝 Nowe Zgłoszenie</h2>
+    
+    <form (ngSubmit)="onSubmit()">
+      
+      <div class="form-group">
+        <label for="title">Tytuł zgłoszenia *</label>
+        <input type="text" id="title" [(ngModel)]="ticket.title" name="title" required placeholder="Np. Nie działa drukarka">
+      </div>
 
-  <div class="card-panel form-card">
-    <div class="form-group">
-      <label>Tytuł zgłoszenia</label>
-      <input type="text" [(ngModel)]="ticket.title" placeholder="Krótko opisz problem..." class="styled-input">
-    </div>
+      <div class="form-row">
+          <div class="form-group">
+            <label for="category">Kategoria *</label>
+            <select id="category" [(ngModel)]="ticket.category" name="category">
+              <option *ngFor="let cat of categories" [value]="cat.name">{{ cat.name }}</option>
+            </select>
+          </div>
 
-    <div class="form-group">
-        <label>Kategoria</label>
-        <select [(ngModel)]="ticket.category" class="styled-select">
-          <option value="" disabled selected>-- Wybierz --</option>
-          <option value="IT">IT / Sprzęt</option>
-          <option value="SOFTWARE">Oprogramowanie</option>
-          <option value="HR">Kadry / HR</option>
-          <option value="OTHER">Inne</option>
-        </select>
-    </div>
+          <div class="form-group">
+            <label for="location">Lokalizacja / Nr Pokoju *</label>
+            <input type="text" id="location" [(ngModel)]="ticket.location" name="location" required placeholder="np. Pokój 102, Budynek B">
+          </div>
+      </div>
 
-    <div class="form-group">
-      <label>Opis szczegółowy</label>
-      <textarea [(ngModel)]="ticket.description" rows="6" placeholder="Opisz dokładnie co się stało..." class="styled-input"></textarea>
-    </div>
+      <div class="form-group">
+        <label for="description">Opis problemu *</label>
+        <textarea id="description" [(ngModel)]="ticket.description" name="description" rows="5" required placeholder="Opisz szczegółowo problem..."></textarea>
+      </div>
 
-    <div class="form-actions">
-      <button class="save-btn-large" (click)="submitTicket()">Wyślij zgłoszenie</button>
-    </div>
+      <div class="button-group">
+        <button type="button" class="cancel-btn" (click)="goBack()">Anuluj</button>
+        <button type="submit" class="submit-btn">Wyślij zgłoszenie</button>
+      </div>
+
+    </form>
   </div>
-
 </div>

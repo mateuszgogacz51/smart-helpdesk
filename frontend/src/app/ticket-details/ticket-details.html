@@ -140,18 +140,42 @@
           <label>Kategoria</label>
           <div *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'; else readOnlyCategory">
              <select [ngModel]="ticket.category" (ngModelChange)="changeCategory($event)" class="styled-select">
-                <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+                <option *ngFor="let cat of categories" [value]="cat.name">{{ cat.name }}</option>
              </select>
           </div>
           <ng-template #readOnlyCategory>
             <div class="value-text">{{ ticket.category }}</div>
           </ng-template>
         </div>
+
         <div class="info-group">
           <label>Zgłaszający</label>
-          <div class="value-text user-value">👤 {{ ticket.author?.username }}</div>
+          <div class="user-card" style="background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e9ecef;">
+             <div style="font-weight: bold; color: #2c3e50; margin-bottom: 5px;">
+               👤 {{ ticket.author?.firstName }} {{ ticket.author?.lastName }}
+             </div>
+             <div style="font-size: 0.9rem; color: #555;">
+               Login: <strong>{{ ticket.author?.username }}</strong>
+             </div>
+             
+             <div *ngIf="ticket.author?.department" style="font-size: 0.85rem; color: #7f8c8d; margin-top: 3px;">
+               🏢 Dział: {{ ticket.author?.department }}
+             </div>
+             <div *ngIf="ticket.author?.phoneNumber" style="font-size: 0.85rem; color: #27ae60; margin-top: 3px; font-weight: 600;">
+               📞 Tel: {{ ticket.author?.phoneNumber }}
+             </div>
+             <div *ngIf="ticket.author?.email" style="font-size: 0.85rem; color: #3498db; margin-top: 3px;">
+               📧 {{ ticket.author?.email }}
+             </div>
+          </div>
         </div>
 
+        <div class="info-group">
+            <label>📍 Lokalizacja Awarii</label>
+            <div class="value-text" style="font-size: 1.1rem; font-weight: 600;">
+                {{ ticket.location || 'Nie podano' }}
+            </div>
+        </div>
         <div class="info-group">
           <label>Przypisano do</label>
           <div *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'; else readOnlyAssignee">

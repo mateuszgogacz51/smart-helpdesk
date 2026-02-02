@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TicketService } from '../ticket.service';
 import { Router } from '@angular/router';
-import { Ticket } from '../ticket.model'; // <--- 1. Importujemy interfejs Ticket
+import { Ticket } from '../ticket.model';
 
 @Component({
   selector: 'app-add-ticket',
@@ -12,33 +12,47 @@ import { Ticket } from '../ticket.model'; // <--- 1. Importujemy interfejs Ticke
   templateUrl: './add-ticket.html',
   styleUrls: ['./add-ticket.css']
 })
-export class AddTicketComponent {
-  
-  // <--- 2. Dodajemy typ ': Ticket' i uzupełniamy brakujące pola (status, location)
+export class AddTicketComponent implements OnInit {
   ticket: Ticket = {
     title: '',
     description: '',
-    category: '', 
+    status: 'OPEN',
     priority: 'NORMAL',
-    status: 'OPEN',         // Wymagane przez model (domyślnie otwarte)
+    category: '',
+    location: '' // <--- NOWE POLE
   };
+
+  // Już nie hardkodujemy ['Awaria', 'Inne'], pobierzemy z bazy
+  categories: any[] = [];
 
   constructor(private ticketService: TicketService, private router: Router) {}
 
-  submitTicket() {
-    if (!this.ticket.title.trim() || !this.ticket.category) {
-      alert('Proszę uzupełnić tytuł i wybrać kategorię!');
-      return;
-    }
+  ngOnInit() {
+    this.loadCategories();
+  }
 
+  loadCategories() {
+    this.ticketService.getCategories().subscribe({
+        next: (data) => {
+            this.categories = data;
+            // Ustaw domyślnie pierwszą kategorię, jeśli lista niepusta
+            if (this.categories.length > 0) {
+                this.ticket.category = this.categories[0].name;
+            }
+        },
+        error: () => console.error('Nie udało się pobrać kategorii')
+    });
+  }
+
+  onSubmit() {
     this.ticketService.createTicket(this.ticket).subscribe({
       next: () => {
-        alert('Zgłoszenie zostało pomyślnie dodane!');
+        alert('Zgłoszenie dodane!');
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        console.error('Błąd dodawania zgłoszenia:', err);
-        alert('Wystąpił błąd podczas wysyłania zgłoszenia. Sprawdź konsolę.');
+        console.error(err);
+        alert('Wystąpił błąd podczas dodawania zgłoszenia.');
       }
     });
   }

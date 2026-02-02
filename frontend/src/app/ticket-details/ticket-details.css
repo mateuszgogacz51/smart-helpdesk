@@ -1,256 +1,288 @@
-/* Główne kontenery */
+/* --- TŁO I UKŁAD GŁÓWNY --- */
 .dashboard-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
+  color: #2c3e50;
+  padding-bottom: 40px;
 }
 
+/* --- GÓRNY PASEK --- */
 .details-header {
+  background: white;
+  padding: 15px 40px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
-  gap: 15px;
 }
 
-/* UKŁAD GRID - Kluczowe dla wyglądu */
+.back-btn {
+  background: white;
+  border: 1px solid #dfe6e9;
+  color: #7f8c8d;
+  padding: 10px 20px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.back-btn:hover {
+  background: #ecf0f1;
+  color: #2c3e50;
+  border-color: #bdc3c7;
+}
+
+/* --- SIATKA LAYOUTU --- */
 .content-grid {
   display: grid;
-  grid-template-columns: 1fr 350px; /* Lewa kolumna szeroka, prawa 350px */
-  gap: 25px;
-  align-items: start;
+  grid-template-columns: 1fr 350px;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 0 20px;
 }
 
-/* Responsywność - na telefonach jedna kolumna */
 @media (max-width: 900px) {
   .content-grid {
     grid-template-columns: 1fr;
   }
 }
 
-/* KARTY (Białe tło, cienie) */
+/* --- KARTY (Panel) --- */
 .card-panel {
   background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  margin-bottom: 20px;
-  border: 1px solid #f0f0f0;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
+  border: 1px solid rgba(255,255,255,0.6);
+  /* Ważne: to zapobiega wychodzeniu elementów poza ramy */
+  overflow: hidden; 
 }
 
-/* Nagłówek wewnątrz karty */
+.panel-title {
+  margin-top: 0;
+  font-size: 18px;
+  color: #34495e;
+  border-bottom: 2px solid #f1f2f6;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+/* --- GŁÓWNA TREŚĆ --- */
 .card-header-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #f5f5f5;
-  padding-bottom: 10px;
+  align-items: flex-start;
+  margin-bottom: 20px;
 }
 
 .ticket-title {
-  font-size: 1.4rem;
   margin: 0;
+  font-size: 24px;
   color: #2c3e50;
-  font-weight: 600;
 }
 
 .date-badge {
-  font-size: 0.8rem;
+  background: #f1f2f6;
   color: #7f8c8d;
-  background: #f8f9fa;
-  padding: 5px 10px;
-  border-radius: 12px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-/* Opis */
-.description-box p {
+.description-box {
+  background: #fdfdfd;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  font-size: 15px;
   line-height: 1.6;
   color: #444;
-  font-size: 1rem;
 }
 
-/* Sekcja Komentarzy */
-.panel-title {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.1rem;
-  color: #34495e;
-  font-weight: 600;
-  border-bottom: 2px solid #ecf0f1;
-  padding-bottom: 8px;
+/* --- SIDEBAR --- */
+.info-group {
+  margin-bottom: 25px;
 }
 
-.comments-list {
-  max-height: 500px;
-  overflow-y: auto;
-  margin-bottom: 20px;
-  padding-right: 5px;
+.info-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #95a5a6;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
 }
 
-.comment-item {
-  background: #fcfcfc;
-  padding: 15px;
+.styled-select {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #dfe6e9;
   border-radius: 8px;
-  margin-bottom: 15px;
-  border-left: 4px solid #3498db;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  background-color: white;
+  font-size: 14px;
+  color: #2c3e50;
+  cursor: pointer;
+  outline: none;
+  transition: border 0.2s;
+  box-sizing: border-box; /* Ważne */
+}
+
+.styled-select:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.value-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* --- WIZYTÓWKA UŻYTKOWNIKA --- */
+.user-card {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #e9ecef;
+}
+
+.user-card div {
+  margin-bottom: 4px;
+}
+
+.action-btn-small {
+  margin-top: 8px;
+  width: 100%;
+  background: #eafaf1;
+  color: #2ecc71;
+  border: 1px solid #d5f5e3;
+  padding: 6px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn-small:hover {
+  background: #2ecc71;
+  color: white;
+}
+
+/* --- HISTORIA --- */
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.history-table th {
+  text-align: left;
+  color: #95a5a6;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.history-table td {
+  padding: 10px;
+  border-bottom: 1px solid #f9f9f9;
+  color: #555;
+}
+
+/* --- KOMENTARZE --- */
+.comment-item {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
 }
 
 .comment-meta {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
   margin-bottom: 8px;
-  color: #7f8c8d;
+  font-size: 13px;
 }
 
-.comment-meta strong {
-  color: #2c3e50;
-}
+.comment-meta strong { color: #3498db; }
+.comment-date { color: #aaa; }
 
-.comment-body {
-  color: #333;
-  line-height: 1.5;
-}
-
+/* --- OBSZAR DODAWANIA KOMENTARZA (NAPRAWA PRZYCISKU) --- */
 .add-comment-area {
-  margin-top: 20px;
-}
-
-/* Inputy i Selecty */
-.styled-input, .styled-select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  background: #fff;
-  transition: border-color 0.2s;
-  box-sizing: border-box; /* Ważne, żeby nie wystawały */
-}
-
-.styled-input:focus, .styled-select:focus {
-  border-color: #3498db;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-}
-
-.styled-select {
-  cursor: pointer;
-  appearance: none; /* Reset domyślnego wyglądu selecta */
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-  background-repeat: no-repeat;
-  background-position: right .7em top 50%;
-  background-size: .65em auto;
-}
-
-/* Sidebar - Prawa Kolumna */
-.info-group {
-  margin-bottom: 20px;
-}
-
-.info-group label {
-  display: block;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: #95a5a6;
-  margin-bottom: 6px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.value-text {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #2c3e50;
-  padding: 5px 0;
-}
-
-.user-value {
+  margin-top: 25px;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column; /* Układa textarea i przycisk jeden pod drugim */
+  align-items: flex-end;  /* Wyrównuje przycisk do prawej */
 }
 
-/* Przyciski */
-.back-btn {
-  background: none;
-  border: 1px solid #ddd;
-  font-size: 0.9rem;
-  color: #666;
-  cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-.back-btn:hover {
-  background: #f0f0f0;
-  color: #333;
+.styled-input {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #dfe6e9;
+  border-radius: 10px;
+  resize: vertical;
+  font-family: inherit;
+  margin-bottom: 15px; /* Odstęp pod polem tekstowym */
+  box-sizing: border-box;
 }
 
+.styled-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+/* --- OBSZAR ZAŁĄCZNIKÓW (NAPRAWA PRZYCISKU) --- */
+.upload-area {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 15px;
+  display: flex;
+  justify-content: flex-end; /* Wyrównuje przycisk do prawej */
+}
+
+/* --- UNIWERSALNY PRZYCISK ZAPISU --- */
 .save-btn {
-  background: #27ae60;
+  background: linear-gradient(135deg, #3498db, #2980b9);
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 10px 25px;
+  border-radius: 30px;
   cursor: pointer;
-  margin-top: 10px;
-  width: 100%;
-  font-weight: 600;
-  transition: background 0.2s;
-}
-.save-btn:hover { background: #219150; }
-
-.action-btn-small {
-  margin-top: 8px;
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  background: #e0e0e0;
-  color: #333;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  width: 100%;
-  transition: background 0.2s;
-}
-.action-btn-small:hover { background: #d0d0d0; }
-
-/* Status Badges */
-.status-badge {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
   font-weight: 700;
+  transition: transform 0.2s;
+  /* Usunięto float: right - używamy flexboxa w rodzicu */
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+}
+
+.save-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Badges */
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: bold;
   color: white;
-  text-transform: uppercase;
 }
-
-.status-badge.OPEN { background-color: #3498db; box-shadow: 0 2px 5px rgba(52, 152, 219, 0.4); }
-.status-badge.IN_PROGRESS { background-color: #f39c12; box-shadow: 0 2px 5px rgba(243, 156, 18, 0.4); }
-.status-badge.CLOSED { background-color: #27ae60; box-shadow: 0 2px 5px rgba(39, 174, 96, 0.4); }
-
-/* Historia Zmian (Tabela) */
-.history-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-  font-size: 0.9rem;
-}
-.history-table th {
-  background: #f8f9fa;
-  color: #7f8c8d;
-  font-weight: 600;
-  text-align: left;
-  padding: 10px;
-  border-bottom: 2px solid #eee;
-}
-.history-table td {
-  padding: 10px;
-  border-bottom: 1px solid #f0f0f0;
-  color: #555;
-}
-.history-table tr:last-child td { border-bottom: none; }
+.status-badge.OPEN { background-color: #3498db; }
+.status-badge.IN_PROGRESS { background-color: #f39c12; }
+.status-badge.CLOSED { background-color: #2ecc71; }

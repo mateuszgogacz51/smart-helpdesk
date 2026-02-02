@@ -2,27 +2,37 @@
   
   <header class="admin-header">
     <div class="header-content">
-      
       <div style="display: flex; align-items: center; gap: 15px;">
         <button (click)="goBack()" class="back-btn">← Wróć</button>
         <div class="welcome-section">
           <h2>Panel Administratora</h2>
         </div>
       </div>
-      
-      <button (click)="goToUsers()" class="users-btn">
-        👥 Zarządzaj Użytkownikami
-      </button>
-
+      <button (click)="goToUsers()" class="users-btn">👥 Zarządzaj Użytkownikami</button>
     </div>
   </header>
 
   <div class="content-area">
     <div class="charts-grid">
       
+      <div class="chart-card" style="grid-column: 1 / -1;"> <h3>🛠️ Zarządzaj Kategoriami</h3>
+          
+          <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+              <input type="text" [(ngModel)]="newCategoryName" placeholder="Nowa kategoria..." 
+                     style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; flex: 1;">
+              <button (click)="addCategory()" class="users-btn" style="padding: 10px 20px;">+ Dodaj</button>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+              <div *ngFor="let cat of categoryList" style="background: #f1f2f6; padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; gap: 10px;">
+                  <span style="font-weight: 600; color: #2c3e50;">{{ cat.name }}</span>
+                  <button (click)="deleteCategory(cat.id)" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-weight: bold;">✕</button>
+              </div>
+              <div *ngIf="categoryList.length === 0" style="color: #999; font-style: italic;">Brak zdefiniowanych kategorii. Dodaj pierwszą!</div>
+          </div>
+      </div>
       <div class="chart-card">
         <h3>🏆 Skuteczność (Zamknięte Zgłoszenia)</h3>
-        
         <div class="chart-content">
           <div *ngFor="let item of stats.users" class="chart-row">
             <div class="chart-label">{{ item.label }}</div>
@@ -32,17 +42,14 @@
               </div>
             </div>
           </div>
-          
           <div *ngIf="stats.users.length === 0" class="empty-state">
             <p>Brak danych.</p>
-            <small>Zamknij zgłoszenie, aby zobaczyć statystyki pracownika.</small>
           </div>
         </div>
       </div>
 
       <div class="chart-card">
-        <h3>📂 Najpopularniejsze Kategorie</h3>
-        
+        <h3>📂 Statystyka Kategorii</h3>
         <div class="chart-content">
           <div *ngFor="let item of stats.categories" class="chart-row">
             <div class="chart-label">{{ item.label }}</div>
@@ -52,10 +59,8 @@
               </div>
             </div>
           </div>
-
           <div *ngIf="stats.categories.length === 0" class="empty-state">
             <p>Brak danych.</p>
-            <small>Utwórz zgłoszenia z różnymi kategoriami.</small>
           </div>
         </div>
       </div>

@@ -1,120 +1,148 @@
-/* Importujemy styl kontenera, żeby był identyczny jak wszędzie */
-.dashboard-container {
-  max-width: 800px; /* Węższy dla formularza, wygląda lepiej */
-  margin: 40px auto;
-  padding: 0 20px;
-  font-family: 'Segoe UI', sans-serif;
-  animation: slideUp 0.4s ease-out;
-}
-
-.details-header {
+/* --- TŁO I UKŁAD --- */
+.add-ticket-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
+  justify-content: center;
+  align-items: center; /* Centruje kartę na środku ekranu */
+  padding: 20px;
 }
 
-.section-title {
-  font-size: 1.5rem;
-  color: #2c3e50;
-  margin: 0;
-}
-
-.back-btn {
+/* --- KARTA FORMULARZA --- */
+.add-ticket-card {
   background: white;
-  border: 1px solid #ddd;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #555;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-
-.back-btn:hover {
-  background: #f1f1f1;
-}
-
-/* KARTA FORMULARZA */
-.card-panel {
-  background: white;
-  border-radius: 12px;
+  width: 100%;
+  max-width: 650px; /* Nieco szersza, żeby pola obok siebie wyglądały dobrze */
   padding: 40px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05); /* Nieco większy cień dla formularza */
-  border: 1px solid rgba(0,0,0,0.01);
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.6);
 }
 
+.add-ticket-card h2 {
+  margin-top: 0;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 24px;
+  font-weight: 700;
+  border-bottom: 2px solid #f1f2f6;
+  padding-bottom: 15px;
+}
+
+/* --- POLA FORMULARZA --- */
 .form-group {
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
-.form-group label {
-  display: block;
-  font-weight: 600;
-  color: #34495e;
-  margin-bottom: 10px;
-  font-size: 0.95rem;
-}
-
-/* UKŁAD DWUKOLUMNOWY DLA SELECTÓW */
+/* Kontener dla pól obok siebie (Kategoria + Lokalizacja) */
 .form-row {
   display: flex;
   gap: 20px;
 }
 
-.half {
-  flex: 1;
+.form-row .form-group {
+  flex: 1; /* Dzieli miejsce po równo */
 }
 
-/* STYLOWANIE PÓL (Identiko jak w ticket-details) */
-.styled-input, .styled-select {
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7f8c8d; /* Szary, profesjonalny kolor */
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+input, select, textarea {
   width: 100%;
-  padding: 14px;
-  border: 1px solid #dde1e3;
+  padding: 12px 15px;
+  border: 1px solid #dfe6e9;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 14px;
+  color: #2c3e50;
+  background: #fafbfc;
+  transition: all 0.3s ease;
+  box-sizing: border-box; /* Kluczowe: padding nie rozpycha elementu */
   font-family: inherit;
-  background: #fdfdfd;
-  transition: all 0.2s;
-  box-sizing: border-box;
 }
 
-.styled-input:focus, .styled-select:focus {
-  background: white;
-  border-color: #3498db;
-  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+/* Efekt po kliknięciu w pole */
+input:focus, select:focus, textarea:focus {
   outline: none;
+  border-color: #3498db;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
 }
 
-.form-actions {
-  margin-top: 35px;
+textarea {
+  resize: vertical; /* Pozwala zmieniać wysokość, ale nie szerokość */
+  min-height: 120px;
+}
+
+/* --- PRZYCISKI --- */
+.button-group {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-end; /* Wyrównanie do prawej */
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f2f6;
 }
 
-.save-btn-large {
-  background: #2ecc71; /* Zielony */
+.cancel-btn {
+  background: white;
+  border: 1px solid #dfe6e9;
+  color: #7f8c8d;
+  padding: 12px 25px;
+  border-radius: 30px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #f1f2f6;
+  color: #2c3e50;
+  border-color: #bdc3c7;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #3498db, #2980b9);
   color: white;
   border: none;
-  padding: 14px 40px;
-  border-radius: 8px;
-  font-size: 1.1rem;
+  padding: 12px 35px;
+  border-radius: 30px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.1s, background 0.2s;
-  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.save-btn-large:hover {
-  background: #27ae60;
+.submit-btn:hover {
   transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
 }
 
-.save-btn-large:active {
-  transform: translateY(0);
-}
+/* --- RESPONSYWNOŚĆ (TELEFONY) --- */
+@media (max-width: 600px) {
+  .add-ticket-card {
+    padding: 25px;
+  }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  .form-row {
+    flex-direction: column; /* Pola jedno pod drugim na małym ekranie */
+    gap: 0;
+  }
+  
+  .button-group {
+    flex-direction: column-reverse; /* Przycisk wyślij na górze przycisków */
+  }
+  
+  .cancel-btn, .submit-btn {
+    width: 100%;
+    text-align: center;
+  }
 }

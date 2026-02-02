@@ -1,9 +1,17 @@
+// Rozbudowany interfejs User o nowe pola (telefon, dział, imię...)
 export interface User {
-  id: number;
+  id?: number;
   username: string;
   role: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  department?: string;   // <--- NOWE
+  phoneNumber?: string;  // <--- NOWE
+  defaultPriority?: string;
 }
 
+// Bilet z nowym polem lokalizacji
 export interface Ticket {
   id?: number;
   title: string;
@@ -11,16 +19,17 @@ export interface Ticket {
   status: string;
   priority: string;
   category: string;
+  location?: string;     // <--- NOWE
   createdDate?: string;
   lastUpdated?: string;
   author?: User;
   assignedUser?: User;
 }
 
-// TEGO BRAKUJE W TWOIM KODZIE:
+// Historia (której brakowało w Twoim kodzie)
 export interface TicketHistory {
   id: number;
-  modifier: { username: string };
+  modifier: User;       // Zmieniono na pełny obiekt User, żeby mieć dostęp do nazwy
   changeType: string;
   oldValue: string;
   newValue: string;

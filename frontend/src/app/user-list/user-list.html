@@ -79,6 +79,16 @@
             </div>
         </div>
 
+        <div class="form-row">
+            <div class="form-group">
+                <label>Dział</label>
+                <input [(ngModel)]="newUser.department" name="department" placeholder="np. IT, Księgowość">
+            </div>
+            <div class="form-group">
+                <label>Telefon</label>
+                <input [(ngModel)]="newUser.phoneNumber" name="phoneNumber" placeholder="np. 500-123-456">
+            </div>
+        </div>
         <div class="form-group">
           <label>Email</label>
           <input [(ngModel)]="newUser.email" name="email" type="email">

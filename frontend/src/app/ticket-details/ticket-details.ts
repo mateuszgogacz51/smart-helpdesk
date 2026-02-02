@@ -24,17 +24,16 @@ export class TicketDetailsComponent implements OnInit {
   supportStaff: User[] = []; 
   currentUserRole: string = '';
   ticketId: number = 0;
-
   attachments: any[] = [];
   isUploading: boolean = false;
 
-  // Lista dostępnych kategorii do edycji
-  categories = ['Awaria sprzętu', 'Oprogramowanie', 'Dostęp/Konta', 'Sieć/Internet', 'Inne'];
+  // Lista kategorii pobierana z bazy
+  categories: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    public ticketService: TicketService, // Public, żeby html widział
+    public ticketService: TicketService,
     private commentService: CommentService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef
@@ -54,6 +53,16 @@ export class TicketDetailsComponent implements OnInit {
     if (this.currentUserRole === 'ADMIN' || this.currentUserRole === 'HELPDESK') {
       this.loadSupportStaff();
     }
+    
+    // Zawsze pobierz kategorie (potrzebne do edycji)
+    this.loadCategories();
+  }
+
+  loadCategories() {
+      this.ticketService.getCategories().subscribe({
+          next: (data) => this.categories = data,
+          error: () => console.error('Błąd kategorii')
+      });
   }
 
   loadTicket(): void {
@@ -70,7 +79,9 @@ export class TicketDetailsComponent implements OnInit {
       }
     });
   }
-
+  
+  // ... (Reszta metod: loadComments, loadHistory, loadAttachments, uploadFile, loadSupportStaff, addComment, changeStatus, updatePriority - BEZ ZMIAN) ...
+  
   loadComments(): void {
     this.commentService.getComments(this.ticketId).subscribe({
       next: (data) => {
@@ -116,7 +127,7 @@ export class TicketDetailsComponent implements OnInit {
         this.loadAttachments();
       },
       error: () => {
-        alert('Błąd wysyłania pliku (Sprawdź czy plik nie jest za duży)');
+        alert('Błąd wysyłania pliku');
         this.isUploading = false;
       }
     });
@@ -173,13 +184,9 @@ export class TicketDetailsComponent implements OnInit {
     });
   }
 
-  // --- NOWA METODA: Zmiana Kategorii ---
-// --- POPRAWIONA METODA ZMIANY KATEGORII ---
   changeCategory(newCategory: string): void {
-    // 1. Dodajemy sprawdzenie: Jeśli nie ma biletu LUB nie ma ID, przerwij
     if (!this.ticket || !this.ticket.id) return;
 
-    // 2. Teraz TypeScript wie, że this.ticket.id na pewno istnieje (jest liczbą)
     this.ticketService.changeCategory(this.ticket.id, newCategory).subscribe({
       next: (updatedTicket) => {
         this.ticket = updatedTicket;
@@ -189,7 +196,6 @@ export class TicketDetailsComponent implements OnInit {
       error: () => alert('Błąd zmiany kategorii')
     });
   }
-  // -------------------------------------
 
   assignTicket(event: Event): void {
     const select = event.target as HTMLSelectElement;
