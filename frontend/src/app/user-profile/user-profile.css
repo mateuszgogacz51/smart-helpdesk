@@ -1,0 +1,208 @@
+/* Wyśrodkowanie treści */
+.profile-content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.profile-card {
+    width: 100%;
+    max-width: 650px;
+    padding: 40px;
+    /* Używamy zmiennej tła zdefiniowanej w styles.css */
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px var(--shadow-color);
+}
+
+/* Sekcja nagłówka z awatarem */
+.profile-header-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 35px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 25px;
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+.profile-username {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    color: var(--text-primary);
+}
+
+/* --- TRYB ODCZYTU (Data Grid) --- */
+.data-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.data-item label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.value-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+    padding: 5px 0;
+}
+
+.action-bar-profile {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.edit-mode-btn {
+    background: var(--bg-card);
+    border: 2px solid #3498db;
+    color: #3498db;
+    padding: 10px 30px;
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.edit-mode-btn:hover {
+    background: #3498db;
+    color: white;
+}
+
+/* --- TRYB EDYCJI (Formularz) --- */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+.form-row .form-group { flex: 1; }
+
+label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+input {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    /* Używamy zmiennych dla inputów */
+    background: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15);
+    background: var(--bg-card);
+}
+
+.password-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.password-section h3 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+.password-section small {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-secondary);
+}
+
+/* Przyciski akcji w formularzu */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.cancel-edit-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.cancel-edit-btn:hover {
+    background: var(--hover-color);
+    color: var(--text-primary);
+}
+
+.save-edit-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    transition: transform 0.2s;
+}
+.save-edit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+}
+
+/* Role Badge - spójne z dashboardem */
+.role-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: white; }
+.role-badge.ADMIN { background: #8e44ad; }
+.role-badge.HELPDESK { background: #f39c12; }
+.role-badge.USER { background: #3498db; }
+
+.loading-state { text-align: center; padding: 50px; color: var(--text-secondary); font-size: 1.2rem; }
+
+/* Responsywność */
+@media (max-width: 600px) {
+    .form-row { flex-direction: column; gap: 0; }
+    .data-grid { grid-template-columns: 1fr; }
+    .form-actions { flex-direction: column-reverse; }
+    .cancel-edit-btn, .save-edit-btn { width: 100%; }
+    .profile-card { padding: 25px; }
+}

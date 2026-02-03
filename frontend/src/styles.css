@@ -1,43 +1,99 @@
-/* Definicja kolorów - Twoja paleta */
+/* --- ZMIENNE KOLORYSTYCZNE --- */
 :root {
-  --primary-blue: #3498db;       /* Niebieski (przyciski, aktywne elementy) */
-  --primary-hover: #2980b9;
-  
-  --success-green: #2ecc71;      /* Zielony (Zapisz, Otwarte) */
-  --success-hover: #27ae60;
-  
-  --warning-orange: #f39c12;     /* Pomarańczowy (W trakcie, Helpdesk) */
-  
-  --danger-red: #e74c3c;         /* Czerwony (Anuluj, Admin, Wysoki priorytet) */
-  --danger-hover: #c0392b;
-  
-  --dark-bg: #2c3e50;            /* Ciemny (Belki, Nagłówki, Tekst główny) */
-  --light-bg: #f4f7f6;           /* Jasne szare tło całej strony */
-  --card-bg: #ffffff;            /* Białe karty */
-  
-  --text-grey: #95a5a6;          /* Szary tekst */
+  --bg-app: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --bg-card: #ffffff;
+  --bg-header: #ffffff;
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
   --border-color: #dfe6e9;
+  --input-bg: #fafbfc;
+  --shadow-color: rgba(0,0,0,0.05);
+  --shadow-strong: rgba(0,0,0,0.1);
+  --hover-color: #ecf0f1;
 }
 
-/* Reset i Baza */
+body.dark-theme {
+  --bg-app: linear-gradient(135deg, #1e1e2f 0%, #2a2a40 100%);
+  --bg-card: #2d2d44;
+  --bg-header: #252538;
+  --text-primary: #ecf0f1;
+  --text-secondary: #aab0c7;
+  --border-color: #3f3f5a;
+  --input-bg: #373752;
+  --shadow-color: rgba(0,0,0,0.3);
+  --shadow-strong: rgba(0,0,0,0.5);
+  --hover-color: #3f3f5a;
+}
+
 body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--light-bg); /* To sprawi, że tło wszędzie będzie szare */
-  color: var(--dark-bg);
+  color: var(--text-primary);
+  background: var(--bg-app);
 }
 
-/* Ujednolicone przyciski dla całej aplikacji */
-button {
-  font-family: inherit;
+.dashboard-container, .admin-container, .add-ticket-container, .login-container {
+  background: var(--bg-app) !important;
+  color: var(--text-primary) !important;
+}
+
+.top-bar, .admin-header, .details-header {
+  background: var(--bg-header) !important;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.card-panel, .add-ticket-card, .table-wrapper, .chart-card, .modal-box, .user-card, .login-card {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 5px 20px var(--shadow-color) !important;
+}
+
+h1, h2, h3, h4, h5, h6, strong, .value-text { color: var(--text-primary) !important; }
+label, .chart-label { color: var(--text-secondary) !important; }
+input, select, textarea {
+  background: var(--input-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+  border-radius: 8px;
+}
+
+/* --- POPRAWIONY PRZYCISK WRÓĆ --- */
+.back-btn {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+  padding: 8px 18px;
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  /* Resetujemy transformację, aby nie uciekał */
+  transform: none !important; 
+  margin-right: 15px; /* Odstęp od tekstu obok */
 }
 
-/* Styl dla kart (używany w dashboard, add-ticket, details) */
-.card-panel, .dashboard-card, .ticket-card, .login-container, .user-card {
-  background: var(--card-bg);
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.02);
+.back-btn:hover {
+  background: var(--hover-color) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--text-secondary) !important;
+}
+
+/* Inne przyciski */
+.cancel-btn {
+  background: var(--bg-card) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-color) !important;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+.cancel-btn:hover {
+  background: var(--hover-color) !important;
+  color: var(--text-primary) !important;
 }

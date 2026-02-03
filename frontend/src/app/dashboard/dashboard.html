@@ -4,8 +4,16 @@
     <div class="welcome-section">
       <h2>Smart Helpdesk</h2>
     </div>
+    
     <div class="user-info">
-      <span>Witaj, <strong>{{ currentUser }}</strong> ({{ currentUserRole }})</span>
+      <button class="theme-btn" (click)="toggleTheme()" title="Zmień motyw">
+        {{ themeService.isDarkMode() ? '☀️' : '🌙' }}
+      </button>
+
+      <button class="theme-btn" (click)="goToProfile()" title="Mój Profil" style="font-size: 1rem; margin-right: 10px; font-weight: 600;">
+        👤 {{ currentUser }}
+      </button>
+
       <button class="logout-btn" (click)="logout()">Wyloguj</button>
     </div>
   </header>
@@ -63,7 +71,7 @@
             📊 Panel Admina
         </button>
 
-        <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #8e44ad;" (click)="router.navigate(['/users'])">
+        <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #8e44ad;" (click)="goToUsers()">
             👥 Użytkownicy
         </button>
         

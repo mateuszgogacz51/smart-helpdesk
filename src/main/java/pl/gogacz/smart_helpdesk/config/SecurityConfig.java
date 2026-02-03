@@ -36,9 +36,24 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
+                        // 1. Logowanie dostępne dla wszystkich
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/attachments/**").authenticated() // Wymaga logowania
+
+                        // 2. Załączniki (dostępne dla zalogowanych)
+                        .requestMatchers("/api/attachments/**").authenticated()
+
+                        // --- !!! WAŻNA ZMIANA !!! ---
+                        // Ta linijka pozwala pobrać Twój profil. Musi być wyżej niż ogólna blokada users.
+                        .requestMatchers("/api/users/me").authenticated()
+                        // ----------------------------
+
+                        // 3. Reszta użytkowników TYLKO dla ADMINA
                         .requestMatchers("/api/users/**").hasAuthority("ADMIN")
+
+                        // 4. Panel admina i kategorie
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/categories/**").hasAnyAuthority("ADMIN", "HELPDESK")
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -52,12 +67,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:4200"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // --- KLUCZOWA ZMIANA ---
-        // Pozwalamy na WSZYSTKIE nagłówki. W Twoim pliku było tylko 'Authorization',
-        // co powodowało błąd 403, gdy przeglądarka wysyłała np. 'Accept'.
         configuration.setAllowedHeaders(List.of("*"));
-
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

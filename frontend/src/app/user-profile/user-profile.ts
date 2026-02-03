@@ -1,0 +1,86 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { AuthService } from '../auth.service';
+
+@Component({
+  selector: 'app-user-profile',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './user-profile.html',
+  styleUrls: ['./user-profile.css']
+})
+export class UserProfileComponent implements OnInit {
+  user: any = {}; // Obiekt do edycji (powiązany z formularzem)
+  originalUserSnapshot: any = {}; // Kopia zapasowa do przycisku "Anuluj"
+  password = '';
+  
+  isEditing = false; // Flaga trybu edycji
+  isLoading = true;
+
+  constructor(private http: HttpClient, private router: Router, public authService: AuthService) {}
+
+  ngOnInit() {
+    this.loadMyProfile();
+  }
+
+  loadMyProfile() {
+    this.isLoading = true;
+    // Używamy nowego endpointu GET /me
+    this.http.get<any>('http://localhost:8080/api/users/me').subscribe({
+      next: (data) => {
+        this.user = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Błąd pobierania profilu', err);
+        alert('Nie udało się załadować danych profilu.');
+        this.goBack();
+      }
+    });
+  }
+
+  // Włącz tryb edycji i zrób kopię danych
+  enableEditMode() {
+    this.isEditing = true;
+    // Tworzymy głęboką kopię obiektu user
+    this.originalUserSnapshot = JSON.parse(JSON.stringify(this.user));
+  }
+
+  // Anuluj edycję i przywróć dane
+  cancelEdit() {
+    this.isEditing = false;
+    this.user = this.originalUserSnapshot;
+    this.password = '';
+  }
+
+  saveProfile() {
+    if (!confirm('Czy na pewno chcesz zapisać zmiany w swoim profilu?')) return;
+
+    const payload = {
+      firstName: this.user.firstName,
+      lastName: this.user.lastName,
+      email: this.user.email,
+      phoneNumber: this.user.phoneNumber,
+      department: this.user.department,
+      password: this.password // Wyślemy tylko jeśli wpisano
+    };
+
+    this.http.put('http://localhost:8080/api/users/me', payload).subscribe({
+      next: () => {
+        alert('Profil zaktualizowany pomyślnie!');
+        this.password = '';
+        this.isEditing = false;
+        // Opcjonalnie: przeładuj dane, żeby mieć pewność
+        this.loadMyProfile();
+      },
+      error: () => alert('Błąd aktualizacji profilu')
+    });
+  }
+
+  goBack() {
+    this.router.navigate(['/dashboard']);
+  }
+}

@@ -1,19 +1,15 @@
 <div class="dashboard-container">
   
   <header class="top-bar">
-    <div class="header-content">
-      
-      <div style="display: flex; align-items: center; gap: 15px;">
-        <button (click)="goBack()" class="back-btn">← Wróć</button>
-        <div class="title-section">
-          <h2>Zarządzanie Użytkownikami</h2>
-        </div>
-      </div>
+    <div class="title-section">
+      <button (click)="goBack()" class="back-btn">← Wróć</button>
+      <h2>Zarządzanie Użytkownikami</h2>
+    </div>
 
+    <div class="actions">
       <button (click)="openAddModal()" class="add-btn">
         + Dodaj Pracownika
       </button>
-
     </div>
   </header>
 
@@ -36,14 +32,11 @@
             <td>#{{ user.id }}</td>
             <td><strong>{{ user.username }}</strong></td>
             <td>{{ user.firstName }} {{ user.lastName }}</td>
-            
             <td>
               <span class="role-badge" [ngClass]="user.role">{{ user.role }}</span>
             </td>
-            
             <td>{{ user.department || '-' }}</td>
             <td>{{ user.defaultPriority || 'NORMAL' }}</td>
-            
             <td style="display: flex; gap: 8px;">
               <button class="action-btn edit" (click)="editUser(user)">✏️</button>
               <button class="action-btn delete" (click)="deleteUser(user)">🗑️</button>
@@ -82,13 +75,14 @@
         <div class="form-row">
             <div class="form-group">
                 <label>Dział</label>
-                <input [(ngModel)]="newUser.department" name="department" placeholder="np. IT, Księgowość">
+                <input [(ngModel)]="newUser.department" name="department" placeholder="np. IT">
             </div>
             <div class="form-group">
                 <label>Telefon</label>
-                <input [(ngModel)]="newUser.phoneNumber" name="phoneNumber" placeholder="np. 500-123-456">
+                <input [(ngModel)]="newUser.phoneNumber" name="phoneNumber">
             </div>
         </div>
+
         <div class="form-group">
           <label>Email</label>
           <input [(ngModel)]="newUser.email" name="email" type="email">
@@ -104,7 +98,7 @@
               <label>Rola</label>
               <select [(ngModel)]="newUser.role" name="role">
                 <option value="USER">Użytkownik</option>
-                <option value="HELPDESK">Serwisant (Helpdesk)</option>
+                <option value="HELPDESK">Serwisant</option>
                 <option value="ADMIN">Administrator</option>
               </select>
             </div>
@@ -125,5 +119,4 @@
       </form>
     </div>
   </div>
-
 </div>

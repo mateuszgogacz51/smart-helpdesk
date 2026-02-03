@@ -1,0 +1,102 @@
+<div class="dashboard-container">
+  
+  <header class="top-bar">
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <button (click)="goBack()" class="back-btn">← Wróć</button>
+      <h2>Mój Profil</h2>
+    </div>
+    </header>
+
+  <div class="content-area profile-content">
+    
+    <div *ngIf="isLoading" class="loading-state">Ładowanie profilu...</div>
+
+    <div class="card-panel profile-card" *ngIf="!isLoading">
+      
+      <div class="profile-header-section">
+        <div class="avatar-circle">
+          {{ user.username?.charAt(0).toUpperCase() }}
+        </div>
+        <h3 class="profile-username">{{ user.username }}</h3>
+        <span class="role-badge" [ngClass]="user.role">{{ user.role }}</span>
+      </div>
+
+      <div *ngIf="!isEditing" class="read-only-view">
+        
+        <div class="data-grid">
+          <div class="data-item">
+            <label>Imię i Nazwisko</label>
+            <div class="value-text">
+              {{ user.firstName || '-' }} {{ user.lastName }}
+            </div>
+          </div>
+
+          <div class="data-item">
+            <label>Email</label>
+            <div class="value-text">{{ user.email || 'Nie podano' }}</div>
+          </div>
+          
+          <div class="data-item">
+             <label>Dział</label>
+             <div class="value-text">{{ user.department || 'Nie podano' }}</div>
+          </div>
+
+          <div class="data-item">
+              <label>Telefon</label>
+              <div class="value-text">{{ user.phoneNumber || 'Nie podano' }}</div>
+           </div>
+        </div>
+
+        <div class="action-bar-profile">
+          <button class="edit-mode-btn" (click)="enableEditMode()">✏️ Edytuj profil</button>
+        </div>
+      </div>
+
+      <form *ngIf="isEditing" (ngSubmit)="saveProfile()" class="edit-form">
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">Imię</label>
+            <input id="firstName" [(ngModel)]="user.firstName" name="firstName" placeholder="Wpisz imię">
+          </div>
+          <div class="form-group">
+            <label for="lastName">Nazwisko</label>
+            <input id="lastName" [(ngModel)]="user.lastName" name="lastName" placeholder="Wpisz nazwisko">
+          </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+              <label for="department">Dział</label>
+              <input id="department" [(ngModel)]="user.department" name="department" placeholder="np. IT">
+            </div>
+            <div class="form-group">
+              <label for="phoneNumber">Telefon</label>
+              <input id="phoneNumber" [(ngModel)]="user.phoneNumber" name="phoneNumber" placeholder="np. 500-123-456">
+            </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" [(ngModel)]="user.email" name="email" type="email" placeholder="jan.kowalski@firma.pl">
+        </div>
+
+        <div class="password-section">
+          <h3>Zmiana Hasła</h3>
+          <div class="form-group">
+            <label for="password">Nowe hasło (zostaw puste, jeśli nie zmieniasz)</label>
+            <input id="password" [(ngModel)]="password" name="password" type="password" placeholder="••••••••">
+            <small>Zmiana hasła wymaga ponownego zalogowania na innych urządzeniach.</small>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="cancel-edit-btn" (click)="cancelEdit()">Anuluj</button>
+          <button type="submit" class="save-edit-btn">💾 Zapisz Zmiany</button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>

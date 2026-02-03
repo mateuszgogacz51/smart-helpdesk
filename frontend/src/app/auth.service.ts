@@ -48,6 +48,11 @@ export class AuthService {
   getRole(): string {
     return localStorage.getItem('role') || 'USER';
   }
+  
+  isLoggedIn(): boolean {
+    // Sprawdza czy token istnieje w przeglądarce
+    return !!localStorage.getItem('token'); 
+  }
 
   getUsername(): string {
     return localStorage.getItem('username') || '';

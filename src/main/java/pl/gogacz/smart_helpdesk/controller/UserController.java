@@ -5,6 +5,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import pl.gogacz.smart_helpdesk.model.User;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import pl.gogacz.smart_helpdesk.repository.UserRepository;
 
 import java.util.List;
@@ -28,6 +30,30 @@ public class UserController {
         return userRepository.findAll();
     }
 
+    // Edycja własnego profilu (bez ID w URL - bierze z kontekstu bezpieczeństwa)
+    @PutMapping("/me")
+    public User updateMyProfile(@RequestBody Map<String, String> updates) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+
+        // Aktualizujemy tylko dozwolone pola
+        if (updates.containsKey("firstName")) user.setFirstName(updates.get("firstName"));
+        if (updates.containsKey("lastName")) user.setLastName(updates.get("lastName"));
+        if (updates.containsKey("email")) user.setEmail(updates.get("email"));
+        if (updates.containsKey("phoneNumber")) user.setPhoneNumber(updates.get("phoneNumber"));
+        if (updates.containsKey("department")) user.setDepartment(updates.get("department"));
+
+        // Zmiana hasła (opcjonalna)
+        if (updates.containsKey("password") && !updates.get("password").isBlank()) {
+            user.setPassword(passwordEncoder.encode(updates.get("password")));
+        }
+
+        return userRepository.save(user);
+    }
+
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> createUser(@RequestBody User user) {
@@ -44,6 +70,15 @@ public class UserController {
 
         userRepository.save(user);
         return ResponseEntity.ok("Utworzono użytkownika");
+    }
+
+    // NOWA METODA: Pobierz moje dane
+    @GetMapping("/me")
+    public User getMyProfile() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+        return userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
     }
 
     @PutMapping("/{id}")

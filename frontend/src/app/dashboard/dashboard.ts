@@ -5,6 +5,7 @@ import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
 import { Ticket } from '../ticket.model';
 import { FormsModule } from '@angular/forms';
+import { ThemeService } from '../theme.service'; // <--- IMPORT
 
 @Component({
   selector: 'app-dashboard',
@@ -20,23 +21,20 @@ export class DashboardComponent implements OnInit {
   currentUser: string = '';
   currentUserRole: string = '';
   
-  // ZAKTUALIZOWANA STRUKTURA STATYSTYK
-  // Dodałem pola 'users' i 'categories' dla Admina
   stats: any = {
     myOpen: 0,
     myInProgress: 0,
     myClosed: 0,
     globalOpen: 0,
     globalTotal: 0,
-    users: [],      // <--- NOWE
-    categories: []  // <--- NOWE
+    users: [],      
+    categories: []  
   };
 
   viewMode: 'ALL' | 'MY' = 'ALL'; 
   currentStatusFilter: string = 'ALL'; 
   searchTerm: string = ''; 
 
-  // --- TWOJE SORTOWANIE ---
   sortColumn: string = 'id'; 
   sortDirection: 'asc' | 'desc' = 'desc'; 
 
@@ -44,7 +42,8 @@ export class DashboardComponent implements OnInit {
     private ticketService: TicketService,
     private authService: AuthService,
     public router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public themeService: ThemeService // <--- DODANY SERWIS (PUBLIC)
   ) {}
 
   ngOnInit() {
@@ -63,7 +62,6 @@ export class DashboardComponent implements OnInit {
     this.ticketService.getStats().subscribe({
       next: (data) => {
         this.stats = data;
-        // Zabezpieczenie na wypadek gdyby backend zwrócił null dla list
         if (!this.stats.users) this.stats.users = [];
         if (!this.stats.categories) this.stats.categories = [];
         this.cdr.detectChanges();
@@ -168,8 +166,16 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  // Metoda do nawigacji do użytkowników (używana w HTML)
   goToUsers() {
     this.router.navigate(['/users']);
+  }
+
+  // --- NOWE METODY ---
+  toggleTheme() {
+    this.themeService.toggleTheme();
+  }
+
+  goToProfile() {
+    this.router.navigate(['/profile']);
   }
 }
