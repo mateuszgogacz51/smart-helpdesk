@@ -1,12 +1,10 @@
 package pl.gogacz.smart_helpdesk.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import pl.gogacz.smart_helpdesk.model.User;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import pl.gogacz.smart_helpdesk.repository.UserRepository;
 
 import java.util.List;
@@ -24,13 +22,17 @@ public class UserController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN')") // Teraz to zadziała, bo w Service też jest "ADMIN"
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    // --- KLUCZOWA METODA, KTÓREJ BRAKOWAŁO ---
+    @GetMapping("/me")
+    public User getMyProfile() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+        return userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
     }
+    // ----------------------------------------
 
-    // Edycja własnego profilu (bez ID w URL - bierze z kontekstu bezpieczeństwa)
+    // --- Edycja własnego profilu ---
     @PutMapping("/me")
     public User updateMyProfile(@RequestBody Map<String, String> updates) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -39,14 +41,12 @@ public class UserController {
         User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
 
-        // Aktualizujemy tylko dozwolone pola
         if (updates.containsKey("firstName")) user.setFirstName(updates.get("firstName"));
         if (updates.containsKey("lastName")) user.setLastName(updates.get("lastName"));
         if (updates.containsKey("email")) user.setEmail(updates.get("email"));
         if (updates.containsKey("phoneNumber")) user.setPhoneNumber(updates.get("phoneNumber"));
         if (updates.containsKey("department")) user.setDepartment(updates.get("department"));
 
-        // Zmiana hasła (opcjonalna)
         if (updates.containsKey("password") && !updates.get("password").isBlank()) {
             user.setPassword(passwordEncoder.encode(updates.get("password")));
         }
@@ -54,60 +54,38 @@ public class UserController {
         return userRepository.save(user);
     }
 
-    @PostMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> createUser(@RequestBody User user) {
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body("Użytkownik o takim loginie już istnieje!");
-        }
-
-        if (user.getPassword() != null) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-        }
-
-        if (user.getDefaultPriority() == null) user.setDefaultPriority("NORMAL");
-        if (user.getRole() == null) user.setRole("USER");
-
-        userRepository.save(user);
-        return ResponseEntity.ok("Utworzono użytkownika");
+    // --- Metody ADMINA ---
+    @GetMapping
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
-    // NOWA METODA: Pobierz moje dane
-    @GetMapping("/me")
-    public User getMyProfile() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = auth.getName();
-        return userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+    @PostMapping
+    public User addUser(@RequestBody User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody Map<String, String> updates) {
-        return userRepository.findById(id).map(user -> {
-            if (updates.containsKey("username")) user.setUsername(updates.get("username"));
-            if (updates.containsKey("firstName")) user.setFirstName(updates.get("firstName"));
-            if (updates.containsKey("lastName")) user.setLastName(updates.get("lastName"));
-            if (updates.containsKey("email")) user.setEmail(updates.get("email"));
-            if (updates.containsKey("department")) user.setDepartment(updates.get("department"));
-            if (updates.containsKey("role")) user.setRole(updates.get("role"));
-            if (updates.containsKey("defaultPriority")) user.setDefaultPriority(updates.get("defaultPriority"));
+    public User updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+        User user = userRepository.findById(id).orElseThrow();
+        user.setUsername(userDetails.getUsername());
+        user.setRole(userDetails.getRole());
+        user.setFirstName(userDetails.getFirstName());
+        user.setLastName(userDetails.getLastName());
+        user.setEmail(userDetails.getEmail());
+        user.setDepartment(userDetails.getDepartment());
+        user.setPhoneNumber(userDetails.getPhoneNumber());
+        user.setDefaultPriority(userDetails.getDefaultPriority());
 
-            if (updates.containsKey("password") && !updates.get("password").isBlank()) {
-                user.setPassword(passwordEncoder.encode(updates.get("password")));
-            }
-
-            userRepository.save(user);
-            return ResponseEntity.ok("Zaktualizowano użytkownika");
-        }).orElse(ResponseEntity.notFound().build());
+        if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+        }
+        return userRepository.save(user);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        return userRepository.findById(id).map(user -> {
-            userRepository.delete(user);
-            return ResponseEntity.ok().build();
-        }).orElse(ResponseEntity.notFound().build());
+    public void deleteUser(@PathVariable Long id) {
+        userRepository.deleteById(id);
     }
 }

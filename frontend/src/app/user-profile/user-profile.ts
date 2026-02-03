@@ -13,11 +13,11 @@ import { AuthService } from '../auth.service';
   styleUrls: ['./user-profile.css']
 })
 export class UserProfileComponent implements OnInit {
-  user: any = {}; // Obiekt do edycji (powiązany z formularzem)
-  originalUserSnapshot: any = {}; // Kopia zapasowa do przycisku "Anuluj"
+  user: any = {}; 
+  originalUserSnapshot: any = {}; 
   password = '';
   
-  isEditing = false; // Flaga trybu edycji
+  isEditing = false; 
   isLoading = true;
 
   constructor(private http: HttpClient, private router: Router, public authService: AuthService) {}
@@ -26,30 +26,29 @@ export class UserProfileComponent implements OnInit {
     this.loadMyProfile();
   }
 
-  loadMyProfile() {
+loadMyProfile() {
     this.isLoading = true;
-    // Używamy nowego endpointu GET /me
     this.http.get<any>('http://localhost:8080/api/users/me').subscribe({
       next: (data) => {
         this.user = data;
-        this.isLoading = false;
+        this.isLoading = false; // Sukces -> koniec ładowania
       },
       error: (err) => {
         console.error('Błąd pobierania profilu', err);
-        alert('Nie udało się załadować danych profilu.');
-        this.goBack();
+        this.isLoading = false; // <--- DODAJ TO: Błąd -> też koniec ładowania!
+        
+        // Opcjonalnie wyświetl komunikat, zamiast od razu uciekać
+        // alert('Brak połączenia z serwerem.'); 
+        // this.goBack(); 
       }
     });
   }
 
-  // Włącz tryb edycji i zrób kopię danych
   enableEditMode() {
     this.isEditing = true;
-    // Tworzymy głęboką kopię obiektu user
     this.originalUserSnapshot = JSON.parse(JSON.stringify(this.user));
   }
 
-  // Anuluj edycję i przywróć dane
   cancelEdit() {
     this.isEditing = false;
     this.user = this.originalUserSnapshot;
@@ -65,7 +64,7 @@ export class UserProfileComponent implements OnInit {
       email: this.user.email,
       phoneNumber: this.user.phoneNumber,
       department: this.user.department,
-      password: this.password // Wyślemy tylko jeśli wpisano
+      password: this.password 
     };
 
     this.http.put('http://localhost:8080/api/users/me', payload).subscribe({
@@ -73,7 +72,6 @@ export class UserProfileComponent implements OnInit {
         alert('Profil zaktualizowany pomyślnie!');
         this.password = '';
         this.isEditing = false;
-        // Opcjonalnie: przeładuj dane, żeby mieć pewność
         this.loadMyProfile();
       },
       error: () => alert('Błąd aktualizacji profilu')
