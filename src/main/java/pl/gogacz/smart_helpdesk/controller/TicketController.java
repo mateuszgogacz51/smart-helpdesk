@@ -4,9 +4,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import pl.gogacz.smart_helpdesk.exception.ResourceNotFoundException; // <--- NOWY IMPORT
 import pl.gogacz.smart_helpdesk.model.Ticket;
 import pl.gogacz.smart_helpdesk.model.TicketHistory;
 import pl.gogacz.smart_helpdesk.model.User;
+import pl.gogacz.smart_helpdesk.model.enums.TicketPriority;
+import pl.gogacz.smart_helpdesk.model.enums.TicketStatus;
 import pl.gogacz.smart_helpdesk.repository.TicketHistoryRepository;
 import pl.gogacz.smart_helpdesk.repository.TicketRepository;
 import pl.gogacz.smart_helpdesk.repository.UserRepository;
@@ -34,14 +37,13 @@ public class TicketController {
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return userRepository.findByUsername(auth.getName())
-                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+                // Zmiana na nasz własny wyjątek
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zalogowanego użytkownika: " + auth.getName()));
     }
 
     @GetMapping
     public List<Ticket> getAllTickets() {
         User currentUser = getCurrentUser();
-        // Sprawdzenie czy użytkownik to ADMIN lub HELPDESK
-        // Uwaga: Upewnij się, że w bazie role to "ADMIN", "HELPDESK" (bez ROLE_) - tak jak ustaliśmy wcześniej
         boolean isStaff = "ADMIN".equals(currentUser.getRole()) || "HELPDESK".equals(currentUser.getRole());
 
         if (isStaff) {
@@ -53,13 +55,17 @@ public class TicketController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Ticket> getTicket(@PathVariable Long id) {
-        return ticketRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Ticket ticket = ticketRepository.findById(id)
+                // Zmiana na nasz własny wyjątek - to zwróci ładne 404
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zgłoszenia o ID: " + id));
+        return ResponseEntity.ok(ticket);
     }
 
     @GetMapping("/{id}/history")
     public List<TicketHistory> getTicketHistory(@PathVariable Long id) {
+        if (!ticketRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Nie znaleziono zgłoszenia o ID: " + id);
+        }
         return historyRepository.findByTicketIdOrderByTimestampDesc(id);
     }
 
@@ -70,15 +76,18 @@ public class TicketController {
         ticket.setAuthor(author);
         ticket.setCreatedDate(LocalDateTime.now());
         ticket.setLastUpdated(LocalDateTime.now());
-        ticket.setStatus("OPEN");
+        ticket.setStatus(TicketStatus.OPEN);
 
         if (author.getDefaultPriority() != null) {
-            ticket.setPriority(author.getDefaultPriority());
+            try {
+                ticket.setPriority(TicketPriority.valueOf(author.getDefaultPriority()));
+            } catch (Exception e) {
+                ticket.setPriority(TicketPriority.NORMAL);
+            }
         } else {
-            ticket.setPriority("NORMAL");
+            ticket.setPriority(TicketPriority.NORMAL);
         }
 
-        // Zabezpieczenie przed brakiem kategorii
         if (ticket.getCategory() == null) {
             ticket.setCategory("Inne");
         }
@@ -88,40 +97,53 @@ public class TicketController {
 
     @PutMapping("/{id}/status")
     public Ticket changeStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        // Obsługa JSON: { "status": "CLOSED" }
-        // Jeśli Twój frontend wysyła czysty string, można zmienić @RequestBody na String status
-        String status = body.get("status");
+        String statusStr = body.get("status");
+        TicketStatus newStatus;
+        try {
+            newStatus = TicketStatus.valueOf(statusStr);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Nieznany status: " + statusStr);
+        }
 
-        Ticket ticket = ticketRepository.findById(id).orElseThrow();
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zgłoszenia o ID: " + id));
+
         User modifier = getCurrentUser();
+        TicketStatus oldStatus = ticket.getStatus();
 
-        String oldStatus = ticket.getStatus();
-        if (!oldStatus.equals(status)) {
-            TicketHistory history = new TicketHistory(ticket, modifier, "STATUS_CHANGE", oldStatus, status);
+        if (oldStatus != newStatus) {
+            TicketHistory history = new TicketHistory(ticket, modifier, "STATUS_CHANGE", oldStatus.name(), newStatus.name());
             historyRepository.save(history);
         }
 
-        ticket.setStatus(status);
+        ticket.setStatus(newStatus);
         ticket.setLastUpdated(LocalDateTime.now());
         return ticketRepository.save(ticket);
     }
 
     @PutMapping("/{id}/priority")
     public Ticket changePriority(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        String priority = body.get("priority");
+        String priorityStr = body.get("priority");
+        TicketPriority newPriority;
+        try {
+            newPriority = TicketPriority.valueOf(priorityStr);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Nieznany priorytet: " + priorityStr);
+        }
 
-        Ticket ticket = ticketRepository.findById(id).orElseThrow();
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zgłoszenia o ID: " + id));
+
         User modifier = getCurrentUser();
+        TicketPriority oldPriority = ticket.getPriority();
+        String oldPriorityName = oldPriority != null ? oldPriority.name() : "BRAK";
 
-        String oldPriority = ticket.getPriority();
-        if (oldPriority == null) oldPriority = "BRAK";
-
-        if (!oldPriority.equals(priority)) {
-            TicketHistory history = new TicketHistory(ticket, modifier, "PRIORITY_CHANGE", oldPriority, priority);
+        if (oldPriority != newPriority) {
+            TicketHistory history = new TicketHistory(ticket, modifier, "PRIORITY_CHANGE", oldPriorityName, newPriority.name());
             historyRepository.save(history);
         }
 
-        ticket.setPriority(priority);
+        ticket.setPriority(newPriority);
         ticket.setLastUpdated(LocalDateTime.now());
         return ticketRepository.save(ticket);
     }
@@ -130,15 +152,17 @@ public class TicketController {
     public Ticket assignTicket(@PathVariable Long id, @RequestBody Map<String, Long> body) {
         Long userId = body.get("userId");
 
-        Ticket ticket = ticketRepository.findById(id).orElseThrow();
-        User staff = userRepository.findById(userId).orElseThrow();
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zgłoszenia o ID: " + id));
+
+        User staff = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono pracownika o ID: " + userId));
+
         User modifier = getCurrentUser();
-
         String oldAssignee = ticket.getAssignedUser() != null ? ticket.getAssignedUser().getUsername() : "Brak";
-        String newAssignee = staff.getUsername();
 
-        if (!oldAssignee.equals(newAssignee)) {
-            TicketHistory history = new TicketHistory(ticket, modifier, "ASSIGNMENT_CHANGE", oldAssignee, newAssignee);
+        if (!oldAssignee.equals(staff.getUsername())) {
+            TicketHistory history = new TicketHistory(ticket, modifier, "ASSIGNMENT_CHANGE", oldAssignee, staff.getUsername());
             historyRepository.save(history);
         }
 
@@ -151,14 +175,13 @@ public class TicketController {
     public Ticket changeCategory(@PathVariable Long id, @RequestBody Map<String, String> body) {
         String category = body.get("category");
 
-        Ticket ticket = ticketRepository.findById(id).orElseThrow();
-        User modifier = getCurrentUser(); // Metoda pomocnicza, którą już masz w klasie
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zgłoszenia o ID: " + id));
 
-        String oldCategory = ticket.getCategory();
-        if (oldCategory == null) oldCategory = "Brak";
+        User modifier = getCurrentUser();
+        String oldCategory = ticket.getCategory() != null ? ticket.getCategory() : "Brak";
 
         if (!oldCategory.equals(category)) {
-            // Logujemy zmianę w historii
             TicketHistory history = new TicketHistory(ticket, modifier, "CATEGORY_CHANGE", oldCategory, category);
             historyRepository.save(history);
         }
@@ -167,16 +190,17 @@ public class TicketController {
         ticket.setLastUpdated(LocalDateTime.now());
         return ticketRepository.save(ticket);
     }
+
     @PutMapping("/{id}/assign-me")
     public Ticket assignToMe(@PathVariable Long id) {
-        Ticket ticket = ticketRepository.findById(id).orElseThrow();
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zgłoszenia o ID: " + id));
+
         User modifier = getCurrentUser();
-
         String oldAssignee = ticket.getAssignedUser() != null ? ticket.getAssignedUser().getUsername() : "Brak";
-        String newAssignee = modifier.getUsername();
 
-        if (!oldAssignee.equals(newAssignee)) {
-            TicketHistory history = new TicketHistory(ticket, modifier, "ASSIGNMENT_CHANGE", oldAssignee, newAssignee);
+        if (!oldAssignee.equals(modifier.getUsername())) {
+            TicketHistory history = new TicketHistory(ticket, modifier, "ASSIGNMENT_CHANGE", oldAssignee, modifier.getUsername());
             historyRepository.save(history);
         }
 
@@ -192,20 +216,15 @@ public class TicketController {
                 .toList();
     }
 
-    // --- ZMODYFIKOWANY ENDPOINT STATYSTYK ---
-    // Łączy Twoje stare liczniki z nowymi danymi dla Admina
     @GetMapping("/stats")
     public Map<String, Object> getStats() {
         User currentUser = getCurrentUser();
         boolean isAdmin = "ADMIN".equals(currentUser.getRole());
 
-        // Używamy HashMap<String, Object>, żeby móc wrzucić tam i Long, i Listy
         Map<String, Object> response = new HashMap<>();
-
         List<Ticket> allTickets = ticketRepository.findAll();
 
-        // 1. Stare Liczniki (Globalne i Osobiste)
-        long globalOpen = allTickets.stream().filter(t -> "OPEN".equals(t.getStatus())).count();
+        long globalOpen = allTickets.stream().filter(t -> TicketStatus.OPEN.equals(t.getStatus())).count();
         long globalTotal = allTickets.size();
 
         boolean isStaff = "ADMIN".equals(currentUser.getRole()) || "HELPDESK".equals(currentUser.getRole());
@@ -223,27 +242,23 @@ public class TicketController {
 
         response.put("globalOpen", globalOpen);
         response.put("globalTotal", globalTotal);
-        response.put("myOpen", myTickets.stream().filter(t -> "OPEN".equals(t.getStatus())).count());
-        response.put("myInProgress", myTickets.stream().filter(t -> "IN_PROGRESS".equals(t.getStatus())).count());
-        response.put("myClosed", myTickets.stream().filter(t -> "CLOSED".equals(t.getStatus())).count());
+        response.put("myOpen", myTickets.stream().filter(t -> TicketStatus.OPEN.equals(t.getStatus())).count());
+        response.put("myInProgress", myTickets.stream().filter(t -> TicketStatus.IN_PROGRESS.equals(t.getStatus())).count());
+        response.put("myClosed", myTickets.stream().filter(t -> TicketStatus.CLOSED.equals(t.getStatus())).count());
 
-        // 2. Nowe Dane dla Admina (Wykresy)
         if (isAdmin) {
-            // Statystyka Pracowników (Kto ile zamknął)
             List<Object[]> userResults = ticketRepository.countClosedTicketsByUser();
             List<Map<String, Object>> userStats = userResults.stream()
                     .map(row -> Map.of("label", row[0], "value", row[1]))
                     .collect(Collectors.toList());
             response.put("users", userStats);
 
-            // Statystyka Kategorii (Popularność)
             List<Object[]> categoryResults = ticketRepository.countTicketsByCategory();
             List<Map<String, Object>> categoryStats = categoryResults.stream()
                     .map(row -> Map.of("label", row[0], "value", row[1]))
                     .collect(Collectors.toList());
             response.put("categories", categoryStats);
         } else {
-            // Puste listy dla nie-admina (żeby frontend nie zgłaszał błędów undefined)
             response.put("users", List.of());
             response.put("categories", List.of());
         }
