@@ -4,18 +4,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import pl.gogacz.smart_helpdesk.exception.ResourceNotFoundException; // <--- NOWY IMPORT
+import pl.gogacz.smart_helpdesk.exception.ResourceNotFoundException;
+import pl.gogacz.smart_helpdesk.model.Category;
 import pl.gogacz.smart_helpdesk.model.Ticket;
 import pl.gogacz.smart_helpdesk.model.TicketHistory;
 import pl.gogacz.smart_helpdesk.model.User;
 import pl.gogacz.smart_helpdesk.model.enums.TicketPriority;
 import pl.gogacz.smart_helpdesk.model.enums.TicketStatus;
+import pl.gogacz.smart_helpdesk.repository.CategoryRepository;
 import pl.gogacz.smart_helpdesk.repository.TicketHistoryRepository;
 import pl.gogacz.smart_helpdesk.repository.TicketRepository;
 import pl.gogacz.smart_helpdesk.repository.UserRepository;
+import pl.gogacz.smart_helpdesk.service.EmailService;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,17 +29,24 @@ public class TicketController {
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
     private final TicketHistoryRepository historyRepository;
+    private final CategoryRepository categoryRepository;
+    private final EmailService emailService;
 
-    public TicketController(TicketRepository ticketRepository, UserRepository userRepository, TicketHistoryRepository historyRepository) {
+    public TicketController(TicketRepository ticketRepository,
+                            UserRepository userRepository,
+                            TicketHistoryRepository historyRepository,
+                            CategoryRepository categoryRepository,
+                            EmailService emailService) {
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
         this.historyRepository = historyRepository;
+        this.categoryRepository = categoryRepository;
+        this.emailService = emailService;
     }
 
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return userRepository.findByUsername(auth.getName())
-                // Zmiana na nasz własny wyjątek
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zalogowanego użytkownika: " + auth.getName()));
     }
 
@@ -56,7 +65,6 @@ public class TicketController {
     @GetMapping("/{id}")
     public ResponseEntity<Ticket> getTicket(@PathVariable Long id) {
         Ticket ticket = ticketRepository.findById(id)
-                // Zmiana na nasz własny wyjątek - to zwróci ładne 404
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zgłoszenia o ID: " + id));
         return ResponseEntity.ok(ticket);
     }
@@ -78,6 +86,7 @@ public class TicketController {
         ticket.setLastUpdated(LocalDateTime.now());
         ticket.setStatus(TicketStatus.OPEN);
 
+        // --- AUTOMATYCZNY PRIORYTET (Ignorujemy to co przysłał frontend) ---
         if (author.getDefaultPriority() != null) {
             try {
                 ticket.setPriority(TicketPriority.valueOf(author.getDefaultPriority()));
@@ -88,9 +97,20 @@ public class TicketController {
             ticket.setPriority(TicketPriority.NORMAL);
         }
 
-        if (ticket.getCategory() == null) {
-            ticket.setCategory("Inne");
+        // --- NAPRAWA KATEGORII (Obsługa obiektu Category) ---
+        // 1. Pobieramy nazwę kategorii (z obiektu lub domyślnie "Inne")
+        String catName = "Inne";
+        if (ticket.getCategory() != null && ticket.getCategory().getName() != null) {
+            catName = ticket.getCategory().getName();
         }
+
+        // 2. Znajdujemy w bazie lub tworzymy nową (żeby uniknąć błędu 500 FK)
+        String finalCatName = catName;
+        Category category = categoryRepository.findByName(finalCatName)
+                .orElseGet(() -> categoryRepository.save(new Category(finalCatName)));
+
+        ticket.setCategory(category);
+        // ---------------------------------------------------
 
         return ticketRepository.save(ticket);
     }
@@ -114,6 +134,16 @@ public class TicketController {
         if (oldStatus != newStatus) {
             TicketHistory history = new TicketHistory(ticket, modifier, "STATUS_CHANGE", oldStatus.name(), newStatus.name());
             historyRepository.save(history);
+
+            // Powiadomienie E-mail (bezpieczne)
+            try {
+                if (emailService != null) {
+                    emailService.sendStatusChangeEmail(ticket.getAuthor().getEmail(), ticket.getId(), newStatus.name());
+                }
+            } catch (Exception e) {
+                // Logujemy błąd ale nie przerywamy requestu
+                System.err.println("Błąd wysyłki maila: " + e.getMessage());
+            }
         }
 
         ticket.setStatus(newStatus);
@@ -173,20 +203,23 @@ public class TicketController {
 
     @PutMapping("/{id}/category")
     public Ticket changeCategory(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        String category = body.get("category");
+        String categoryName = body.get("category");
 
         Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono zgłoszenia o ID: " + id));
 
         User modifier = getCurrentUser();
-        String oldCategory = ticket.getCategory() != null ? ticket.getCategory() : "Brak";
+        String oldCategoryName = ticket.getCategory() != null ? ticket.getCategory().getName() : "Brak";
 
-        if (!oldCategory.equals(category)) {
-            TicketHistory history = new TicketHistory(ticket, modifier, "CATEGORY_CHANGE", oldCategory, category);
+        Category newCategory = categoryRepository.findByName(categoryName)
+                .orElseGet(() -> categoryRepository.save(new Category(categoryName)));
+
+        if (!oldCategoryName.equals(newCategory.getName())) {
+            TicketHistory history = new TicketHistory(ticket, modifier, "CATEGORY_CHANGE", oldCategoryName, newCategory.getName());
             historyRepository.save(history);
         }
 
-        ticket.setCategory(category);
+        ticket.setCategory(newCategory);
         ticket.setLastUpdated(LocalDateTime.now());
         return ticketRepository.save(ticket);
     }
@@ -213,7 +246,7 @@ public class TicketController {
     public List<User> getSupportStaff() {
         return userRepository.findAll().stream()
                 .filter(u -> "HELPDESK".equals(u.getRole()) || "ADMIN".equals(u.getRole()))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/stats")
@@ -221,7 +254,7 @@ public class TicketController {
         User currentUser = getCurrentUser();
         boolean isAdmin = "ADMIN".equals(currentUser.getRole());
 
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new java.util.HashMap<>();
         List<Ticket> allTickets = ticketRepository.findAll();
 
         long globalOpen = allTickets.stream().filter(t -> TicketStatus.OPEN.equals(t.getStatus())).count();
@@ -247,17 +280,18 @@ public class TicketController {
         response.put("myClosed", myTickets.stream().filter(t -> TicketStatus.CLOSED.equals(t.getStatus())).count());
 
         if (isAdmin) {
-            List<Object[]> userResults = ticketRepository.countClosedTicketsByUser();
-            List<Map<String, Object>> userStats = userResults.stream()
-                    .map(row -> Map.of("label", row[0], "value", row[1]))
-                    .collect(Collectors.toList());
-            response.put("users", userStats);
+            try {
+                // Te metody wymagają odpowiedniego zapytania w TicketRepository
+                // Jeśli ich nie masz, zakomentuj te linie:
+                List<Object[]> userResults = ticketRepository.countClosedTicketsByUser();
+                response.put("users", userResults.stream().map(row -> Map.of("label", row[0], "value", row[1])).collect(Collectors.toList()));
 
-            List<Object[]> categoryResults = ticketRepository.countTicketsByCategory();
-            List<Map<String, Object>> categoryStats = categoryResults.stream()
-                    .map(row -> Map.of("label", row[0], "value", row[1]))
-                    .collect(Collectors.toList());
-            response.put("categories", categoryStats);
+                List<Object[]> categoryResults = ticketRepository.countTicketsByCategory();
+                response.put("categories", categoryResults.stream().map(row -> Map.of("label", row[0], "value", row[1])).collect(Collectors.toList()));
+            } catch (Exception e) {
+                response.put("users", List.of());
+                response.put("categories", List.of());
+            }
         } else {
             response.put("users", List.of());
             response.put("categories", List.of());

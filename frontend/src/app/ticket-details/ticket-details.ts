@@ -65,16 +65,28 @@ export class TicketDetailsComponent implements OnInit {
       });
   }
 
-  loadTicket(): void {
-    this.ticketService.getTicket(this.ticketId).subscribe({
+loadTicket() {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    
+    this.ticketService.getTicket(id).subscribe({
       next: (data) => {
         this.ticket = data;
+        this.loadHistory(); 
+        
+        // <--- TA LINIA NAPRAWIA BŁĄD NG0100 --->
         this.cdr.detectChanges(); 
       },
       error: (err) => {
-        if (err.status !== 401 && err.status !== 403) {
-           alert('Nie udało się pobrać szczegółów zgłoszenia.');
-           this.router.navigate(['/dashboard']);
+        console.error('Błąd pobierania zgłoszenia', err);
+        
+        if (err.status === 403) {
+          alert('⛔ BRAK DOSTĘPU: To zgłoszenie nie należy do Ciebie!');
+          this.router.navigate(['/dashboard']); 
+        } else if (err.status === 404) {
+          alert('❌ Nie znaleziono takiego zgłoszenia.');
+          this.router.navigate(['/dashboard']);
+        } else {
+          alert('Wystąpił błąd podczas ładowania zgłoszenia.');
         }
       }
     });

@@ -4,10 +4,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import pl.gogacz.smart_helpdesk.model.Category;
 import pl.gogacz.smart_helpdesk.model.Ticket;
 import pl.gogacz.smart_helpdesk.model.User;
-import pl.gogacz.smart_helpdesk.model.enums.TicketPriority; // <--- IMPORT
-import pl.gogacz.smart_helpdesk.model.enums.TicketStatus;   // <--- IMPORT
+import pl.gogacz.smart_helpdesk.model.enums.TicketPriority;
+import pl.gogacz.smart_helpdesk.model.enums.TicketStatus;
+import pl.gogacz.smart_helpdesk.repository.CategoryRepository;
 import pl.gogacz.smart_helpdesk.repository.TicketRepository;
 import pl.gogacz.smart_helpdesk.repository.UserRepository;
 
@@ -19,9 +21,10 @@ public class DataInitializer {
     @Bean
     CommandLineRunner init(UserRepository userRepository,
                            TicketRepository ticketRepository,
+                           CategoryRepository categoryRepository,
                            PasswordEncoder passwordEncoder) {
         return args -> {
-            // 1. Użytkownicy (bez zmian - kopiuję Twój obecny kod)
+            // 1. UŻYTKOWNICY (Sprawdzamy niezależnie)
             if (userRepository.count() == 0) {
                 User admin = new User();
                 admin.setUsername("admin");
@@ -30,6 +33,7 @@ public class DataInitializer {
                 admin.setFirstName("Główny");
                 admin.setLastName("Administrator");
                 admin.setEmail("admin@firma.pl");
+                admin.setDefaultPriority("HIGH");
                 userRepository.save(admin);
 
                 User user = new User();
@@ -39,6 +43,8 @@ public class DataInitializer {
                 user.setFirstName("Jan");
                 user.setLastName("Kowalski");
                 user.setEmail("jan@firma.pl");
+                user.setDepartment("IT");
+                user.setPhoneNumber("123-456-789");
                 userRepository.save(user);
 
                 User helpdesk = new User();
@@ -49,29 +55,16 @@ public class DataInitializer {
                 helpdesk.setLastName("Serwisant");
                 userRepository.save(helpdesk);
 
-                // 2. Przykładowe Zgłoszenia (POPRAWIONE NA ENUMY)
-                Ticket t1 = new Ticket();
-                t1.setTitle("Nie działa drukarka");
-                t1.setDescription("Drukarka na 2 piętrze wciąga papier.");
-                t1.setStatus(TicketStatus.OPEN);       // <--- Było "OPEN"
-                t1.setPriority(TicketPriority.HIGH);   // <--- Było "HIGH"
-                t1.setCategory("Sprzęt");
-                t1.setCreatedDate(LocalDateTime.now());
-                t1.setAuthor(user);
-                ticketRepository.save(t1);
+                System.out.println("--- Dodano użytkowników ---");
+            }
 
-                Ticket t2 = new Ticket();
-                t2.setTitle("Brak dostępu do VPN");
-                t2.setDescription("Nie mogę się połączyć z domu.");
-                t2.setStatus(TicketStatus.IN_PROGRESS); // <--- Było "IN_PROGRESS"
-                t2.setPriority(TicketPriority.NORMAL);  // <--- Było "NORMAL"
-                t2.setCategory("Sieć");
-                t2.setCreatedDate(LocalDateTime.now().minusHours(2));
-                t2.setAuthor(user);
-                t2.setAssignedUser(helpdesk);
-                ticketRepository.save(t2);
+            // 2. KATEGORIE (To musi się wykonać, nawet jak userzy już są!)
+            if (categoryRepository.count() == 0) {
+                Category c1 = categoryRepository.save(new Category("Sprzęt"));
+                Category c2 = categoryRepository.save(new Category("Sieć"));
+                Category c3 = categoryRepository.save(new Category("Inne"));
 
-                System.out.println("--- ZAINICJOWANO DANE TESTOWE ---");
+                System.out.println("--- Dodano kategorie ---");
             }
         };
     }

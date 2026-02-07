@@ -17,12 +17,11 @@ export class AddTicketComponent implements OnInit {
     title: '',
     description: '',
     status: 'OPEN',
-    priority: 'NORMAL',
-    category: '',
-    location: '' // <--- NOWE POLE
+    priority: 'NORMAL', // To pole jest ignorowane przez backend, ale wymagane przez model
+    category: null, 
+    location: ''
   };
 
-  // Już nie hardkodujemy ['Awaria', 'Inne'], pobierzemy z bazy
   categories: any[] = [];
 
   constructor(private ticketService: TicketService, private router: Router) {}
@@ -35,24 +34,31 @@ export class AddTicketComponent implements OnInit {
     this.ticketService.getCategories().subscribe({
         next: (data) => {
             this.categories = data;
-            // Ustaw domyślnie pierwszą kategorię, jeśli lista niepusta
+            // Domyślnie ustawiamy pierwszą kategorię
             if (this.categories.length > 0) {
-                this.ticket.category = this.categories[0].name;
+                this.ticket.category = this.categories[0];
             }
         },
-        error: () => console.error('Nie udało się pobrać kategorii')
+        error: (err) => console.error('Nie udało się pobrać kategorii', err)
     });
   }
 
   onSubmit() {
+    // Prosta walidacja
+    if (!this.ticket.category) {
+        alert("Wybierz kategorię!");
+        return;
+    }
+
     this.ticketService.createTicket(this.ticket).subscribe({
       next: () => {
-        alert('Zgłoszenie dodane!');
+        alert('Zgłoszenie zostało wysłane pomyślnie!');
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        console.error(err);
-        alert('Wystąpił błąd podczas dodawania zgłoszenia.');
+        console.error('Error:', err);
+        const msg = err.error && err.error.message ? err.error.message : 'Błąd połączenia z serwerem.';
+        alert('Nie udało się dodać zgłoszenia: ' + msg);
       }
     });
   }

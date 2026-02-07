@@ -1,30 +1,31 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from './auth.service'; // Upewnij się, że masz ten import
 import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = localStorage.getItem('token'); 
+  const authService = inject(AuthService);
   const router = inject(Router);
-
-  let authReq = req;
+  const token = authService.getToken();
 
   if (token) {
-    authReq = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}` // <--- Tu musi być Bearer, nie Basic
-      }
+    req = req.clone({
+      setHeaders: { Authorization: `Bearer ${token}` }
     });
   }
 
-  return next(authReq).pipe(
-    catchError((error) => {
-      // Jeśli dostaniesz 401/403 (brak dostępu), dopiero wtedy wyloguj
-      if (error.status === 401 || error.status === 403) {
-        console.warn('Błąd autoryzacji - wylogowywanie...');
-        localStorage.clear();
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      
+      // --- LOGIKA: Wyloguj TYLKO przy 401 (Wygasły token) ---
+      if (error.status === 401) {
+        console.warn('Sesja wygasła (401) - wylogowywanie...');
+        authService.logout();
         router.navigate(['/login']);
       }
+
+      // Błędy 403 (Brak dostępu) i inne puszczamy dalej do komponentu
       return throwError(() => error);
     })
   );

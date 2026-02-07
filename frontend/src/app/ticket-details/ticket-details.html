@@ -61,7 +61,7 @@
           <tbody>
             <tr *ngFor="let entry of history">
               <td>{{ entry.timestamp | date:'short' }}</td>
-              <td><strong>{{ entry.modifier?.username }}</strong></td>
+              <td><strong>{{ entry.modifier.username }}</strong></td>
               <td>
                 <span *ngIf="entry.changeType === 'STATUS_CHANGE'">Status</span>
                 <span *ngIf="entry.changeType === 'PRIORITY_CHANGE'">Priorytet</span>

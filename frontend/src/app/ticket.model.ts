@@ -1,35 +1,35 @@
-// Rozbudowany interfejs User o nowe pola (telefon, dział, imię...)
-export interface User {
+// Importujemy Twojego rozbudowanego Usera z pliku obok
+import { User } from './user.model'; 
+
+export interface Category {
   id?: number;
-  username: string;
-  role: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  department?: string;   // <--- NOWE
-  phoneNumber?: string;  // <--- NOWE
-  defaultPriority?: string;
+  name: string;
 }
 
-// Bilet z nowym polem lokalizacji
 export interface Ticket {
   id?: number;
   title: string;
   description: string;
   status: string;
   priority: string;
-  category: string;
-  location?: string;     // <--- NOWE
+
+  // --- TO JEST NAJWAŻNIEJSZE DLA BŁĘDU 500 ---
+  // Musi być 'any' lub 'Category', żeby przyjąć obiekt {id: 1, name: "Sprzęt"}
+  category: any; 
+  // -------------------------------------------
+
+  location?: string;
   createdDate?: string;
   lastUpdated?: string;
-  author?: User;
+
+  // Tutaj używamy Twojego Usera (z polami fullName, phone itp.)
+  author?: User;        
   assignedUser?: User;
 }
 
-// Historia (której brakowało w Twoim kodzie)
 export interface TicketHistory {
   id: number;
-  modifier: User;       // Zmieniono na pełny obiekt User, żeby mieć dostęp do nazwy
+  modifier: User;
   changeType: string;
   oldValue: string;
   newValue: string;

@@ -25,6 +25,17 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(TicketAccessDeniedException.class)
+    public ResponseEntity<?> handleTicketAccessDeniedException(TicketAccessDeniedException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.FORBIDDEN.value());
+        body.put("error", "Access Denied");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false));
+
+        return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
+    }
 
     // 2. Obsługa wszystkich innych nieprzewidzianych błędów (500)
     @ExceptionHandler(Exception.class)

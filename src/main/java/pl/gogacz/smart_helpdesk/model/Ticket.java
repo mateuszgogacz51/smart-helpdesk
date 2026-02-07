@@ -2,8 +2,8 @@ package pl.gogacz.smart_helpdesk.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import pl.gogacz.smart_helpdesk.model.enums.TicketPriority; // <--- NOWY IMPORT
-import pl.gogacz.smart_helpdesk.model.enums.TicketStatus;   // <--- NOWY IMPORT
+import pl.gogacz.smart_helpdesk.model.enums.TicketPriority;
+import pl.gogacz.smart_helpdesk.model.enums.TicketStatus;
 
 import java.time.LocalDateTime;
 
@@ -19,15 +19,18 @@ public class Ticket {
     @Column(length = 5000)
     private String description;
 
-    // --- ZMIANA: String -> Enum ---
     @Enumerated(EnumType.STRING)
     private TicketStatus status;
 
     @Enumerated(EnumType.STRING)
     private TicketPriority priority;
-    // ------------------------------
 
-    private String category;
+    // --- NAPRAWA BŁĘDU 500 ---
+    // Baza danych wymaga relacji, a nie tekstu!
+    @ManyToOne
+    @JoinColumn(name = "category_id") // To łączy się z tabelą Category
+    private Category category;
+    // -------------------------
 
     private String location;
 
