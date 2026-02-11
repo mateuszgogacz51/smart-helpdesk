@@ -6,9 +6,41 @@
     </div>
     
     <div class="user-info">
+      
       <button class="theme-btn" (click)="toggleTheme()" title="Zmień motyw">
         {{ themeService.isDarkMode() ? '☀️' : '🌙' }}
       </button>
+
+      <div class="notification-container" (click)="toggleNotifications()" title="Powiadomienia">
+        <span class="bell-icon">🔔</span>
+        <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+
+        <div class="notification-dropdown" *ngIf="showNotifications" (click)="$event.stopPropagation()">
+            
+            <div *ngIf="isLoadingNotifications" class="notification-empty">
+                Ładowanie...
+            </div>
+
+            <div *ngIf="!isLoadingNotifications && notifications.length === 0" class="notification-empty">
+                Brak nowych powiadomień
+            </div>
+            
+            <div *ngFor="let notif of notifications" 
+                 class="notification-item" 
+                 [class.unread]="!notif.read"
+                 (click)="onNotificationClick(notif)">
+                
+                 <div class="notif-info">
+                    <div class="notif-content">{{ notif.message }}</div>
+                    <div class="notif-date">{{ notif.createdDate | date:'short' }}</div>
+                 </div>
+
+                 <button class="delete-notif-btn" (click)="deleteNotification($event, notif)" title="Usuń powiadomienie">
+                    ✕
+                 </button>
+            </div>
+        </div>
+      </div>
 
       <button class="theme-btn" (click)="goToProfile()" title="Mój Profil" style="font-size: 1rem; margin-right: 10px; font-weight: 600;">
         👤 {{ currentUser }}
@@ -21,7 +53,6 @@
   <div class="content-area">
 
     <div class="stats-container" *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
-      
       <div class="stats-group">
         <h3>Moje Zadania (Przypisane)</h3>
         <div class="cards-row">
@@ -56,7 +87,6 @@
     </div>
 
     <div class="action-bar">
-      
       <div class="view-toggle" *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
         <button [class.active]="viewMode === 'ALL'" (click)="viewMode = 'ALL'; setFilter('ALL')">Wszystkie</button>
         <button [class.active]="viewMode === 'MY'" (click)="viewMode = 'MY'; setFilter('ALL')">Tylko moje</button>
@@ -70,11 +100,9 @@
         <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #e74c3c;" (click)="router.navigate(['/admin'])">
             📊 Panel Admina
         </button>
-
         <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #8e44ad;" (click)="goToUsers()">
             👥 Użytkownicy
         </button>
-        
         <button class="add-btn" (click)="goToAddTicket()">+ Nowe zgłoszenie</button>
       </div>
     </div>
@@ -105,7 +133,11 @@
           <tr *ngFor="let ticket of visibleTickets">
             <td>#{{ ticket.id }}</td>
             <td><strong>{{ ticket.title }}</strong></td>
-            <td><span class="status-badge" [ngClass]="ticket.status">{{ ticket.status }}</span></td>
+            <td>
+                <span class="status-badge" [ngClass]="'status-' + ticket.status.toLowerCase()">
+                    {{ ticket.status }}
+                </span>
+            </td>
             
             <td *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
               <span *ngIf="ticket.priority === 'HIGH'" class="priority-badge high">🔥 PILNE</span>
@@ -114,7 +146,7 @@
               <span *ngIf="!ticket.priority">-</span>
             </td>
 
-            <td>{{ ticket.category }}</td>
+            <td>{{ ticket.category?.name }}</td>
             <td>{{ ticket.author?.username }}</td>
             <td>{{ ticket.assignedUser?.username || 'Brak' }}</td>
             <td>{{ ticket.createdDate | date:'short' }}</td>

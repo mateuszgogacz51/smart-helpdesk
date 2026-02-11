@@ -5,7 +5,8 @@ import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
 import { Ticket } from '../ticket.model';
 import { FormsModule } from '@angular/forms';
-import { ThemeService } from '../theme.service'; // <--- IMPORT
+import { ThemeService } from '../theme.service';
+import { NotificationService } from '../notification.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,6 +22,12 @@ export class DashboardComponent implements OnInit {
   currentUser: string = '';
   currentUserRole: string = '';
   
+  // --- ZMIENNE DO POWIADOMIEŃ ---
+  unreadCount: number = 0;
+  notifications: any[] = [];
+  showNotifications: boolean = false;
+  isLoadingNotifications: boolean = false; // Naprawia miganie "Brak powiadomień"
+
   stats: any = {
     myOpen: 0,
     myInProgress: 0,
@@ -41,9 +48,10 @@ export class DashboardComponent implements OnInit {
   constructor(
     private ticketService: TicketService,
     private authService: AuthService,
+    private notificationService: NotificationService,
     public router: Router,
     private cdr: ChangeDetectorRef,
-    public themeService: ThemeService // <--- DODANY SERWIS (PUBLIC)
+    public themeService: ThemeService
   ) {}
 
   ngOnInit() {
@@ -56,7 +64,71 @@ export class DashboardComponent implements OnInit {
 
     this.loadTickets();
     this.loadStats();
+    this.loadNotificationCount();
   }
+
+  // --- LOGIKA POWIADOMIEŃ ---
+
+  loadNotificationCount() {
+    this.notificationService.getUnreadCount().subscribe({
+      next: (count) => {
+        this.unreadCount = count;
+      },
+      error: (err) => console.error('Błąd licznika powiadomień', err)
+    });
+  }
+
+  toggleNotifications() {
+    this.showNotifications = !this.showNotifications;
+
+    if (this.showNotifications) {
+      this.isLoadingNotifications = true; // Włączamy loader
+      this.notifications = []; // Czyścimy listę, żeby nie pokazywać starych danych
+
+      this.notificationService.getNotifications().subscribe({
+        next: (data) => {
+          this.notifications = data;
+          this.isLoadingNotifications = false; // Wyłączamy loader
+          this.cdr.detectChanges(); // Odświeżamy widok
+        },
+        error: (err) => {
+          console.error('Błąd pobierania listy powiadomień', err);
+          this.isLoadingNotifications = false;
+        }
+      });
+    }
+  }
+
+  onNotificationClick(notification: any) {
+    if (!notification.read) {
+      this.notificationService.markAsRead(notification.id).subscribe(() => {
+        this.unreadCount = Math.max(0, this.unreadCount - 1);
+        notification.read = true;
+      });
+    }
+    this.showNotifications = false;
+    this.router.navigate(['/ticket', notification.ticketId]);
+  }
+
+  deleteNotification(event: Event, notification: any) {
+    event.stopPropagation(); // Zapobiega otwarciu zgłoszenia przy kliknięciu "X"
+    
+    this.notificationService.deleteNotification(notification.id).subscribe({
+      next: () => {
+        // Usuń z listy lokalnej
+        this.notifications = this.notifications.filter(n => n.id !== notification.id);
+        
+        // Jeśli usuwamy nieprzeczytane, zmniejsz licznik
+        if (!notification.read) {
+          this.unreadCount = Math.max(0, this.unreadCount - 1);
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Błąd usuwania powiadomienia', err)
+    });
+  }
+
+  // --- ISTNIEJĄCE METODY DASHBOARDU ---
 
   loadStats() {
     this.ticketService.getStats().subscribe({
@@ -98,7 +170,6 @@ export class DashboardComponent implements OnInit {
   applyFilters() {
     let temp = [...this.tickets];
 
-    // 1. Filtrowanie (Widok)
     if (this.viewMode === 'MY') {
       if (this.currentUserRole === 'ADMIN' || this.currentUserRole === 'HELPDESK') {
         temp = temp.filter(t => t.assignedUser?.username === this.currentUser);
@@ -107,12 +178,10 @@ export class DashboardComponent implements OnInit {
       }
     }
 
-    // 2. Filtrowanie (Status)
     if (this.currentStatusFilter !== 'ALL') {
       temp = temp.filter(t => t.status === this.currentStatusFilter);
     }
 
-    // 3. Wyszukiwanie
     if (this.searchTerm) {
       const lowerTerm = this.searchTerm.toLowerCase();
       temp = temp.filter(t => 
@@ -122,13 +191,11 @@ export class DashboardComponent implements OnInit {
       );
     }
 
-    // 4. SORTOWANIE
     temp.sort((a: any, b: any) => {
        const valA = this.resolveFieldData(a, this.sortColumn);
        const valB = this.resolveFieldData(b, this.sortColumn);
        
        let comparison = 0;
-       
        if (valA === valB) return 0;
        if (valA === null || valA === undefined) return 1;
        if (valB === null || valB === undefined) return -1;
@@ -138,7 +205,6 @@ export class DashboardComponent implements OnInit {
        } else {
          comparison = (valA < valB ? -1 : 1);
        }
-
        return this.sortDirection === 'asc' ? comparison : -comparison;
     });
 
@@ -170,7 +236,6 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/users']);
   }
 
-  // --- NOWE METODY ---
   toggleTheme() {
     this.themeService.toggleTheme();
   }

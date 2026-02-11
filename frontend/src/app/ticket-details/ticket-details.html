@@ -139,12 +139,12 @@
         <div class="info-group">
           <label>Kategoria</label>
           <div *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'; else readOnlyCategory">
-             <select [ngModel]="ticket.category" (ngModelChange)="changeCategory($event)" class="styled-select">
+             <select [ngModel]="ticket.category?.name" (ngModelChange)="changeCategory($event)" class="styled-select">
                 <option *ngFor="let cat of categories" [value]="cat.name">{{ cat.name }}</option>
              </select>
           </div>
           <ng-template #readOnlyCategory>
-            <div class="value-text">{{ ticket.category }}</div>
+            <div class="value-text">{{ ticket.category?.name }}</div>
           </ng-template>
         </div>
 

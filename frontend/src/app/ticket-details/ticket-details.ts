@@ -73,8 +73,9 @@ loadTicket() {
         this.ticket = data;
         this.loadHistory(); 
         
-        // <--- TA LINIA NAPRAWIA BŁĄD NG0100 --->
+        // --- TO JEST TA KLUCZOWA POPRAWKA ---
         this.cdr.detectChanges(); 
+        // ------------------------------------
       },
       error: (err) => {
         console.error('Błąd pobierania zgłoszenia', err);
