@@ -26,7 +26,7 @@ export class DashboardComponent implements OnInit {
   unreadCount: number = 0;
   notifications: any[] = [];
   showNotifications: boolean = false;
-  isLoadingNotifications: boolean = false; // Naprawia miganie "Brak powiadomień"
+  isLoadingNotifications: boolean = false;
 
   stats: any = {
     myOpen: 0,
@@ -42,7 +42,8 @@ export class DashboardComponent implements OnInit {
   currentStatusFilter: string = 'ALL'; 
   searchTerm: string = ''; 
 
-  sortColumn: string = 'id'; 
+  // ZMIANA: Sortujemy domyślnie po ostatniej aktualizacji
+  sortColumn: string = 'lastUpdated'; 
   sortDirection: 'asc' | 'desc' = 'desc'; 
 
   constructor(
@@ -82,14 +83,14 @@ export class DashboardComponent implements OnInit {
     this.showNotifications = !this.showNotifications;
 
     if (this.showNotifications) {
-      this.isLoadingNotifications = true; // Włączamy loader
-      this.notifications = []; // Czyścimy listę, żeby nie pokazywać starych danych
+      this.isLoadingNotifications = true;
+      this.notifications = []; 
 
       this.notificationService.getNotifications().subscribe({
         next: (data) => {
           this.notifications = data;
-          this.isLoadingNotifications = false; // Wyłączamy loader
-          this.cdr.detectChanges(); // Odświeżamy widok
+          this.isLoadingNotifications = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Błąd pobierania listy powiadomień', err);
@@ -111,14 +112,11 @@ export class DashboardComponent implements OnInit {
   }
 
   deleteNotification(event: Event, notification: any) {
-    event.stopPropagation(); // Zapobiega otwarciu zgłoszenia przy kliknięciu "X"
+    event.stopPropagation();
     
     this.notificationService.deleteNotification(notification.id).subscribe({
       next: () => {
-        // Usuń z listy lokalnej
         this.notifications = this.notifications.filter(n => n.id !== notification.id);
-        
-        // Jeśli usuwamy nieprzeczytane, zmniejsz licznik
         if (!notification.read) {
           this.unreadCount = Math.max(0, this.unreadCount - 1);
         }
@@ -214,6 +212,10 @@ export class DashboardComponent implements OnInit {
   
   resolveFieldData(data: any, field: string): any {
     if (data && field) {
+      // WAŻNE: Jeśli sortujemy po ostatniej aktualizacji, a jest pusta, bierzemy datę utworzenia
+      if (field === 'lastUpdated') {
+         return data.lastUpdated || data.createdDate;
+      }
       return field.split('.').reduce((prev, curr) => (prev ? prev[curr] : null), data);
     }
     return null;

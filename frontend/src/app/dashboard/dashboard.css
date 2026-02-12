@@ -411,3 +411,18 @@ body.dark-theme .view-toggle button.active { background: #555; color: white; }
     background-color: var(--border-color);
     border-radius: 10px;
 }
+
+/* Nowa kolumna: Ostatnia Aktualizacja */
+.last-updated-cell {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+/* Wyróżnienie w trybie ciemnym */
+body.dark-theme .last-updated-cell {
+    color: #ecf0f1;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    padding: 4px 8px;
+}

@@ -114,18 +114,40 @@
             <th (click)="sortTable('id')" class="sortable">
                 ID <span *ngIf="sortColumn === 'id'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
             </th>
-            <th (click)="sortTable('title')" class="sortable">Tytuł</th>
-            <th (click)="sortTable('status')" class="sortable">Status</th>
+
+            <th (click)="sortTable('title')" class="sortable">
+                Tytuł <span *ngIf="sortColumn === 'title'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+
+            <th (click)="sortTable('status')" class="sortable">
+                Status <span *ngIf="sortColumn === 'status'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
             
             <th *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'" 
                 (click)="sortTable('priority')" class="sortable">
-                Priorytet
+                Priorytet <span *ngIf="sortColumn === 'priority'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
             </th> 
 
-            <th (click)="sortTable('category')" class="sortable">Kategoria</th>
-            <th (click)="sortTable('author.username')" class="sortable">Autor</th>
-            <th (click)="sortTable('assignedUser.username')" class="sortable">Przypisany</th>
-            <th (click)="sortTable('createdDate')" class="sortable">Data</th>
+            <th (click)="sortTable('category')" class="sortable">
+                Kategoria <span *ngIf="sortColumn === 'category'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+
+            <th (click)="sortTable('author.username')" class="sortable">
+                Autor <span *ngIf="sortColumn === 'author.username'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+
+            <th (click)="sortTable('assignedUser.username')" class="sortable">
+                Przypisany <span *ngIf="sortColumn === 'assignedUser.username'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            
+            <th (click)="sortTable('createdDate')" class="sortable">
+                Utworzono <span *ngIf="sortColumn === 'createdDate'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+
+            <th (click)="sortTable('lastUpdated')" class="sortable">
+                Ost. Zmiana <span *ngIf="sortColumn === 'lastUpdated'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+
             <th>Akcja</th>
           </tr>
         </thead>
@@ -149,7 +171,13 @@
             <td>{{ ticket.category?.name }}</td>
             <td>{{ ticket.author?.username }}</td>
             <td>{{ ticket.assignedUser?.username || 'Brak' }}</td>
+            
             <td>{{ ticket.createdDate | date:'short' }}</td>
+
+            <td class="last-updated-cell">
+                {{ (ticket.lastUpdated || ticket.createdDate) | date:'short' }}
+            </td>
+
             <td>
               <button class="details-btn" (click)="goToDetails(ticket.id!)">Podgląd</button>
             </td>
