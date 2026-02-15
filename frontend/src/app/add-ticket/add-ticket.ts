@@ -17,7 +17,7 @@ export class AddTicketComponent implements OnInit {
     title: '',
     description: '',
     status: 'OPEN',
-    priority: 'NORMAL', // To pole jest ignorowane przez backend, ale wymagane przez model
+    priority: 'NORMAL',
     category: null, 
     location: ''
   };
@@ -34,25 +34,24 @@ export class AddTicketComponent implements OnInit {
     this.ticketService.getCategories().subscribe({
         next: (data) => {
             this.categories = data;
-            // Domyślnie ustawiamy pierwszą kategorię
+            // ZMIANA: Nie ustawiamy domyślnej kategorii "na siłę",
+            // żeby zmusić użytkownika do świadomego wyboru (albo zostawiamy null).
+            // Jeśli chcesz domyślną, odkomentuj poniższe:
+            /*
             if (this.categories.length > 0) {
                 this.ticket.category = this.categories[0];
             }
+            */
         },
         error: (err) => console.error('Nie udało się pobrać kategorii', err)
     });
   }
 
   onSubmit() {
-    // Prosta walidacja
-    if (!this.ticket.category) {
-        alert("Wybierz kategorię!");
-        return;
-    }
-
+    // Walidacja jest teraz w HTML (przycisk disabled), więc tu tylko wysyłamy
     this.ticketService.createTicket(this.ticket).subscribe({
       next: () => {
-        alert('Zgłoszenie zostało wysłane pomyślnie!');
+        // alert('Zgłoszenie zostało wysłane pomyślnie!'); // Opcjonalnie można usunąć alert
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {

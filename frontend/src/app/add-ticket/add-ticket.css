@@ -134,3 +134,27 @@ button {
     padding: 20px;
   }
 }
+
+/* --- WALIDACJA --- */
+
+/* Czerwona ramka, jeśli pole jest niepoprawne i dotknięte */
+.form-control.ng-invalid.ng-touched {
+    border-color: #e74c3c;
+    background-color: #fdf2f2;
+}
+
+/* Komunikat błędu pod polem */
+.error-msg {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    font-weight: 600;
+}
+
+/* Zablokowany przycisk */
+.btn-submit:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
