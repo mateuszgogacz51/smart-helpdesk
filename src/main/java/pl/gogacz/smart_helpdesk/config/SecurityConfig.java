@@ -33,27 +33,23 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 1. Publiczne endpointy
-                        .requestMatchers("/api/auth/**").permitAll()
+                        // --- 1. PLIKI STATYCZNE ANGULARA (PUBLICZNE) ---
+                        // Te reguły pozwalają serwerowi wysłać frontend do przeglądarki
+                        .requestMatchers("/", "/index.html", "/favicon.ico", "/*.js", "/*.css", "/assets/**").permitAll()
 
-                        // TYMCZASOWE: Odblokowanie przycisku naprawczego (jeśli go dodałeś)
+                        // --- 2. PUBLICZNE API ---
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/auth/fix-admin-role").permitAll()
 
-                        // 2. Kategorie
-                        // GET dostępny dla każdego zalogowanego (hasAnyAuthority zamiast hasRole)
+                        // --- 3. KATEGORIE ---
                         .requestMatchers(HttpMethod.GET, "/api/categories").authenticated()
-                        // Zarządzanie kategoriami TYLKO dla ADMINA
                         .requestMatchers("/api/categories/**").hasAuthority("ADMIN")
 
-                        // 3. Użytkownicy
-                        // Tutaj był błąd - zmieniamy hasAnyRole na hasAnyAuthority
-                        // Dzięki temu zadziała zarówno "ADMIN", "USER" jak i "HELPDESK"
+                        // --- 4. UŻYTKOWNICY I ADMIN ---
                         .requestMatchers("/api/users/**").hasAnyAuthority("ADMIN", "USER", "HELPDESK")
-
-                        // 4. Panel Admina
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
 
-                        // Reszta wymaga logowania
+                        // --- 5. RESZTA (WYMAGA LOGOWANIA) ---
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
@@ -74,7 +70,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Upewnij się, że port Angulara jest poprawny (zazwyczaj 4200)
+        // Pozwalamy na localhost:4200 (dev) oraz puste origin (produkcja z JARa)
         configuration.setAllowedOrigins(List.of("http://localhost:4200"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
