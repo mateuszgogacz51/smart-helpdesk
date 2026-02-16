@@ -2,8 +2,8 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { TicketService } from '../ticket.service'; // Import serwisu
-import { FormsModule } from '@angular/forms'; // Import Forms dla inputa kategorii
+import { TicketService } from '../ticket.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-admin',
@@ -25,16 +25,17 @@ export class AdminComponent implements OnInit {
     private http: HttpClient, 
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private ticketService: TicketService // Wstrzykujemy serwis
+    private ticketService: TicketService
   ) {}
 
   ngOnInit() {
     this.loadStats();
-    this.loadCategories(); // Ładujemy listę kategorii
+    this.loadCategories();
   }
 
   loadStats() {
-    this.http.get<any>('http://localhost:8080/api/tickets/stats').subscribe({
+    // Używam ticketService zamiast bezpośredniego http dla porządku
+    this.ticketService.getStats().subscribe({
       next: (data) => {
         this.stats = data || { users: [], categories: [] };
         if (!this.stats.users) this.stats.users = [];
@@ -57,12 +58,32 @@ export class AdminComponent implements OnInit {
       },
       error: (err) => {
         console.error('Błąd statystyk', err);
-        this.cdr.detectChanges();
       }
     });
   }
 
-  // --- METODY DO KATEGORII ---
+  // --- NOWOŚĆ: POBIERANIE RAPORTU ---
+  downloadReport() {
+    this.ticketService.exportToCsv().subscribe({
+      next: (blob: Blob) => {
+        // Tworzymy wirtualny link do pliku
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        // Ustawiamy nazwę pliku z datą
+        a.download = `raport_helpdesk_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+        // Sprzątamy po sobie
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Błąd pobierania raportu.');
+      }
+    });
+  }
+
+  // --- KATEGORIE ---
   loadCategories() {
       this.ticketService.getCategories().subscribe({
           next: (data) => {
@@ -93,7 +114,6 @@ export class AdminComponent implements OnInit {
           error: () => alert('Błąd usuwania')
       });
   }
-  // ---------------------------
 
   goBack() {
     this.router.navigate(['/dashboard']);

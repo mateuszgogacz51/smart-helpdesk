@@ -14,21 +14,43 @@
   </header>
 
   <div class="content-area">
+    
+    <div class="search-hero">
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" 
+                   placeholder="Szukaj pracownika po nazwisku, loginie, dziale..." 
+                   [(ngModel)]="searchTerm" (input)="filterUsers()">
+        </div>
+    </div>
+
     <div class="table-wrapper">
       <table class="users-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Login</th>
-            <th>Imię i Nazwisko</th>
-            <th>Rola</th>
-            <th>Dział</th>
-            <th>Priorytet</th>
+            <th (click)="sortTable('id')" class="sortable">
+                ID <span *ngIf="sortColumn === 'id'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th (click)="sortTable('username')" class="sortable">
+                Login <span *ngIf="sortColumn === 'username'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th (click)="sortTable('lastName')" class="sortable">
+                Nazwisko <span *ngIf="sortColumn === 'lastName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th (click)="sortTable('role')" class="sortable">
+                Rola <span *ngIf="sortColumn === 'role'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th (click)="sortTable('department')" class="sortable">
+                Dział <span *ngIf="sortColumn === 'department'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th (click)="sortTable('defaultPriority')" class="sortable">
+                Priorytet <span *ngIf="sortColumn === 'defaultPriority'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
             <th>Akcje</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let user of users">
+          <tr *ngFor="let user of visibleUsers">
             <td>#{{ user.id }}</td>
             <td><strong>{{ user.username }}</strong></td>
             <td>{{ user.firstName }} {{ user.lastName }}</td>
@@ -45,8 +67,8 @@
         </tbody>
       </table>
       
-      <div *ngIf="users.length === 0" class="empty-state">
-        Brak użytkowników w systemie.
+      <div *ngIf="visibleUsers.length === 0" class="empty-state">
+        Brak użytkowników pasujących do wyszukiwania.
       </div>
     </div>
   </div>
@@ -55,10 +77,15 @@
     <div class="modal-box">
       <h3>{{ isEditing ? 'Edytuj Użytkownika' : 'Nowy Pracownik' }}</h3>
       
-      <form (ngSubmit)="saveUser()">
+      <form (ngSubmit)="saveUser()" #userForm="ngForm">
+        
         <div class="form-group">
-          <label>Login</label>
-          <input [(ngModel)]="newUser.username" name="username" required>
+          <label>Login <span style="color:red">*</span></label>
+          <input [(ngModel)]="newUser.username" name="username" required minlength="3" 
+                 #username="ngModel" placeholder="Min. 3 znaki">
+          <div *ngIf="username.invalid && (username.dirty || username.touched)" class="error-msg">
+            Login wymagany (min. 3).
+          </div>
         </div>
         
         <div class="form-row">
@@ -75,28 +102,32 @@
         <div class="form-row">
             <div class="form-group">
                 <label>Dział</label>
-                <input [(ngModel)]="newUser.department" name="department" placeholder="np. IT">
+                <input [(ngModel)]="newUser.department" name="department">
             </div>
             <div class="form-group">
                 <label>Telefon</label>
-                <input [(ngModel)]="newUser.phoneNumber" name="phoneNumber">
+                <input [(ngModel)]="newUser.phoneNumber" name="phoneNumber" pattern="[0-9]{9}" #phone="ngModel">
+                <div *ngIf="phone.invalid && (phone.dirty || phone.touched)" class="error-msg">9 cyfr.</div>
             </div>
         </div>
 
         <div class="form-group">
           <label>Email</label>
-          <input [(ngModel)]="newUser.email" name="email" type="email">
+          <input [(ngModel)]="newUser.email" name="email" type="email" email #emailField="ngModel">
+          <div *ngIf="emailField.invalid && (emailField.dirty || emailField.touched)" class="error-msg">Błędny email.</div>
         </div>
 
         <div class="form-group">
-          <label>Hasło (zostaw puste aby nie zmieniać)</label>
-          <input [(ngModel)]="newUser.password" name="password" type="password">
+          <label>Hasło</label>
+          <input [(ngModel)]="newUser.password" name="password" type="password" 
+                 [required]="!isEditing" minlength="4" #pass="ngModel">
+          <div *ngIf="pass.invalid && (pass.dirty || pass.touched)" class="error-msg">Min. 4 znaki.</div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
               <label>Rola</label>
-              <select [(ngModel)]="newUser.role" name="role">
+              <select [(ngModel)]="newUser.role" name="role" required>
                 <option value="USER">Użytkownik</option>
                 <option value="HELPDESK">Serwisant</option>
                 <option value="ADMIN">Administrator</option>
@@ -114,7 +145,7 @@
 
         <div class="modal-actions">
           <button type="button" class="cancel-btn" (click)="closeModal()">Anuluj</button>
-          <button type="submit" class="save-btn">Zapisz</button>
+          <button type="submit" class="save-btn" [disabled]="!userForm.form.valid">Zapisz</button>
         </div>
       </form>
     </div>

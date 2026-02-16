@@ -1,73 +1,88 @@
-<div class="dashboard-container" style="display: flex; justify-content: center; align-items: flex-start; padding-top: 40px;">
-
-  <div class="card-container">
-    <div class="card-header">
-      <h2>Nowe Zgłoszenie</h2>
-      <p class="subtitle">Wypełnij formularz, a my zajmiemy się resztą.</p>
-    </div>
-    
-    <form (ngSubmit)="onSubmit()" #ticketForm="ngForm" class="ticket-form">
-      
-      <div class="form-group">
-        <label for="title">Temat zgłoszenia <span style="color:red">*</span></label>
-        <input type="text" id="title" 
-               [(ngModel)]="ticket.title" name="title" required minlength="3"
-               #title="ngModel"
-               class="form-control" placeholder="Np. Awaria drukarki na recepcji">
-        
-        <div *ngIf="title.invalid && (title.dirty || title.touched)" class="error-msg">
-            <div *ngIf="title.errors?.['required']">Temat jest wymagany.</div>
-            <div *ngIf="title.errors?.['minlength']">Temat musi mieć min. 3 znaki.</div>
-        </div>
-      </div>
+<div class="dashboard-container">
   
-      <div class="form-row">
-        <div class="form-group half-width">
-          <label for="category">Kategoria <span style="color:red">*</span></label>
-          <select id="category" 
-                  [(ngModel)]="ticket.category" name="category" required
-                  #category="ngModel"
-                  class="form-control">
-            <option [ngValue]="null" disabled>Wybierz...</option>
-            <option *ngFor="let cat of categories" [ngValue]="cat">
-              {{ cat.name }}
-            </option>
-          </select>
+  <header class="top-bar">
+    <div class="title-section">
+      <button (click)="goBack()" class="back-btn">← Wróć</button>
+      <h2>Nowe Zgłoszenie</h2>
+    </div>
+  </header>
+
+  <div class="content-area">
+    <div class="card-container">
+      
+      <p class="subtitle">Wypełnij formularz, a my zajmiemy się resztą.</p>
+      
+      <form (ngSubmit)="onSubmit()" #ticketForm="ngForm" class="ticket-form">
+        
+        <div class="form-group">
+          <label for="title">Temat zgłoszenia <span style="color:red">*</span></label>
+          <input type="text" id="title" 
+                 [(ngModel)]="ticket.title" name="title" required minlength="3"
+                 #title="ngModel"
+                 class="form-control" placeholder="Np. Awaria drukarki na recepcji">
           
-          <div *ngIf="category.invalid && (category.dirty || category.touched)" class="error-msg">
-            Wybierz kategorię.
+          <div *ngIf="title.invalid && (title.dirty || title.touched)" class="error-msg">
+              <div *ngIf="title.errors?.['required']">Temat jest wymagany.</div>
+              <div *ngIf="title.errors?.['minlength']">Temat musi mieć min. 3 znaki.</div>
           </div>
         </div>
-  
-        <div class="form-group half-width">
-          <label for="location">Lokalizacja</label>
-          <input type="text" id="location" 
-                 [(ngModel)]="ticket.location" name="location" 
-                 class="form-control" placeholder="Np. Pokój 102">
+    
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label for="category">Kategoria <span style="color:red">*</span></label>
+            <select id="category" 
+                    [(ngModel)]="ticket.category" name="category" required
+                    #category="ngModel"
+                    class="form-control">
+              <option [ngValue]="null" disabled>Wybierz...</option>
+              <option *ngFor="let cat of categories" [ngValue]="cat">
+                {{ cat.name }}
+              </option>
+            </select>
+            
+            <div *ngIf="category.invalid && (category.dirty || category.touched)" class="error-msg">
+              Wybierz kategorię.
+            </div>
+          </div>
+    
+          <div class="form-group half-width">
+            <label for="location">Lokalizacja</label>
+            <input type="text" id="location" 
+                   [(ngModel)]="ticket.location" name="location" 
+                   class="form-control" placeholder="Np. Pokój 102">
+          </div>
         </div>
-      </div>
-  
-      <div class="form-group">
-        <label for="description">Szczegółowy opis <span style="color:red">*</span></label>
-        <textarea id="description" 
-                  [(ngModel)]="ticket.description" name="description" required minlength="10"
-                  #description="ngModel"
-                  class="form-control" rows="6" placeholder="Opisz dokładnie, co się stało..."></textarea>
         
-        <div *ngIf="description.invalid && (description.dirty || description.touched)" class="error-msg">
-            Opis jest wymagany (min. 10 znaków).
+        <div class="form-group">
+            <label for="attachment">Dodaj Załącznik (opcjonalnie)</label>
+            <input type="file" id="attachment" (change)="onFileSelected($event)" class="form-control-file">
+            <small style="color: var(--text-secondary); display: block; margin-top: 5px; font-size: 0.8rem;">
+                Możesz dodać zrzut ekranu lub dokument (PDF, JPG, PNG).
+            </small>
         </div>
-      </div>
-  
-      <div class="button-actions">
-        <button type="button" (click)="goBack()" class="btn-cancel">Anuluj</button>
-        
-        <button type="submit" [disabled]="!ticketForm.form.valid" class="btn-submit" 
-                [title]="!ticketForm.form.valid ? 'Uzupełnij wymagane pola' : ''">
-          Wyślij Zgłoszenie
-        </button>
-      </div>
-  
-    </form>
+    
+        <div class="form-group">
+          <label for="description">Szczegółowy opis <span style="color:red">*</span></label>
+          <textarea id="description" 
+                    [(ngModel)]="ticket.description" name="description" required minlength="10"
+                    #description="ngModel"
+                    class="form-control" rows="6" placeholder="Opisz dokładnie, co się stało..."></textarea>
+          
+          <div *ngIf="description.invalid && (description.dirty || description.touched)" class="error-msg">
+              Opis jest wymagany (min. 10 znaków).
+          </div>
+        </div>
+    
+        <div class="button-actions">
+          <button type="button" (click)="goBack()" class="btn-cancel">Anuluj</button>
+          
+          <button type="submit" [disabled]="!ticketForm.form.valid" class="btn-submit" 
+                  [title]="!ticketForm.form.valid ? 'Uzupełnij wymagane pola' : ''">
+            Wyślij Zgłoszenie
+          </button>
+        </div>
+    
+      </form>
+    </div>
   </div>
 </div>

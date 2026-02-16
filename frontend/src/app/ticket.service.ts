@@ -10,7 +10,7 @@ import { User } from './user.model';
 export class TicketService {
   private apiUrl = 'http://localhost:8080/api/tickets';
   private attachmentUrl = 'http://localhost:8080/api/attachments';
-  private categoryUrl = 'http://localhost:8080/api/categories'; // <--- NOWY URL
+  private categoryUrl = 'http://localhost:8080/api/categories'; 
 
   constructor(private http: HttpClient) {}
 
@@ -40,9 +40,18 @@ export class TicketService {
     return this.http.post<Ticket>(this.apiUrl, ticket);
   }
 
+  // --- STATYSTYKI I RAPORTY ---
+  
   getStats(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/stats`);
   }
+
+  // [NOWOŚĆ] Tego brakowało - metoda do pobierania pliku CSV
+  exportToCsv(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export`, { responseType: 'blob' });
+  }
+
+  // --- ZMIANY STATUSÓW I EDYCJA ---
 
   changeStatus(id: number, status: string): Observable<Ticket> {
     return this.http.put<Ticket>(`${this.apiUrl}/${id}/status`, { status });

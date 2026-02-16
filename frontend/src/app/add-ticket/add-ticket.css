@@ -1,149 +1,209 @@
-/* Stylizacja karty formularza */
+/* --- GŁÓWNY KONTENER --- */
+.dashboard-container {
+    min-height: 100vh;
+    background: var(--bg-app);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding-bottom: 40px;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* --- GÓRNY PASEK (TOP BAR) --- */
+.top-bar {
+    background: var(--bg-header);
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.title-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.title-section h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Przycisk Wróć */
+.back-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-weight: 600;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.back-btn:hover {
+    background: var(--hover-color);
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+}
+
+/* --- OBSZAR TREŚCI --- */
+.content-area {
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center; /* Centrowanie karty */
+}
+
+/* --- KARTA FORMULARZA --- */
 .card-container {
-  background: var(--bg-card); /* Używamy zmiennej motywu */
-  color: var(--text-primary);
-  width: 100%;
-  max-width: 700px;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px var(--shadow-strong, rgba(0,0,0,0.1));
-  padding: 40px;
-  border: 1px solid var(--border-color);
-  transition: background 0.3s, color 0.3s;
-}
-
-/* Nagłówek */
-.card-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-h2 {
-  color: var(--text-primary);
-  font-size: 24px;
-  margin-bottom: 10px;
-  font-weight: 700;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    width: 100%;
+    max-width: 700px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px var(--shadow-strong, rgba(0,0,0,0.1));
+    padding: 40px;
+    border: 1px solid var(--border-color);
+    transition: background 0.3s, color 0.3s;
 }
 
 .subtitle {
-  color: var(--text-secondary);
-  font-size: 14px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 30px;
+    text-align: center;
+    display: block;
 }
 
-/* Formularz */
+/* --- FORMULARZ --- */
 .form-group {
-  margin-bottom: 25px;
+    margin-bottom: 25px;
 }
 
 .form-row {
-  display: flex;
-  gap: 20px;
+    display: flex;
+    gap: 20px;
 }
 
 .half-width {
-  flex: 1;
+    flex: 1;
 }
 
 label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: var(--text-secondary);
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .form-control {
-  width: 100%;
-  padding: 12px 15px;
-  border: 1px solid var(--border-color);
-  background: var(--input-bg, #f9f9f9); /* Fallback jeśli zmienna nie istnieje */
-  color: var(--text-primary);
-  border-radius: 8px;
-  font-size: 15px;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
 .form-control:focus {
-  border-color: #3498db;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
 
 textarea.form-control {
-  resize: vertical;
-  min-height: 120px;
+    resize: vertical;
+    min-height: 120px;
 }
 
-/* Przyciski */
+/* INPUT FILE (Załącznik) */
+.form-control-file {
+    padding: 10px;
+    background: var(--input-bg);
+    border: 1px dashed var(--border-color);
+    color: var(--text-primary);
+    border-radius: 8px;
+    width: 100%;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.2s;
+}
+
+.form-control-file:hover {
+    background: var(--hover-color);
+    border-color: #3498db;
+}
+
+/* --- PRZYCISKI AKCJI --- */
 .button-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 15px;
-  margin-top: 10px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border-color);
-}
-
-button {
-  padding: 12px 25px;
-  font-size: 14px;
-  font-weight: 700;
-  border-radius: 30px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
 }
 
 .btn-submit {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  color: white;
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    padding: 12px 25px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 30px;
+    cursor: pointer;
+    border: none;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    transition: all 0.2s;
 }
 
 .btn-submit:hover:not(:disabled) {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
+    transform: translateY(-2px);
+    filter: brightness(1.1);
 }
 
 .btn-submit:disabled {
-  background: #bdc3c7;
-  cursor: not-allowed;
-  box-shadow: none;
+    background: #bdc3c7;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 .btn-cancel {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid transparent;
+    padding: 12px 25px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 30px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    transition: all 0.2s;
 }
 
 .btn-cancel:hover {
-  color: var(--text-primary);
-  background: var(--hover-color, #ecf0f1);
-}
-
-/* Responsywność */
-@media (max-width: 600px) {
-  .form-row {
-    flex-direction: column;
-    gap: 0;
-  }
-  .card-container {
-    padding: 20px;
-  }
+    color: var(--text-primary);
+    background: var(--hover-color);
 }
 
 /* --- WALIDACJA --- */
-
-/* Czerwona ramka, jeśli pole jest niepoprawne i dotknięte */
 .form-control.ng-invalid.ng-touched {
     border-color: #e74c3c;
-    background-color: #fdf2f2;
+    background-color: rgba(231, 76, 60, 0.05);
 }
 
-/* Komunikat błędu pod polem */
 .error-msg {
     color: #e74c3c;
     font-size: 0.85rem;
@@ -151,10 +211,16 @@ button {
     font-weight: 600;
 }
 
-/* Zablokowany przycisk */
-.btn-submit:disabled {
-    background-color: #bdc3c7;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
+/* Responsywność */
+@media (max-width: 600px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    .card-container {
+        padding: 20px;
+    }
+    .top-bar {
+        padding: 15px 20px;
+    }
 }

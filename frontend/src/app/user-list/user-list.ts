@@ -14,12 +14,18 @@ import { AuthService } from '../auth.service';
   styleUrls: ['./user-list.css']
 })
 export class UserListComponent implements OnInit {
-  users: User[] = [];
+  users: User[] = [];         // Wszystkie dane z bazy
+  visibleUsers: User[] = [];  // Dane wyświetlane (przefiltrowane/posortowane)
   
-  // Zmienne do obsługi Modala i Formularza
+  // Zmienne do wyszukiwania i sortowania
+  searchTerm: string = '';
+  sortColumn: string = 'id';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
+  // Zmienne do obsługi Modala
   newUser: any = {}; 
-  isEditing = false;  // Zmieniono nazwę flagi, aby pasowała do HTML
-  showModal = false;  // Nowa flaga do wyświetlania okna
+  isEditing = false;
+  showModal = false;
 
   constructor(
     private http: HttpClient,
@@ -36,13 +42,61 @@ export class UserListComponent implements OnInit {
     this.http.get<User[]>('http://localhost:8080/api/users').subscribe({
       next: (data) => {
         this.users = data;
-        this.cdr.detectChanges();
+        this.filterUsers(); // Od razu inicjujemy widoczną listę
       },
       error: (err) => console.error('Błąd pobierania użytkowników:', err)
     });
   }
 
-  // Otwieranie okna dodawania (pasuje do przycisku w HTML)
+  // --- LOGIKA WYSZUKIWANIA ---
+  filterUsers() {
+    let temp = [...this.users];
+
+    if (this.searchTerm) {
+      const lowerTerm = this.searchTerm.toLowerCase();
+      temp = temp.filter(u => 
+        u.username.toLowerCase().includes(lowerTerm) ||
+        (u.firstName && u.firstName.toLowerCase().includes(lowerTerm)) ||
+        (u.lastName && u.lastName.toLowerCase().includes(lowerTerm)) ||
+        (u.email && u.email.toLowerCase().includes(lowerTerm)) ||
+        (u.department && u.department.toLowerCase().includes(lowerTerm))
+      );
+    }
+
+    this.sortData(temp);
+  }
+
+  // --- LOGIKA SORTOWANIA ---
+  sortTable(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.filterUsers();
+  }
+
+  sortData(data: User[]) {
+    data.sort((a: any, b: any) => {
+      const valA = a[this.sortColumn] || '';
+      const valB = b[this.sortColumn] || '';
+
+      let comparison = 0;
+      if (typeof valA === 'string' && typeof valB === 'string') {
+        comparison = valA.localeCompare(valB);
+      } else {
+        comparison = valA < valB ? -1 : (valA > valB ? 1 : 0);
+      }
+
+      return this.sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    this.visibleUsers = data;
+    this.cdr.detectChanges();
+  }
+
+  // --- MODAL I AKCJE ---
   openAddModal() {
     this.isEditing = false;
     this.showModal = true;
@@ -53,13 +107,11 @@ export class UserListComponent implements OnInit {
     };
   }
 
-  // Otwieranie okna edycji
   editUser(user: User) {
     this.isEditing = true;
     this.showModal = true;
-    // Kopiujemy dane
     this.newUser = { ...user };
-    this.newUser.password = ''; // Czyścimy hasło dla bezpieczeństwa
+    this.newUser.password = ''; 
   }
 
   deleteUser(user: User) {
@@ -75,37 +127,22 @@ export class UserListComponent implements OnInit {
     this.showModal = false;
   }
 
-  // Metoda zapisu (z Twoją logiką responseType: 'text')
   saveUser() {
     if (!this.isEditing) {
-      // TWORZENIE
-      if (!this.newUser.username || !this.newUser.password) {
-        alert('Login i hasło są wymagane!');
-        return;
-      }
       this.http.post('http://localhost:8080/api/users', this.newUser, { responseType: 'text' }).subscribe({
-        next: () => {
-          this.closeModal();
-          this.loadUsers();
-        },
+        next: () => { this.closeModal(); this.loadUsers(); },
         error: (err) => alert('Błąd tworzenia: ' + err.error)
       });
     } else {
-      // EDYCJA
       const updates = { ...this.newUser };
-      if (!updates.password) delete updates.password; // Nie wysyłaj pustego hasła
-
+      if (!updates.password) delete updates.password;
       this.http.put(`http://localhost:8080/api/users/${this.newUser.id}`, updates, { responseType: 'text' }).subscribe({
-        next: () => {
-          this.closeModal();
-          this.loadUsers();
-        },
+        next: () => { this.closeModal(); this.loadUsers(); },
         error: (err) => alert('Błąd zapisu.')
       });
     }
   }
 
-  // WAŻNE: Powrót do Admina (a nie Dashboardu), bo teraz tam jest wejście
   goBack() {
     this.router.navigate(['/dashboard']);
   }

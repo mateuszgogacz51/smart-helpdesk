@@ -1,7 +1,6 @@
 /* --- GŁÓWNY KONTENER --- */
 .dashboard-container {
   min-height: 100vh;
-  /* Zmienna tła aplikacji */
   background: var(--bg-app);
   color: var(--text-primary);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -14,7 +13,7 @@
   background: var(--bg-header);
   padding: 15px 40px;
   display: flex;
-  justify-content: space-between; /* To wyrzuca elementy na brzegi */
+  justify-content: space-between; 
   align-items: center;
   box-shadow: 0 4px 15px var(--shadow-color);
   border-bottom: 1px solid var(--border-color);
@@ -32,6 +31,17 @@
   font-size: 24px;
 }
 
+.back-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+.back-btn:hover { background: var(--hover-color); color: var(--text-primary); }
+
 .add-btn {
   background: linear-gradient(135deg, #2ecc71, #27ae60);
   color: white;
@@ -48,15 +58,57 @@
   transform: translateY(-2px);
 }
 
-/* --- ZAWARTOŚĆ (TABELA) --- */
+/* --- ZAWARTOŚĆ --- */
 .content-area {
   padding: 40px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
+/* --- NOWA SEKCJA WYSZUKIWARKI (HERO) --- */
+.search-hero {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.search-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 500px; /* Maksymalna szerokość paska */
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.search-wrapper input {
+    width: 100%;
+    padding: 15px 15px 15px 45px; /* Miejsce na ikonę */
+    border-radius: 30px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card); /* Tło jak karty */
+    color: var(--text-primary);
+    font-size: 1rem;
+    box-shadow: 0 4px 15px var(--shadow-color); /* Lekki cień */
+    transition: all 0.3s;
+}
+
+.search-wrapper input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.25);
+    width: 100%;
+}
+
+/* --- TABELA --- */
 .table-wrapper {
-  /* Tło karty (białe lub ciemne - zależnie od motywu) */
   background: var(--bg-card);
   border-radius: 16px;
   overflow: hidden;
@@ -78,7 +130,11 @@
   font-size: 13px;
   text-transform: uppercase;
   border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  user-select: none;
 }
+
+.users-table th:hover { background-color: rgba(0,0,0,0.05); }
 
 .users-table td {
   padding: 18px 20px;
@@ -90,6 +146,13 @@
 
 .users-table tr:hover {
   background-color: var(--hover-color);
+}
+
+.empty-state {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
 }
 
 /* --- ELEMENTY UI --- */
@@ -114,6 +177,23 @@
 .action-btn.delete { background: #e74c3c; color: white; }
 .action-btn:hover { transform: scale(1.1); }
 
+/* --- WALIDACJA --- */
+input.ng-invalid.ng-touched, select.ng-invalid.ng-touched {
+    border-color: #e74c3c;
+    background-color: #fdf2f2;
+}
+.error-msg {
+    color: #e74c3c;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    font-weight: 600;
+}
+.save-btn:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+}
+
 /* --- MODAL (OKNO EDYCJI) --- */
 .modal-overlay {
   position: fixed;
@@ -127,8 +207,8 @@
 }
 
 .modal-box {
-  background: var(--bg-card); /* Tło modala */
-  color: var(--text-primary); /* Tekst modala */
+  background: var(--bg-card);
+  color: var(--text-primary);
   padding: 30px;
   border-radius: 16px;
   width: 450px;
@@ -158,7 +238,6 @@ input, select {
   width: 100%;
   padding: 10px;
   border-radius: 8px;
-  /* Zmienne dla pól input */
   background: var(--input-bg);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
@@ -177,6 +256,11 @@ input:focus, select:focus {
   gap: 10px;
   margin-top: 25px;
 }
+
+.cancel-btn {
+    background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600;
+}
+.cancel-btn:hover { background: var(--hover-color); color: var(--text-primary); }
 
 .save-btn {
   background: linear-gradient(135deg, #3498db, #2980b9);

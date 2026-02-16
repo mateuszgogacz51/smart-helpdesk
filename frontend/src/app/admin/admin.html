@@ -8,14 +8,24 @@
           <h2>Panel Administratora</h2>
         </div>
       </div>
-      <button (click)="goToUsers()" class="users-btn">👥 Zarządzaj Użytkownikami</button>
+      
+      <div style="display: flex; gap: 10px;">
+          <button (click)="downloadReport()" class="users-btn" style="background: linear-gradient(135deg, #27ae60, #2ecc71); box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);">
+            📥 Pobierz Raport
+          </button>
+          
+          <button (click)="goToUsers()" class="users-btn">
+            👥 Zarządzaj Użytkownikami
+          </button>
+      </div>
     </div>
   </header>
 
   <div class="content-area">
     <div class="charts-grid">
       
-      <div class="chart-card" style="grid-column: 1 / -1;"> <h3>🛠️ Zarządzaj Kategoriami</h3>
+      <div class="chart-card" style="grid-column: 1 / -1;"> 
+          <h3>🛠️ Zarządzaj Kategoriami</h3>
           
           <div style="display: flex; gap: 10px; margin-bottom: 20px;">
               <input type="text" [(ngModel)]="newCategoryName" placeholder="Nowa kategoria..." 
@@ -31,6 +41,7 @@
               <div *ngIf="categoryList.length === 0" style="color: #999; font-style: italic;">Brak zdefiniowanych kategorii. Dodaj pierwszą!</div>
           </div>
       </div>
+
       <div class="chart-card">
         <h3>🏆 Skuteczność (Zamknięte Zgłoszenia)</h3>
         <div class="chart-content">

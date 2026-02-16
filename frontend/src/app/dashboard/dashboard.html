@@ -16,28 +16,14 @@
         <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
 
         <div class="notification-dropdown" *ngIf="showNotifications" (click)="$event.stopPropagation()">
-            
-            <div *ngIf="isLoadingNotifications" class="notification-empty">
-                Ładowanie...
-            </div>
-
-            <div *ngIf="!isLoadingNotifications && notifications.length === 0" class="notification-empty">
-                Brak nowych powiadomień
-            </div>
-            
-            <div *ngFor="let notif of notifications" 
-                 class="notification-item" 
-                 [class.unread]="!notif.read"
-                 (click)="onNotificationClick(notif)">
-                
+            <div *ngIf="isLoadingNotifications" class="notification-empty">Ładowanie...</div>
+            <div *ngIf="!isLoadingNotifications && notifications.length === 0" class="notification-empty">Brak nowych powiadomień</div>
+            <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read" (click)="onNotificationClick(notif)">
                  <div class="notif-info">
                     <div class="notif-content">{{ notif.message }}</div>
                     <div class="notif-date">{{ notif.createdDate | date:'short' }}</div>
                  </div>
-
-                 <button class="delete-notif-btn" (click)="deleteNotification($event, notif)" title="Usuń powiadomienie">
-                    ✕
-                 </button>
+                 <button class="delete-notif-btn" (click)="deleteNotification($event, notif)">✕</button>
             </div>
         </div>
       </div>
@@ -57,16 +43,13 @@
         <h3>Moje Zadania (Przypisane)</h3>
         <div class="cards-row">
             <div class="stat-card blue clickable" (click)="viewMode = 'MY'; setFilter('OPEN')">
-                <span class="count">{{ stats.myOpen }}</span>
-                <span class="label">Nowe</span>
+                <span class="count">{{ stats.myOpen }}</span><span class="label">Nowe</span>
             </div>
             <div class="stat-card orange clickable" (click)="viewMode = 'MY'; setFilter('IN_PROGRESS')">
-                <span class="count">{{ stats.myInProgress }}</span>
-                <span class="label">W trakcie</span>
+                <span class="count">{{ stats.myInProgress }}</span><span class="label">W trakcie</span>
             </div>
             <div class="stat-card green clickable" (click)="viewMode = 'MY'; setFilter('CLOSED')">
-                <span class="count">{{ stats.myClosed }}</span>
-                <span class="label">Gotowe</span>
+                <span class="count">{{ stats.myClosed }}</span><span class="label">Gotowe</span>
             </div>
         </div>
       </div>
@@ -75,12 +58,10 @@
         <h3>Cała Firma</h3>
         <div class="cards-row">
              <div class="stat-card blue clickable" (click)="viewMode = 'ALL'; setFilter('OPEN')">
-                 <span class="count">{{ stats.globalOpen }}</span>
-                 <span class="label">Wszystkie Nowe</span>
+                 <span class="count">{{ stats.globalOpen }}</span><span class="label">Wszystkie Nowe</span>
              </div>
              <div class="stat-card dark clickable" (click)="viewMode = 'ALL'; setFilter('ALL')">
-                 <span class="count">{{ stats.globalTotal }}</span>
-                 <span class="label">Razem</span>
+                 <span class="count">{{ stats.globalTotal }}</span><span class="label">Razem</span>
              </div>
         </div>
       </div>
@@ -97,12 +78,8 @@
       </div>
 
       <div style="display: flex; gap: 10px;">
-        <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #e74c3c;" (click)="router.navigate(['/admin'])">
-            📊 Panel Admina
-        </button>
-        <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #8e44ad;" (click)="goToUsers()">
-            👥 Użytkownicy
-        </button>
+        <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #e74c3c;" (click)="router.navigate(['/admin'])">📊 Panel Admina</button>
+        <button *ngIf="currentUserRole === 'ADMIN'" class="add-btn" style="background: #8e44ad;" (click)="goToUsers()">👥 Użytkownicy</button>
         <button class="add-btn" (click)="goToAddTicket()">+ Nowe zgłoszenie</button>
       </div>
     </div>
@@ -111,55 +88,23 @@
       <table class="tickets-table">
         <thead>
           <tr>
-            <th (click)="sortTable('id')" class="sortable">
-                ID <span *ngIf="sortColumn === 'id'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
-
-            <th (click)="sortTable('title')" class="sortable">
-                Tytuł <span *ngIf="sortColumn === 'title'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
-
-            <th (click)="sortTable('status')" class="sortable">
-                Status <span *ngIf="sortColumn === 'status'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
-            
-            <th *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'" 
-                (click)="sortTable('priority')" class="sortable">
-                Priorytet <span *ngIf="sortColumn === 'priority'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th> 
-
-            <th (click)="sortTable('category')" class="sortable">
-                Kategoria <span *ngIf="sortColumn === 'category'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
-
-            <th (click)="sortTable('author.username')" class="sortable">
-                Autor <span *ngIf="sortColumn === 'author.username'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
-
-            <th (click)="sortTable('assignedUser.username')" class="sortable">
-                Przypisany <span *ngIf="sortColumn === 'assignedUser.username'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
-            
-            <th (click)="sortTable('createdDate')" class="sortable">
-                Utworzono <span *ngIf="sortColumn === 'createdDate'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
-
-            <th (click)="sortTable('lastUpdated')" class="sortable">
-                Ost. Zmiana <span *ngIf="sortColumn === 'lastUpdated'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-            </th>
-
+            <th (click)="sortTable('id')" class="sortable">ID <span *ngIf="sortColumn === 'id'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+            <th (click)="sortTable('title')" class="sortable">Tytuł <span *ngIf="sortColumn === 'title'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+            <th (click)="sortTable('status')" class="sortable">Status <span *ngIf="sortColumn === 'status'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+            <th *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'" (click)="sortTable('priority')" class="sortable">Priorytet <span *ngIf="sortColumn === 'priority'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th> 
+            <th (click)="sortTable('category')" class="sortable">Kategoria <span *ngIf="sortColumn === 'category'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+            <th (click)="sortTable('author.username')" class="sortable">Autor <span *ngIf="sortColumn === 'author.username'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+            <th (click)="sortTable('assignedUser.username')" class="sortable">Przypisany <span *ngIf="sortColumn === 'assignedUser.username'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+            <th (click)="sortTable('createdDate')" class="sortable">Utworzono <span *ngIf="sortColumn === 'createdDate'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+            <th (click)="sortTable('lastUpdated')" class="sortable">Ost. Zmiana <span *ngIf="sortColumn === 'lastUpdated'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
             <th>Akcja</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let ticket of visibleTickets">
+          <tr *ngFor="let ticket of paginatedTickets">
             <td>#{{ ticket.id }}</td>
             <td><strong>{{ ticket.title }}</strong></td>
-            <td>
-                <span class="status-badge" [ngClass]="'status-' + ticket.status.toLowerCase()">
-                    {{ ticket.status }}
-                </span>
-            </td>
+            <td><span class="status-badge" [ngClass]="'status-' + ticket.status.toLowerCase()">{{ ticket.status }}</span></td>
             
             <td *ngIf="currentUserRole === 'ADMIN' || currentUserRole === 'HELPDESK'">
               <span *ngIf="ticket.priority === 'HIGH'" class="priority-badge high">🔥 PILNE</span>
@@ -171,19 +116,28 @@
             <td>{{ ticket.category?.name }}</td>
             <td>{{ ticket.author?.username }}</td>
             <td>{{ ticket.assignedUser?.username || 'Brak' }}</td>
-            
             <td>{{ ticket.createdDate | date:'short' }}</td>
-
-            <td class="last-updated-cell">
-                {{ (ticket.lastUpdated || ticket.createdDate) | date:'short' }}
-            </td>
-
-            <td>
-              <button class="details-btn" (click)="goToDetails(ticket.id!)">Podgląd</button>
-            </td>
+            <td class="last-updated-cell">{{ (ticket.lastUpdated || ticket.createdDate) | date:'short' }}</td>
+            <td><button class="details-btn" (click)="goToDetails(ticket.id!)">Podgląd</button></td>
           </tr>
         </tbody>
       </table>
+
+      <div class="pagination-bar" *ngIf="visibleTickets.length > 0">
+          <div class="pagination-info">
+              <span>Pokaż:</span>
+              <select [(ngModel)]="itemsPerPage" (change)="onPageSizeChange()">
+                  <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+              </select>
+              <span>wierszy</span>
+          </div>
+
+          <div class="pagination-controls">
+              <button [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">❮ Poprzednia</button>
+              <span class="page-number">Strona {{ currentPage }} z {{ totalPages }}</span>
+              <button [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">Następna ❯</button>
+          </div>
+      </div>
 
       <div *ngIf="visibleTickets.length === 0" style="padding: 20px; text-align: center; color: #888;">
           Brak zgłoszeń spełniających kryteria.
