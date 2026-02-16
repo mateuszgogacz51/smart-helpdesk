@@ -1,7 +1,8 @@
 version: '3.8'
+
 services:
   db:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: helpdesk_db
     restart: always
     environment:
@@ -12,6 +13,23 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+
+  # --- TWOJA APLIKACJA ---
+  app:
+    build: .
+    container_name: helpdesk_app
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      # Kluczowa zmiana: wewnątrz Dockera hostem bazy jest nazwa serwisu, czyli 'db'
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/helpdesk_db
+      SPRING_DATASOURCE_USERNAME: helpdesk
+      SPRING_DATASOURCE_PASSWORD: password
+      # Opcjonalnie wymuszamy profil produkcyjny
+      SPRING_PROFILES_ACTIVE: prod
 
 volumes:
   db_data:
