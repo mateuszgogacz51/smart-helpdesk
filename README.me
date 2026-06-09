@@ -1,9 +1,32 @@
 # 🛠️ Smart Helpdesk System
 
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white) 
-![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white) 
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) 
-![JWT](https://img.shields.io/badge/JWT-Auth-black?style=for-the-badge&logo=JSON%20web%20tokens)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white) ![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) ![JWT](https://img.shields.io/badge/JWT-Auth-black?style=for-the-badge&logo=JSON%20web%20tokens)
+
+**Smart Helpdesk System** to kompleksowa, w pełni responsywna platforma do zarządzania zgłoszeniami serwisowymi (Ticketing System). Projekt został stworzony z myślą o wewnętrznych działach wsparcia IT w średnich i dużych organizacjach, aby zautomatyzować obieg informacji, skrócić czas reakcji na awarie i uporządkować komunikację między pracownikami a technikami.
+
+Aplikacja opiera się na nowoczesnej architekturze klient-serwer, wykorzystując potęgę Spring Boota na backendzie, dynamikę Angulara na frontendzie oraz powiadomienia e-mail w czasie rzeczywistym.
+
+---
+
+## 🎯 Główne Funkcjonalności (Features)
+
+System dostarcza dedykowane widoki i narzędzia dla trzech głównych grup użytkowników (Role-Based Access Control):
+
+### 👤 Moduł Użytkownika (Pracownika)
+* **Intuicyjne zgłaszanie problemów:** Prosty formularz pozwalający na określenie tematu, kategorii problemu (np. Sprzęt, Sieć) oraz dokładnej lokalizacji.
+* **Dodawanie załączników:** Możliwość dołączenia zrzutów ekranu lub dokumentów w celu szybszej diagnozy.
+* **Interakcja z serwisem:** Prowadzenie konwersacji z technikiem bezpośrednio w panelu zgłoszenia poprzez system komentarzy.
+
+### 🛠️ Moduł Helpdesku i Administratora
+* **Analityczny Dashboard (Statystyki):** Dynamiczny panel prezentujący na żywo kluczowe metryki – liczbę otwartych, przypisanych i rozwiązanych zgłoszeń.
+* **Zarządzanie przepływem pracy:** Przejrzysta lista zadań z możliwością filtrowania, przypisywania techników oraz zmiany priorytetów (Low, Normal, High).
+* **Zarządzanie Kadrami (User Management):** Pełny CRUD dla kont pracowników, zarządzanie uprawnieniami i działami.
+* **Dziennik Zdarzeń (Audit Trail):** Automatyczne rejestrowanie każdej akcji w zgłoszeniu, co gwarantuje transparentność działań.
+
+### ⚙️ Zaawansowane Funkcjonalności Systemowe
+* **Integracja E-mail (SMTP):** Automatyczne powiadomienia mailowe o zmianie statusu zgłoszenia czy nowym komentarzu.
+* **Powiadomienia Real-Time:** Dynamicznie odświeżająca się ikona dzwonka, która alarmuje o nowych zdarzeniach bez konieczności przeładowywania strony.
+* **Bezpieczeństwo (Stateless Auth):** Logowanie oparte na tokenach JWT z weryfikacją ról na każdym endpoincie.
 
 ---
 
@@ -11,18 +34,34 @@
 
 ### 1. Ekran Logowania i Panel Użytkownika
 ![Logowanie](LOGIN.png)
-
 ![Panel Użytkownika](panel_USER.png)
 
-### 2. Panel Administratora
+### 2. Analityczny Dashboard i Panel Admina
 ![Widok Admina](widok_admina.jpg)
-
 ![Panel Admina](panel_admin.png)
 
-### 3. Obsługa Zgłoszenia
-![Komentarze](komentarz.png)
+### 3. Obsługa Zgłoszenia (Komentarze, Załączniki, Historia)
+![Komentarze i Załączniki](komentarz.png)
 
-### 4. Administracja i Profil
-![Zarządzanie](zarzadzanie_user.png)
+### 4. Administracja i Profil Użytkownika
+![Zarządzanie Użytkownikami](zarzadzanie_user.png)
+![Profil Użytkownika](edycja_profil.png)
 
-![Profil](edycja_profil.png)
+---
+
+## 🏗️ Architektura i Stack Technologiczny
+
+Aplikacja to klasyczna architektura typu Single Page Application (SPA) współpracująca z REST API.
+
+**Backend (Java)**
+* Java 17 / Spring Boot 3.2
+* Spring Security + JWT
+* Spring Data JPA / Hibernate
+* JavaMailSender (Integracja SMTP)
+* PostgreSQL
+* Maven
+
+**Frontend (TypeScript)**
+* Angular 17 (Standalone Components)
+* RxJS (Observables, Interceptors)
+* Czysty SCSS / CSS
