@@ -34,7 +34,6 @@ export class AdminComponent implements OnInit {
   }
 
   loadStats() {
-    // Używam ticketService zamiast bezpośredniego http dla porządku
     this.ticketService.getStats().subscribe({
       next: (data) => {
         this.stats = data || { users: [], categories: [] };
@@ -62,18 +61,15 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  // --- NOWOŚĆ: POBIERANIE RAPORTU ---
+  // --- POBIERANIE RAPORTU CSV ---
   downloadReport() {
     this.ticketService.exportToCsv().subscribe({
       next: (blob: Blob) => {
-        // Tworzymy wirtualny link do pliku
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        // Ustawiamy nazwę pliku z datą
         a.download = `raport_helpdesk_${new Date().toISOString().slice(0,10)}.csv`;
         a.click();
-        // Sprzątamy po sobie
         window.URL.revokeObjectURL(url);
       },
       error: (err) => {
@@ -85,34 +81,37 @@ export class AdminComponent implements OnInit {
 
   // --- KATEGORIE ---
   loadCategories() {
-      this.ticketService.getCategories().subscribe({
-          next: (data) => {
-              this.categoryList = data;
-              this.cdr.detectChanges();
-          }
-      });
+    this.ticketService.getCategories().subscribe({
+      next: (data) => {
+        this.categoryList = data;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   addCategory() {
-      if (!this.newCategoryName.trim()) return;
-      this.ticketService.addCategory(this.newCategoryName).subscribe({
-          next: () => {
-              this.newCategoryName = '';
-              this.loadCategories();
-              alert('Dodano kategorię!');
-          },
-          error: () => alert('Błąd dodawania (może taka już istnieje?)')
-      });
+    if (!this.newCategoryName.trim()) return;
+    this.ticketService.addCategory(this.newCategoryName).subscribe({
+      next: () => {
+        this.newCategoryName = '';
+        this.loadCategories();
+        alert('Dodano kategorię!');
+      },
+      error: () => alert('Błąd dodawania (może taka już istnieje?)')
+    });
   }
 
   deleteCategory(id: number) {
-      if(!confirm('Czy usunąć kategorię?')) return;
-      this.ticketService.deleteCategory(id).subscribe({
-          next: () => {
-              this.loadCategories();
-          },
-          error: () => alert('Błąd usuwania')
-      });
+    if (!confirm('Czy usunąć kategorię?')) return;
+    this.ticketService.deleteCategory(id).subscribe({
+      next: () => {
+        this.loadCategories();
+      },
+      error: (err) => {
+        const msg = err.error?.message || 'Nie można usunąć kategorii — ma przypisane zgłoszenia.';
+        alert(msg);
+      }
+    });
   }
 
   goBack() {

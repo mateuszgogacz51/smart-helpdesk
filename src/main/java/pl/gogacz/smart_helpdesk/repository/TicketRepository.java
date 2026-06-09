@@ -14,7 +14,10 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     // Dla zwykłego Usera: widzi tylko swoje
     List<Ticket> findByAuthor(User author);
 
-    // --- NOWE ZAPYTANIA DLA ADMINA (STATYSTYKI) ---
+    // Sprawdzenie czy kategoria ma przypisane zgłoszenia
+    long countByCategoryId(Long categoryId);
+
+    // --- ZAPYTANIA DLA ADMINA (STATYSTYKI) ---
 
     // 1. Skuteczność serwisantów (ile zamknęli zgłoszeń)
     @Query("SELECT t.assignedUser.username, COUNT(t) " +
