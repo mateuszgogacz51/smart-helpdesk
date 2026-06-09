@@ -48,6 +48,12 @@ export class AddTicketComponent implements OnInit {
       }
   }
 
+  // NOWA METODA: Czyszczenie wybranego pliku
+  clearFile(fileInput: HTMLInputElement) {
+      this.selectedFile = null;
+      fileInput.value = ''; // Resetuje pole wyboru w przeglądarce
+  }
+
   onSubmit() {
     // 1. Najpierw tworzymy zgłoszenie
     this.ticketService.createTicket(this.ticket).subscribe({

@@ -1,40 +1,73 @@
-# Smart Helpdesk
+# 🛠️ Smart Helpdesk System
 
-Nowoczesna platforma typu Service Desk służąca do kompleksowego zarządzania zgłoszeniami serwisowymi. System umożliwia pełną obsługę cyklu życia błędu/prośby – od momentu zgłoszenia przez użytkownika, aż po rozwiązanie przez dział techniczny.
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
+![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-Auth-black?style=for-the-badge&logo=JSON%20web%20tokens)
 
-## Kluczowe Funkcjonalności
-
-### Moduł Użytkownika
-* **System Zgłoszeń:** Tworzenie zgłoszeń z wyborem kategorii, lokalizacji i priorytetu.
-* **Załączniki:** Możliwość dodawania dokumentacji lub zrzutów ekranu do zgłoszeń.
-* **Śledzenie Postępów:** Podgląd statusu własnych spraw i historia zmian.
-
-### Moduł Pracownika (Helpdesk) & Admina
-* **Zarządzanie Zgłoszeniami:** Przypisywanie do pracowników, zmiana priorytetów i statusów.
-* **Panel Administracyjny:** Zarządzanie użytkownikami (role: USER, HELPDESK, ADMIN) oraz kategoriami.
-* **Statystyki:** Dashboard z danymi o skuteczności i obciążeniu zespołu.
-* **Eksport danych:** Generowanie raportów do formatu CSV.
-
-### Automatyzacja
-* **Powiadomienia E-mail:** System powiadomień o zmianie statusu zgłoszenia (integracja z SMTP).
-* **System Komentarzy:** Bezpośrednia komunikacja wewnątrz zgłoszenia.
+Kompleksowy, w pełni responsywny system zgłoszeniowy (Ticketing System) zaprojektowany do usprawnienia komunikacji między pracownikami a działem wsparcia IT. Projekt prezentuje nowoczesną architekturę backendową oraz dynamiczny interfejs użytkownika z podziałem na role (RBAC).
 
 ---
 
-**Backend:**
-* Java 17 / Spring Boot 3
-* Spring Security (JWT Authentication)
-* Spring Data JPA / Hibernate
-* PostgreSQL
-* Jakarta Mail (SMTP Integration)
+## 🚀 Główne Funkcjonalności (Features)
 
-**Frontend:**
-* Angular 19 (Standalone Components)
-* TypeScript / RxJS
-* CSS3 (Custom Styling / Responsive Design)
-
-**DevOps & Deployment:**
-* Docker / Docker Compose
-* Maven
+* **Role-Based Access Control (RBAC):** Trzy poziomy uprawnień (`ADMIN`, `HELPDESK`, `USER`). Każda rola posiada dedykowany interfejs i inne uprawnienia.
+* **Zarządzanie Zgłoszeniami (Ticketing):** Tworzenie ticketów, przypisywanie kategorii, lokalizacji oraz śledzenie statusów (Nowe, W trakcie, Zamknięte).
+* **Obsługa Załączników:** Możliwość dodawania zrzutów ekranu i plików (np. PDF, JPG) bezpośrednio do zgłoszeń.
+* **System Komentarzy i Notatek:** Płynna wymiana informacji między serwisantem a osobą zgłaszającą problem.
+* **Dziennik Zdarzeń (Audit Log):** Automatyczne śledzenie historii zmian (kto i kiedy zmienił status, przypisanie lub priorytet).
+* **Zarządzanie Użytkownikami (Admin Panel):** Pełny CRUD dla kont pracowników, działów i uprawnień.
+* **Powiadomienia w czasie rzeczywistym:** Moduł informujący o zmianach w przypisanych zgłoszeniach.
 
 ---
+
+## 📸 Galeria Systemu
+
+### 1. Ekran Logowania i Panel Użytkownika (USER)
+Zwykły pracownik widzi tylko swoje zgłoszenia i ma prosty, intuicyjny proces dodawania nowych problemów.
+
+![Logowanie](LOGIN.png)
+![Panel Użytkownika](panel_USER.png)
+
+### 2. Panel Administratora / Helpdesku
+Dedykowany widok pozwalający na zarządzanie całym przepływem pracy, filtrowanie zgłoszeń i przypisywanie zadań.
+
+![Widok Admina](widok%20admina.jpg)
+![Panel Admina](panel_admin.png)
+
+### 3. Obsługa Zgłoszenia (Komentarze, Załączniki, Historia)
+Szczegóły ticketa pozwalające na interakcję z użytkownikiem, dodawanie notatek serwisowych i przegląd logów systemowych.
+
+![Komentarze i Załączniki](komentarz.png)
+
+### 4. Administracja i Profil Użytkownika
+Panel zarządzania kadrami oraz widok edycji profilu, powiadomień i ustawień konta.
+
+![Zarządzanie Użytkownikami](zarzadzanie_user.png)
+![Profil Użytkownika](edycja%20profil.png)
+
+---
+
+## 🏗️ Architektura i Stack Technologiczny
+
+Aplikacja została podzielona na dwa niezależne moduły komunikujące się poprzez REST API.
+
+### Backend (Java)
+* **Framework:** Spring Boot 3.2
+* **Bezpieczeństwo:** Spring Security + Stateless JWT Authentication
+* **Baza danych:** PostgreSQL (mapowanie za pomocą Hibernate/JPA)
+* **Architektura:** Warstwowa (Controllers, Services, Repositories, DTOs)
+
+### Frontend (TypeScript)
+* **Framework:** Angular 17 (Standalone Components)
+* **Komunikacja:** RxJS (Observables, Interceptors dla tokenów JWT)
+* **Style:** Czysty SCSS CSS z naciskiem na nowoczesny UX/UI.
+
+---
+
+## 💻 Instrukcja Uruchomienia (Local Setup)
+
+### 1. Klonowanie repozytorium
+```bash
+git clone [https://github.com/TWOJ_NICK/smart-helpdesk.git](https://github.com/TWOJ_NICK/smart-helpdesk.git)
+cd smart-helpdesk

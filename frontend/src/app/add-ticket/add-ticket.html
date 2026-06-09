@@ -55,7 +55,16 @@
         
         <div class="form-group">
             <label for="attachment">Dodaj Załącznik (opcjonalnie)</label>
-            <input type="file" id="attachment" (change)="onFileSelected($event)" class="form-control-file">
+            
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="file" id="attachment" #fileInput (change)="onFileSelected($event)" class="form-control-file">
+                
+                <button *ngIf="selectedFile" type="button" (click)="clearFile(fileInput)" 
+                        style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
+                  ❌ Usuń
+                </button>
+            </div>
+
             <small style="color: var(--text-secondary); display: block; margin-top: 5px; font-size: 0.8rem;">
                 Możesz dodać zrzut ekranu lub dokument (PDF, JPG, PNG).
             </small>
