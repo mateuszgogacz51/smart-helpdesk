@@ -1,28 +1,57 @@
-# 🛠️ Smart Helpdesk System
+# Smart Helpdesk System
 
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white) 
-![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white) 
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) 
-![JWT](https://img.shields.io/badge/JWT-Auth-black?style=for-the-badge&logo=JSON%20web%20tokens)
+## Opis Projektu
+**Smart Helpdesk System** to zaawansowana platforma klasy Enterprise służąca do zarządzania zgłoszeniami serwisowymi (ticketing). System został zaprojektowany w celu optymalizacji pracy działów wsparcia IT, automatyzacji obiegu dokumentacji oraz poprawy komunikacji na linii pracownik-serwisant. Aplikacja wspiera pełny cykl życia zgłoszenia: od momentu rejestracji problemu, przez diagnostykę i przypisanie zasobów, aż po jego finalne rozwiązanie.
+
+## Kluczowe Funkcjonalności
+
+### Zarządzanie Zgłoszeniami (Ticketing)
+* **System Zgłoszeniowy:** Użytkownicy mogą rejestrować awarie, definiując temat, kategorię (np. sprzęt, sieć, oprogramowanie) oraz lokalizację.
+* **Obsługa Załączników:** System wspiera przesyłanie plików (logi błędów, zrzuty ekranu), co znacząco przyspiesza proces diagnostyczny.
+* **Priorytetyzacja:** Administratorzy mają możliwość nadawania priorytetów (Low, Normal, High), co pozwala na dynamiczne zarządzanie kolejką zgłoszeń.
+
+### Role i Uprawnienia (RBAC)
+System implementuje mechanizm **Role-Based Access Control**, separując uprawnienia dla trzech typów użytkowników:
+1. **USER:** Zgłaszanie problemów, monitorowanie statusów własnych zadań, komunikacja w komentarzach.
+2. **HELPDESK:** Zarządzanie kolejką zgłoszeń, przypisywanie zadań, diagnoza techniczna.
+3. **ADMIN:** Pełna administracja systemem, zarządzanie kontami użytkowników, konfiguracja kategorii oraz analiza statystyk.
+
+### Automatyzacja i Powiadomienia
+* **Integracja E-mail:** Automatyczna wysyłka komunikatów SMTP informujących o zmianach statusów zgłoszeń.
+* **Powiadomienia Real-Time:** System powiadomień w interfejsie użytkownika, zapewniający informację zwrotną w czasie rzeczywistym.
+* **Audit Trail:** Rejestracja historii zmian w każdym zgłoszeniu (kto, kiedy i co zmienił), co zapewnia pełną transparentność działań serwisowych.
+
+### Analiza Danych
+* **Dashboard Analityczny:** Panel administracyjny prezentujący statystyki wydajności działu, w tym podział zgłoszeń według kategorii oraz skuteczność serwisantów.
 
 ---
 
-## 📸 Galeria Systemu
+## Architektura Techniczna
 
-### 1. Ekran Logowania i Panel Użytkownika
-![Logowanie](LOGIN.png)
+Aplikacja opiera się na architekturze typu **Single Page Application (SPA)** z rozdzieleniem logiki biznesowej od warstwy prezentacji.
 
-![Panel Użytkownika](panel_USER.png)
+### Backend (Java)
+* **Technologia:** Spring Boot 3.2
+* **Bezpieczeństwo:** Spring Security z autoryzacją bezstanową (stateless) opartą na tokenach **JWT (JSON Web Tokens)**.
+* **Persistence Layer:** Spring Data JPA / Hibernate mapujące obiekty na bazę danych PostgreSQL.
+* **Logika:** Warstwowa architektura (Controllers, Services, Repositories, DTOs).
 
-### 2. Panel Administratora
-![Widok Admina](widok_admina.jpg)
+### Frontend (TypeScript)
+* **Framework:** Angular 17 (Standalone Components).
+* **Komunikacja:** RxJS (Observables, HTTP Interceptors dla obsługi nagłówków autoryzacyjnych).
+* **Stylizacja:** SCSS / CSS.
 
-![Panel Admina](panel_admin.png)
+---
 
-### 3. Obsługa Zgłoszenia
-![Komentarze](komentarz.png)
+## Wymagania Środowiskowe
+Aby uruchomić aplikację, wymagane są:
+* **JDK 17** lub nowsze.
+* **Node.js 18+** z menedżerem npm.
+* **PostgreSQL** (skonfigurowany w `application.properties`).
+* **Maven** do budowania projektu backendowego.
 
-### 4. Administracja i Profil
-![Zarządzanie](zarzadzanie_user.png)
-
-![Profil](edycja_profil.png)
+## Instrukcja Uruchomienia
+1. **Baza Danych:** Upewnij się, że instancja PostgreSQL jest uruchomiona i skonfigurowana.
+2. **Backend:** W głównym katalogu projektu uruchom komendę: `./mvnw spring-boot:run`.
+3. **Frontend:** Przejdź do folderu `/frontend`, zainstaluj zależności (`npm install`) i uruchom środowisko deweloperskie (`ng serve`).
+4. **Dostęp:** Aplikacja jest dostępna pod adresem `http://localhost:4200`. Domyślne dane dostępowe dla administratora to: `admin` / `admin123`.
