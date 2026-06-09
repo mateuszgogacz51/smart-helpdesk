@@ -1,73 +1,72 @@
 # 🛠️ Smart Helpdesk System
 
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
-![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![JWT](https://img.shields.io/badge/JWT-Auth-black?style=for-the-badge&logo=JSON%20web%20tokens)
+<p align="left">
+  <img src="https://img.shields.io/badge/Spring_Boot-3.2-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot" />
+  <img src="https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white" alt="Angular" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/JWT-Auth-black?style=for-the-badge&logo=JSON%20web%20tokens" alt="JWT" />
+</p>
 
-Kompleksowy, w pełni responsywny system zgłoszeniowy (Ticketing System) zaprojektowany do usprawnienia komunikacji między pracownikami a działem wsparcia IT. Projekt prezentuje nowoczesną architekturę backendową oraz dynamiczny interfejs użytkownika z podziałem na role (RBAC).
+**Smart Helpdesk System** to kompleksowa, w pełni responsywna platforma do zarządzania zgłoszeniami serwisowymi (Ticketing System). Projekt został stworzony z myślą o wewnętrznych działach wsparcia IT w średnich i dużych organizacjach, aby zautomatyzować obieg informacji, skrócić czas reakcji na awarie i uporządkować komunikację.
+
+Aplikacja opiera się na nowoczesnej architekturze klient-serwer, wykorzystując potęgę Spring Boota na backendzie, dynamikę Angulara na frontendzie oraz powiadomienia e-mail w czasie rzeczywistym.
 
 ---
 
-## 🚀 Główne Funkcjonalności (Features)
+## 🎯 Główne Funkcjonalności (Features)
 
-* **Role-Based Access Control (RBAC):** Trzy poziomy uprawnień (`ADMIN`, `HELPDESK`, `USER`). Każda rola posiada dedykowany interfejs i inne uprawnienia.
-* **Zarządzanie Zgłoszeniami (Ticketing):** Tworzenie ticketów, przypisywanie kategorii, lokalizacji oraz śledzenie statusów (Nowe, W trakcie, Zamknięte).
-* **Obsługa Załączników:** Możliwość dodawania zrzutów ekranu i plików (np. PDF, JPG) bezpośrednio do zgłoszeń.
-* **System Komentarzy i Notatek:** Płynna wymiana informacji między serwisantem a osobą zgłaszającą problem.
-* **Dziennik Zdarzeń (Audit Log):** Automatyczne śledzenie historii zmian (kto i kiedy zmienił status, przypisanie lub priorytet).
-* **Zarządzanie Użytkownikami (Admin Panel):** Pełny CRUD dla kont pracowników, działów i uprawnień.
-* **Powiadomienia w czasie rzeczywistym:** Moduł informujący o zmianach w przypisanych zgłoszeniach.
+System dostarcza dedykowane widoki i narzędzia dla trzech głównych grup użytkowników (Role-Based Access Control):
+
+### 👤 Moduł Użytkownika (Pracownika)
+* **Intuicyjne zgłaszanie problemów:** Prosty formularz pozwalający na określenie tematu, kategorii problemu (np. Sprzęt, Sieć) oraz dokładnej lokalizacji (np. numer pokoju).
+* **Dodawanie załączników:** Możliwość dołączenia zrzutów ekranu lub dokumentów (np. logów błędów) w celu szybszej diagnozy.
+* **Interakcja z serwisem:** Prowadzenie konwersacji z technikiem bezpośrednio w panelu konkretnego zgłoszenia poprzez system komentarzy.
+
+### 🛠️ Moduł Helpdesku i Administratora
+* **Analityczny Dashboard (Statystyki):** Dynamiczny panel prezentujący na żywo kluczowe metryki – liczbę otwartych, przypisanych i rozwiązanych zgłoszeń, co pozwala na błyskawiczną ocenę obciążenia działu IT.
+* **Zarządzanie przepływem pracy:** Przejrzysta lista zadań z możliwością filtrowania, przypisywania techników oraz zmiany priorytetów (Low, Normal, High).
+* **Zarządzanie Kadrami (User Management):** Panel administratora do dodawania kont pracowników, modyfikacji ich danych i zarządzania uprawnieniami systemowymi.
+* **Dziennik Zdarzeń (Audit Trail):** System automatycznie rejestruje każdą akcję (kto, kiedy i co zmienił w zgłoszeniu), gwarantując pełną transparentność działań.
+
+### ⚙️ Zaawansowane Funkcjonalności Systemowe
+* **Integracja E-mail (SMTP):** System automatycznie wysyła wiadomości mailowe do użytkowników, informując ich o ważnych zmianach (np. utworzenie zgłoszenia, zmiana statusu, nowy komentarz od serwisanta).
+* **Powiadomienia Real-Time:** Dynamicznie odświeżająca się ikona dzwonka (powiadomień) w interfejsie Angulara, która natychmiastowo alarmuje użytkownika o nowych zdarzeniach bez konieczności przeładowywania strony.
+* **Bezpieczeństwo (Stateless Auth):** Logowanie i autoryzacja oparte na JSON Web Tokens (JWT) z weryfikacją ról na każdym endpoincie po stronie serwera.
 
 ---
 
 ## 📸 Galeria Systemu
 
 ### 1. Ekran Logowania i Panel Użytkownika (USER)
-Zwykły pracownik widzi tylko swoje zgłoszenia i ma prosty, intuicyjny proces dodawania nowych problemów.
-
 ![Logowanie](LOGIN.png)
 ![Panel Użytkownika](panel_USER.png)
 
-### 2. Panel Administratora / Helpdesku
-Dedykowany widok pozwalający na zarządzanie całym przepływem pracy, filtrowanie zgłoszeń i przypisywanie zadań.
-
-![Widok Admina](widok%20admina.jpg)
+### 2. Analityczny Dashboard i Panel Admina
+![Widok Admina](widok_admina.jpg)
 ![Panel Admina](panel_admin.png)
 
 ### 3. Obsługa Zgłoszenia (Komentarze, Załączniki, Historia)
-Szczegóły ticketa pozwalające na interakcję z użytkownikiem, dodawanie notatek serwisowych i przegląd logów systemowych.
-
 ![Komentarze i Załączniki](komentarz.png)
 
 ### 4. Administracja i Profil Użytkownika
-Panel zarządzania kadrami oraz widok edycji profilu, powiadomień i ustawień konta.
-
 ![Zarządzanie Użytkownikami](zarzadzanie_user.png)
-![Profil Użytkownika](edycja%20profil.png)
+![Profil Użytkownika](edycja_profil.png)
 
 ---
 
 ## 🏗️ Architektura i Stack Technologiczny
 
-Aplikacja została podzielona na dwa niezależne moduły komunikujące się poprzez REST API.
+Projekt to aplikacja typu Single Page Application (SPA) współpracująca z niezależnym REST API.
 
-### Backend (Java)
-* **Framework:** Spring Boot 3.2
-* **Bezpieczeństwo:** Spring Security + Stateless JWT Authentication
-* **Baza danych:** PostgreSQL (mapowanie za pomocą Hibernate/JPA)
-* **Architektura:** Warstwowa (Controllers, Services, Repositories, DTOs)
+**Backend (Java)**
+* Java 17 / Spring Boot 3.2
+* Spring Security + JWT
+* Spring Data JPA / Hibernate
+* JavaMailSender (Integracja SMTP)
+* PostgreSQL
+* Maven
 
-### Frontend (TypeScript)
-* **Framework:** Angular 17 (Standalone Components)
-* **Komunikacja:** RxJS (Observables, Interceptors dla tokenów JWT)
-* **Style:** Czysty SCSS CSS z naciskiem na nowoczesny UX/UI.
-
----
-
-## 💻 Instrukcja Uruchomienia (Local Setup)
-
-### 1. Klonowanie repozytorium
-```bash
-git clone [https://github.com/TWOJ_NICK/smart-helpdesk.git](https://github.com/TWOJ_NICK/smart-helpdesk.git)
-cd smart-helpdesk
+**Frontend (TypeScript)**
+* Angular 17 (Standalone Components)
+* RxJS (Observables, Interceptors)
+* Czysty SCSS / CSS
