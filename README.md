@@ -28,63 +28,63 @@
 ### 🔐 Logowanie
 > Ekran logowania z autoryzacją JWT. Użytkownik wpisuje login i hasło — po uwierzytelnieniu otrzymuje token i zostaje przekierowany do dashboardu.
 
-![Ekran logowania](IMG/screenshot_login.png)
+![Ekran logowania](IMG/1.png)
 
 ---
 
 ### 📊 Dashboard — widok wszystkich zgłoszeń
 > Główny panel aplikacji. Wyświetla kafelki ze statystykami (Moje zadania przypisane oraz stan całej firmy), pełną listę zgłoszeń z kolumnami: ID, tytuł, status, priorytet, kategoria, autor, przypisany, daty. Dostępne przyciski: Panel Admina, Użytkownicy, Nowe zgłoszenie.
 
-![Dashboard - wszystkie zgłoszenia](IMG/screenshot_dashboard.png)
+![Dashboard - wszystkie zgłoszenia](IMG/2.png)
 
 ---
 
 ### 🔍 Filtrowanie — tylko moje zgłoszenia
 > Widok po przełączeniu filtra na „Tylko moje" — lista zawęża się wyłącznie do zgłoszeń przypisanych do zalogowanego użytkownika. Widoczna paginacja z wyborem liczby wierszy na stronę.
 
-![Dashboard - tylko moje zgłoszenia](IMG/screenshot_filter.png)
+![Dashboard - tylko moje zgłoszenia](IMG/3.png)
 
 ---
 
 ### ➕ Tworzenie nowego zgłoszenia
 > Formularz rejestracji nowej awarii. Pola: temat zgłoszenia, kategoria (dropdown), lokalizacja, załącznik (PDF/JPG/PNG) oraz szczegółowy opis. Przycisk „Wyślij Zgłoszenie" aktywuje się po uzupełnieniu wymaganych pól.
 
-![Formularz nowego zgłoszenia](IMG/screenshot_new_ticket.png)
+![Formularz nowego zgłoszenia](IMG/4.png)
 
 ---
 
 ### 🎫 Szczegóły zgłoszenia
 > Widok pojedynczego ticketu. Po lewej: opis zgłoszenia, sekcja załączników z możliwością pobrania i dodania pliku, Dziennik Zdarzeń (Audit Trail) z historią zmian oraz sekcja komentarzy. Po prawej: panel zarządzania — zmiana statusu, priorytetu, kategorii, przypisanie serwisanta i dane zgłaszającego.
 
-![Szczegóły zgłoszenia](IMG/screenshot_ticket_detail.png)
+![Szczegóły zgłoszenia](IMG/5.png)
 
 ---
 
 ### 👤 Profil użytkownika
 > Strona profilu z danymi konta: imię i nazwisko, email, dział, telefon oraz oznaczenie roli (ADMIN/HELPDESK/USER). Dostępny przycisk edycji profilu.
 
-![Profil użytkownika](IMG/screenshot_profile.png)
+![Profil użytkownika](IMG/6.png)
 
 ---
 
 ### 🔔 Powiadomienia real-time
 > Powiadomienie w interfejsie użytkownika wyświetlane po dodaniu nowego komentarza przez innego użytkownika. Ikona dzwonka w nawigacji wskazuje liczbę nieprzeczytanych powiadomień.
 
-![Powiadomienia real-time](IMG/screenshot_notification.png)
+![Powiadomienia real-time](IMG/7.png)
 
 ---
 
 ### 👥 Zarządzanie użytkownikami (Admin)
 > Panel administracyjny zarządzania kontami. Lista pracowników z kolumnami: ID, login, nazwisko, rola (kolorowe oznaczenia ADMIN/HELPDESK/USER), dział, domyślny priorytet oraz przyciski akcji (edytuj, usuń). Wyszukiwarka po nazwisku, loginie lub dziale.
 
-![Zarządzanie użytkownikami](IMG/screenshot_users.png)
+![Zarządzanie użytkownikami](IMG/8.png)
 
 ---
 
 ### ➕ Dodawanie nowego pracownika
 > Modal tworzenia nowego konta. Pola: login, imię, nazwisko, dział, telefon, email, hasło, rola (Użytkownik/Helpdesk/Admin) oraz domyślny priorytet zgłoszeń przypisywanych temu pracownikowi.
 
-![Dodawanie nowego pracownika](IMG/screenshot_new_user.png)
+![Dodawanie nowego pracownika](IMG/9.png)
 
 ---
 
